@@ -1,2 +1,2 @@
-# inventory-appbisa
+# appbisa
 Dashboard Appbisa
