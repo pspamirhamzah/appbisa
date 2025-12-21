@@ -260,7 +260,7 @@ const app = (() => {
         }
     };
 
-    // --- CHART NASIONAL (WARNA STOK GELAP/KALEM) ---
+    // --- CHART NASIONAL ---
     const renderNasionalChart = (nasStats) => {
         const ctx = document.getElementById('chartNasional').getContext('2d');
         if(chartNasional) chartNasional.destroy();
@@ -292,9 +292,9 @@ const app = (() => {
                     },
                     {
                         label: 'Stok', data: data.stock, type: 'bar', 
-                        // WARNA ABU-ABU GELAP & KALEM DENGAN TRANSPARANSI
-                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Gray-600
-                        borderColor: '#374151',                   // Gray-700
+                        // WARNA ABU-ABU GELAP (Sesuai Request)
+                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Dark Gray
+                        borderColor: '#374151',                   // Darker Border
                         borderWidth: 1, 
                         barPercentage: 0.5, order: 2
                     }
@@ -309,7 +309,7 @@ const app = (() => {
         });
     };
 
-    // --- CHART PROVINSI (WARNA STOK GELAP/KALEM) ---
+    // --- CHART PROVINSI (DENGAN STOK) ---
     const renderProvChart = () => {
         const provName = document.getElementById('dropdown-provinsi').value;
         const placeholder = document.getElementById('prov-placeholder');
@@ -338,7 +338,8 @@ const app = (() => {
             if (r.BULAN >= 0) {
                 if (r.JENIS.includes('REALISASI') || r.JENIS.includes('PENJUALAN')) mReal[r.BULAN] += r.TONASE;
                 else if (r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET') || r.JENIS.includes('RKO')) mTarget[r.BULAN] += r.TONASE;
-                else if (r.JENIS.includes('STOK') || r.JENIS.includes('STOCK')) mStock[r.BULAN] += r.TONASE;
+                // MENAMBAHKAN LOGIKA LENGKAP UNTUK STOK PROVINSI
+                else if (r.JENIS.includes('STOK') || r.JENIS.includes('STOCK') || r.JENIS.includes('PERSEDIAAN') || r.JENIS.includes('AKTUAL')) mStock[r.BULAN] += r.TONASE;
             }
         });
 
@@ -350,7 +351,7 @@ const app = (() => {
         const targetIcon = createDashedCircle('#999');
 
         chartProvinsi = new Chart(ctx, {
-            type: 'bar',
+            type: 'bar', // Tipe Utama BAR
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
@@ -366,9 +367,9 @@ const app = (() => {
                     },
                     {
                         label: 'Stok', data: mStock, type: 'bar', 
-                        // WARNA ABU-ABU GELAP & KALEM DENGAN TRANSPARANSI
-                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Gray-600
-                        borderColor: '#374151',                   // Gray-700
+                        // WARNA ABU-ABU GELAP (Sesuai Request)
+                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Dark Gray
+                        borderColor: '#374151', 
                         borderWidth: 1, 
                         barPercentage: 0.5, order: 2
                     }
