@@ -4,7 +4,6 @@ Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
 Chart.defaults.font.size = 11;
 
 const app = (() => {
-    // ⚠️ URL WEB APP ⚠️
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     let state = {
@@ -38,6 +37,86 @@ const app = (() => {
     const hexToRgbA = (hex, alpha) => {
         let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
     }
+
+    // --- FITUR BARU: CUSTOM DROPDOWN RENDERER ---
+    const initCustomDropdown = (selectId, onChangeCallback) => {
+        const selectElement = document.getElementById(selectId);
+        if (!selectElement) return;
+
+        // Cek apakah wrapper custom sudah ada? Jika ada, update isinya saja
+        let wrapper = selectElement.nextElementSibling;
+        if (!wrapper || !wrapper.classList.contains('custom-dropdown-wrapper')) {
+            // Buat struktur HTML custom dropdown
+            wrapper = document.createElement('div');
+            wrapper.className = 'custom-dropdown-wrapper';
+            
+            const trigger = document.createElement('div');
+            trigger.className = 'dropdown-trigger';
+            trigger.innerText = 'Pilih...';
+            
+            const menu = document.createElement('div');
+            menu.className = 'dropdown-menu';
+            
+            const scrollContainer = document.createElement('div');
+            scrollContainer.className = 'dropdown-scroll';
+            
+            menu.appendChild(scrollContainer);
+            wrapper.appendChild(trigger);
+            wrapper.appendChild(menu);
+            
+            // Masukkan wrapper SETELAH select asli
+            selectElement.parentNode.insertBefore(wrapper, selectElement.nextSibling);
+
+            // Event: Klik Trigger utk Buka/Tutup
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Tutup dropdown lain jika ada
+                document.querySelectorAll('.custom-dropdown-wrapper.active').forEach(w => {
+                    if (w !== wrapper) w.classList.remove('active');
+                });
+                wrapper.classList.toggle('active');
+            });
+
+            // Event: Klik di luar utk Tutup
+            document.addEventListener('click', () => {
+                wrapper.classList.remove('active');
+            });
+        }
+
+        const trigger = wrapper.querySelector('.dropdown-trigger');
+        const scrollContainer = wrapper.querySelector('.dropdown-scroll');
+        scrollContainer.innerHTML = ''; // Kosongkan opsi lama
+
+        // Ambil opsi dari select asli dan buat item custom
+        Array.from(selectElement.options).forEach(option => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            if (option.selected) item.classList.add('selected');
+            item.innerText = option.text;
+            
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Update Select Asli
+                selectElement.value = option.value;
+                
+                // Update UI Custom
+                wrapper.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                trigger.innerText = option.text;
+                wrapper.classList.remove('active');
+
+                // Panggil fungsi callback (misal: render ulang chart)
+                if (onChangeCallback) onChangeCallback(option.value);
+            });
+
+            scrollContainer.appendChild(item);
+        });
+
+        // Set teks awal trigger
+        if (selectElement.options.length > 0 && selectElement.selectedIndex >= 0) {
+            trigger.innerText = selectElement.options[selectElement.selectedIndex].text;
+        }
+    };
 
     // --- INIT & LOAD ---
     const init = () => { fetchData(); checkScreenSize(); };
@@ -83,6 +162,9 @@ const app = (() => {
         });
         if(!years.includes(state.selectedYear) && years.length > 0) state.selectedYear = years[0];
 
+        // INIT DROPDOWN TAHUN (CUSTOM)
+        initCustomDropdown('year-select', (val) => app.changeYear(val));
+
         updateDashboard(); 
     };
 
@@ -95,21 +177,24 @@ const app = (() => {
             let opt = document.createElement('option');
             opt.innerText = "Tidak ada data";
             s.appendChild(opt);
-            return;
+        } else {
+            const sortedProvs = provKeys.filter(p => p !== 'LAINNYA').sort();
+            sortedProvs.forEach(prov => {
+                let opt = document.createElement('option');
+                opt.value = prov; opt.innerText = prov;
+                s.appendChild(opt);
+            });
+            
+            if (prevVal && sortedProvs.includes(prevVal)) {
+                s.value = prevVal; 
+            } else if (sortedProvs.length > 0) {
+                s.value = sortedProvs[0]; 
+            }
         }
 
-        const sortedProvs = provKeys.filter(p => p !== 'LAINNYA').sort();
-        sortedProvs.forEach(prov => {
-            let opt = document.createElement('option');
-            opt.value = prov; opt.innerText = prov;
-            s.appendChild(opt);
-        });
-        
-        if (prevVal && sortedProvs.includes(prevVal)) {
-            s.value = prevVal; 
-        } else if (sortedProvs.length > 0) {
-            s.value = sortedProvs[0]; 
-        }
+        // INIT DROPDOWN PROVINSI (CUSTOM)
+        // Dipanggil setiap kali data provinsi diupdate
+        initCustomDropdown('dropdown-provinsi', () => app.renderProvChart());
     };
 
     // --- DASHBOARD LOGIC ---
@@ -216,11 +301,9 @@ const app = (() => {
             return { name: key, val: sortVal, display: displayVal, rawReal: item.real };
         });
 
-        // Urutkan dari Besar ke Kecil (Ranking 1 di atas)
         let activeData = arr.filter(item => item.rawReal > 0);
         activeData.sort((a,b) => b.val - a.val);
 
-        // --- RENDER TOP 5 (Provinsi Tertinggi) ---
         const listTop5 = document.getElementById('list-top5');
         if (activeData.length > 0) {
             listTop5.innerHTML = activeData.slice(0, 5).map((item, i) => `
@@ -236,14 +319,10 @@ const app = (() => {
             listTop5.innerHTML = '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Tidak ada data</div>';
         }
 
-        // --- RENDER BOTTOM 5 (Provinsi Terendah) ---
         const listOthers = document.getElementById('list-others');
         if(activeData.length > 5) {
-            // Ambil 5 terakhir, lalu balik urutan (agar yang paling kecil/terendah di paling atas list ini)
-            const bottom5 = activeData.slice(-5).reverse(); 
-            
+            const bottom5 = activeData.slice(5).reverse().slice(0, 5); 
             listOthers.innerHTML = bottom5.map((item) => {
-                // Hitung ranking asli (index + 1)
                 let realRank = activeData.indexOf(item) + 1;
                 return `
                 <div class="rank-item">
@@ -260,7 +339,6 @@ const app = (() => {
         }
     };
 
-    // --- CHART CONFIG ---
     const getChartOptions = () => ({
         responsive: true, 
         maintainAspectRatio: false,
