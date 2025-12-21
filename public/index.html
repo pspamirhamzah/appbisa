@@ -120,23 +120,25 @@
                 
                 <div class="chart-section">
                      <div class="section-header">
-                        <div class="section-title">Peta Wilayah</div>
+                        <div class="section-title">Realisasi Per Provinsi</div>
+                        <div class="select-wrapper">
+                             <select id="prov-select" onchange="renderProvChart()" style="border: 1px solid #333; background: #1a1a1a; color: white; padding: 5px; border-radius: 5px; outline: none; font-size: 11px;">
+                                 <option value="">-- Pilih Provinsi --</option>
+                             </select>
+                        </div>
                     </div>
-                    <div class="chart-wrapper" style="display: flex; align-items: center; justify-content: center; color: grey;">
-                        <canvas id="chartProv"></canvas>
-                    </div>
+                    <div class="chart-wrapper"><canvas id="chartProv"></canvas></div>
                 </div>
             </div>
 
             <div class="ranking-grid">
                 <div class="chart-section">
                     <div class="section-header"><div class="section-title">🏆 Top 5 Provinsi</div></div>
-                    <div id="list-best" class="rank-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    <div id="list-best" class="rank-list"></div>
                 </div>
-                
                 <div class="chart-section">
                     <div class="section-header"><div class="section-title">⚠️ Perlu Perhatian</div></div>
-                    <div id="list-warn" class="rank-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    <div id="list-warn" class="rank-list"></div>
                 </div>
             </div>
             
