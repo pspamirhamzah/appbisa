@@ -1,7 +1,7 @@
 /* =========================================================
    1. KONFIGURASI
    ========================================================= */
-// ⚠️ PASTE URL /exec DARI APPS SCRIPT BARU ANDA DISINI
+// ⚠️ PASTE URL /exec DARI APPS SCRIPT ANDA DI SINI
 const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec'; 
 const ADMIN_PASSWORD = 'pso123';
 
@@ -10,28 +10,19 @@ const ADMIN_PASSWORD = 'pso123';
    ========================================================= */
 let rawData = [];
 let currentSector = 'SUBSIDI'; 
-let selectedYear = new Date().getFullYear(); // Default Tahun Ini (2025)
+let selectedYear = new Date().getFullYear(); // Default 2025
 
 // KAMUS BULAN: Menerjemahkan Teks Spreadsheet -> Angka Grafik
-// Format: "Teks di Excel" : Index (0=Jan, 11=Des)
 const MONTH_MAP = {
-    'JAN': 0, 'JANUARI': 0,
-    'FEB': 1, 'FEBRUARI': 1,
-    'MAR': 2, 'MARET': 2,
-    'APR': 3, 'APRIL': 3,
-    'MEI': 4, 'MAY': 4,
-    'JUN': 5, 'JUNI': 5,
-    'JUL': 6, 'JULI': 6,
-    'AGU': 7, 'AGUSTUS': 7, 'AUG': 7,
-    'SEP': 8, 'SEPTEMBER': 8,
-    'OKT': 9, 'OKTOBER': 9,
-    'NOV': 10, 'NOVEMBER': 10,
-    'DES': 11, 'DESEMBER': 11
+    'JAN': 0, 'JANUARI': 0, 'FEB': 1, 'FEBRUARI': 1, 
+    'MAR': 2, 'MARET': 2, 'APR': 3, 'APRIL': 3, 
+    'MEI': 4, 'MAY': 4, 'JUN': 5, 'JUNI': 5,
+    'JUL': 6, 'JULI': 6, 'AGU': 7, 'AGUSTUS': 7, 'AUG': 7,
+    'SEP': 8, 'SEPTEMBER': 8, 'OKT': 9, 'OKTOBER': 9,
+    'NOV': 10, 'NOVEMBER': 10, 'DES': 11, 'DESEMBER': 11
 };
 
-// Label untuk Sumbu X Grafik
 const CHART_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
 let chartNasional; 
 let isAdminLoggedIn = false;
 
@@ -39,15 +30,12 @@ let isAdminLoggedIn = false;
    3. INIT & LOAD DATA
    ========================================================= */
 window.onload = function() {
-    // 1. Cek Tema
     const savedTheme = localStorage.getItem('theme') || 'dark';
     setTheme(savedTheme);
 
-    // 2. Set Tampilan Awal Tahun
     const yearDisplay = document.querySelector('.page-info p');
-    if(yearDisplay) yearDisplay.innerText = `Data Tahun: ${selectedYear}`;
+    if(yearDisplay) yearDisplay.innerText = `Mode Diagnosa: ${selectedYear}`;
 
-    // 3. Ambil Data
     loadData();
 };
 
@@ -60,24 +48,20 @@ function loadData() {
     fetch(API_URL)
     .then(response => response.json())
     .then(data => {
-        if(data.error) {
-            console.error("Server Error:", data.error);
-            alert("Error: " + data.error);
-            if(loader) loader.style.display = 'none';
-            return;
+        // [DIAGNOSA 1] Cek apakah data masuk
+        if(!Array.isArray(data) || data.length === 0) {
+            alert("⚠️ DIAGNOSA: Data Kosong! Apps Script tidak mengirim data apapun. Cek Spreadsheet.");
+        } else {
+            console.log("Data Mentah Diterima:", data[0]); // Cek baris pertama di Console
         }
 
-        // PROSES DATA TEKS MENJADI ANGKA
         processData(data);
-        
-        // HITUNG & TAMPILKAN DASHBOARD
         updateDashboard();
         
         if(loader) loader.style.display = 'none';
     })
     .catch(error => {
-        console.error('Fetch Error:', error);
-        // alert("Gagal koneksi. Cek Console.");
+        alert("❌ ERROR KONEKSI: " + error.message + "\nCek URL Apps Script Anda!");
         if(loader) loader.style.display = 'none';
     });
 }
@@ -86,33 +70,33 @@ function processData(data) {
     if (!Array.isArray(data)) return;
 
     rawData = data.map(r => {
-        // A. BERSIHKAN ANGKA TONASE
-        // Data dari getDisplayValues() pasti STRING, misal: "1250" atau "1250,50"
+        // A. BERSIHKAN TONASE
         let valStr = String(r['TONASE']); 
-        
-        // Ganti koma jadi titik (jika ada desimal pakai koma)
-        // Hapus titik ribuan (jika ada) - Safety measure
         let cleanVal = valStr.replace(/\./g, '').replace(/,/g, '.');
         let val = parseFloat(cleanVal) || 0;
 
         // B. BERSIHKAN TAHUN
         let year = parseInt(r['TAHUN']) || 0;
-        if (year === 0) year = new Date().getFullYear(); // Fallback
+        if (year === 0) year = new Date().getFullYear(); 
 
-        // C. BERSIHKAN BULAN (Mapping Teks -> Angka)
+        // C. BERSIHKAN BULAN
         let txtBulan = String(r['BULAN'] || '').toUpperCase().trim();
         let monthIdx = -1;
         
-        if (MONTH_MAP.hasOwnProperty(txtBulan)) {
+        // Cek apakah format Tanggal ISO (2024-12-31...)
+        if (txtBulan.includes('T') && txtBulan.includes('-')) {
+             let d = new Date(r['BULAN']);
+             if (!isNaN(d.getTime())) monthIdx = d.getMonth();
+        } 
+        // Cek apakah Teks (JAN, FEB)
+        else if (MONTH_MAP.hasOwnProperty(txtBulan)) {
             monthIdx = MONTH_MAP[txtBulan];
         }
 
-        // D. KEMBALIKAN DATA BERSIH
         return {
             ...r,
             TAHUN: year,
             BULAN_IDX: monthIdx,
-            // Simpan versi Huruf Besar untuk memudahkan filter (case-insensitive)
             SEKTOR_RAW: String(r['SEKTOR'] || '').toUpperCase().trim(),
             PRODUK_RAW: String(r['PRODUK'] || '').toUpperCase().trim(),
             JENIS_RAW: String(r['JENIS'] || '').toUpperCase().trim(),
@@ -121,13 +105,13 @@ function processData(data) {
         };
     });
 
-    // AUTO-DETECT TAHUN: Jika tahun yang dipilih kosong, pindah ke tahun terbaru yang ada datanya
+    // AUTO-DETECT TAHUN
     const hasDataThisYear = rawData.some(r => r.TAHUN === selectedYear);
     if (!hasDataThisYear && rawData.length > 0) {
         const uniqueYears = [...new Set(rawData.map(r => r.TAHUN))].sort((a,b) => b-a);
         if (uniqueYears.length > 0) {
             selectedYear = uniqueYears[0];
-            console.log("Auto-switch tahun ke:", selectedYear);
+            // alert(`ℹ️ INFO: Tidak ada data tahun 2025. Otomatis pindah ke tahun ${selectedYear}`);
             const yearDisplay = document.querySelector('.page-info p');
             if(yearDisplay) yearDisplay.innerText = `Data Tahun: ${selectedYear}`;
         }
@@ -135,46 +119,46 @@ function processData(data) {
 }
 
 /* =========================================================
-   4. LOGIKA DASHBOARD
+   4. LOGIKA DASHBOARD (DENGAN DIAGNOSA)
    ========================================================= */
 function setSector(sector) {
     currentSector = sector;
     
-    // Update Menu Aktif
     const navSubsidi = document.getElementById('nav-subsidi');
     const navRetail = document.getElementById('nav-retail');
     if(navSubsidi) navSubsidi.className = sector === 'SUBSIDI' ? 'nav-item active' : 'nav-item';
     if(navRetail) navRetail.className = sector === 'RETAIL' ? 'nav-item active' : 'nav-item';
     
-    // Update Judul Halaman
     document.querySelector('.page-info h2').innerText = sector === 'SUBSIDI' ? 'Subsidi' : 'Retail';
 
     updateDashboard();
 
-    // Tutup sidebar di HP
     if(window.innerWidth <= 768) toggleSidebar();
 }
 
 function updateDashboard() {
     if (rawData.length === 0) return;
 
-    // --- VARIABEL PENAMPUNG ---
     let totalUrea = 0;
     let totalNPK = 0;
     let provStats = {}; 
-    
-    // Data Grafik (12 Bulan)
     let chartData = {
         UREA: { real: Array(12).fill(0), target: Array(12).fill(0) },
         NPK: { real: Array(12).fill(0), target: Array(12).fill(0) }
     };
 
-    // --- LOOPING DATA ---
+    // [DIAGNOSA 2] Hitung Data Lolos Filter
+    let countTahun = 0;
+    let countSektor = 0;
+    let countJenis = 0;
+    let countProduk = 0;
+
     rawData.forEach(r => {
         // 1. FILTER TAHUN
         if (r.TAHUN !== selectedYear) return;
+        countTahun++;
 
-        // 2. FILTER SEKTOR (Flexible)
+        // 2. FILTER SEKTOR
         let isSectorMatch = false;
         if (currentSector === 'SUBSIDI') {
             isSectorMatch = r.SEKTOR_RAW.includes('SUBSIDI') && !r.SEKTOR_RAW.includes('NON');
@@ -182,37 +166,55 @@ function updateDashboard() {
             isSectorMatch = r.SEKTOR_RAW.includes('RETAIL') || r.SEKTOR_RAW.includes('NON');
         }
         if (!isSectorMatch) return;
+        countSektor++;
 
-        // 3. IDENTIFIKASI JENIS (Realisasi vs Target)
+        // 3. IDENTIFIKASI JENIS
         const isReal = r.JENIS_RAW.includes('REALISASI') || r.JENIS_RAW.includes('PENJUALAN');
         const isTarget = r.JENIS_RAW.includes('RKAP') || r.JENIS_RAW.includes('TARGET');
 
-        // 4. IDENTIFIKASI PRODUK (Urea / NPK)
+        if (isReal) countJenis++; // Data realisasi ditemukan
+
+        // 4. IDENTIFIKASI PRODUK
         let pKey = '';
         if (r.PRODUK_RAW.includes('UREA') || r.PRODUK_RAW.includes('NITREA')) pKey = 'UREA';
         else if (r.PRODUK_RAW.includes('NPK') || r.PRODUK_RAW.includes('PHONSKA')) pKey = 'NPK';
 
         if (!pKey) return; 
+        if (isReal) countProduk++; // Produk valid ditemukan
 
         // --- AGGREGASI ---
         if (isReal) {
-            // Kartu Atas (Total Tahunan)
             if (pKey === 'UREA') totalUrea += r.TONASE;
             else totalNPK += r.TONASE;
 
-            // Ranking Provinsi
             let prov = r.PROVINSI_RAW || 'LAINNYA';
             if (!provStats[prov]) provStats[prov] = 0;
             provStats[prov] += r.TONASE;
 
-            // Grafik Bulanan (Jika bulan valid 0-11)
             if (r.BULAN_IDX >= 0) chartData[pKey].real[r.BULAN_IDX] += r.TONASE;
         } 
         else if (isTarget) {
-            // Grafik Target Bulanan
             if (r.BULAN_IDX >= 0) chartData[pKey].target[r.BULAN_IDX] += r.TONASE;
         }
     });
+
+    // [DIAGNOSA 3] Tampilkan Pesan Error Jika Data Masih 0
+    if (totalUrea === 0 && totalNPK === 0) {
+        alert(
+            `⚠️ HASIL DIAGNOSA:\n` +
+            `1. Total Data Masuk: ${rawData.length} baris\n` +
+            `2. Lolos Filter Tahun (${selectedYear}): ${countTahun} baris\n` +
+            `3. Lolos Filter Sektor (${currentSector}): ${countSektor} baris\n` +
+            `4. Lolos Filter Jenis (Realisasi): ${countJenis} baris\n` +
+            `5. Lolos Filter Produk (Urea/NPK): ${countProduk} baris\n\n` +
+            `KESIMPULAN:\n` +
+            (countTahun === 0 ? "❌ TAHUN TIDAK COCOK. Cek kolom TAHUN di Excel.\n" : "") +
+            (countSektor === 0 && countTahun > 0 ? "❌ SEKTOR TIDAK COCOK. Pastikan tulisannya 'SUBSIDI' atau 'RETAIL'.\n" : "") +
+            (countJenis === 0 && countSektor > 0 ? "❌ JENIS TIDAK COCOK. Pastikan tulisannya 'Realisasi'.\n" : "") +
+            (countProduk === 0 && countJenis > 0 ? "❌ PRODUK TIDAK COCOK. Pastikan tulisannya 'Urea' atau 'NPK'.\n" : "") +
+            (countProduk > 0 ? "✅ Filter OK tapi total 0. Cek Format Angka Tonase (Mungkin terbaca teks/error)." : "")
+        );
+    }
 
     // --- UPDATE UI ---
     updateElement('val-urea', formatNumber(totalUrea));
@@ -224,9 +226,11 @@ function updateDashboard() {
 
 function renderRanking(stats) {
     const list = document.getElementById('top-province-list');
-    if (!list) return;
+    if (!list) {
+        // console.error("Element ID 'top-province-list' tidak ditemukan di HTML");
+        return;
+    }
 
-    // Ubah Object ke Array -> Sort Besar ke Kecil
     let sorted = Object.keys(stats).map(key => ({ 
         name: toTitleCase(key), 
         val: stats[key] 
@@ -258,8 +262,6 @@ function renderRanking(stats) {
 }
 
 function renderCharts(data) {
-    // Tampilkan Grafik UREA sebagai default
-    // Jika ingin NPK, tinggal ganti parameter data.UREA jadi data.NPK
     drawChart('chartNasional', data.UREA.real, data.UREA.target, 'UREA');
 }
 
@@ -269,15 +271,11 @@ function drawChart(canvasId, dReal, dTarget, label) {
 
     const context = ctx.getContext('2d');
     const styles = getComputedStyle(document.body);
-    
-    // Warna sesuai Produk
     const colorMain = label === 'UREA' ? 
         (styles.getPropertyValue('--color-urea').trim() || '#F7DA19') : 
         (styles.getPropertyValue('--color-npk').trim() || '#055AA1');
-    
     const colorText = styles.getPropertyValue('--text-secondary').trim() || '#888';
 
-    // Hapus chart lama agar tidak numpuk
     if (canvasId === 'chartNasional' && chartNasional) chartNasional.destroy();
 
     const config = {
@@ -286,64 +284,34 @@ function drawChart(canvasId, dReal, dTarget, label) {
             labels: CHART_LABELS,
             datasets: [
                 {
-                    label: 'Realisasi',
-                    data: dReal,
-                    borderColor: colorMain,
-                    backgroundColor: colorMain + '20', // Transparan
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 3
+                    label: 'Realisasi', data: dReal,
+                    borderColor: colorMain, backgroundColor: colorMain + '20',
+                    borderWidth: 3, tension: 0.4, fill: true, pointRadius: 3
                 },
                 {
-                    label: 'Target',
-                    data: dTarget,
-                    borderColor: colorText,
-                    borderDash: [5, 5],
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: false,
-                    pointRadius: 0
+                    label: 'Target', data: dTarget,
+                    borderColor: colorText, borderDash: [5, 5],
+                    borderWidth: 2, tension: 0.4, fill: false, pointRadius: 0
                 }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { 
-                    display: true, 
-                    position: 'top', 
-                    align: 'end', 
-                    labels: { color: colorText, font: { size: 11 }, boxWidth: 10 } 
-                },
-                tooltip: { mode: 'index', intersect: false }
-            },
-            scales: {
-                x: { 
-                    grid: { display: false }, 
-                    ticks: { color: colorText, font: { size: 10 } } 
-                },
-                y: { 
-                    border: { display: false }, 
-                    grid: { color: '#333333' }, 
-                    ticks: { color: colorText, font: { size: 10 } }, 
-                    beginAtZero: true 
-                }
-            }
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'top', align: 'end', labels: { color: colorText, font: { size: 11 }, boxWidth: 10 } } },
+            scales: { x: { grid: { display: false }, ticks: { color: colorText, font: { size: 10 } } }, y: { border: { display: false }, grid: { color: '#333333' }, ticks: { color: colorText, font: { size: 10 } }, beginAtZero: true } }
         }
     };
 
-    const newChart = new Chart(context, config);
-    if (canvasId === 'chartNasional') chartNasional = newChart;
+    chartNasional = new Chart(context, config);
 }
 
 /* =========================================================
-   5. UTILS & ADMIN
+   5. UTILS
    ========================================================= */
 function updateElement(id, value) {
     const el = document.getElementById(id);
     if(el) el.innerText = value;
+    else console.warn(`Element ID '${id}' tidak ditemukan di HTML.`);
 }
 
 function formatNumber(num) {
@@ -375,83 +343,11 @@ function toggleSidebar() {
     if(overlay) overlay.classList.toggle('active');
 }
 
-// ADMIN PANEL LOGIC
-function openLoginModal() {
-    if(isAdminLoggedIn) {
-        isAdminLoggedIn = false;
-        alert("Logout Berhasil");
-        document.getElementById('btn-login-trigger').innerHTML = '<i class="fas fa-lock"></i> <span>Login Admin</span>';
-        if(document.getElementById('btn-admin-panel')) document.getElementById('btn-admin-panel').style.display = 'none';
-        toggleSidebar();
-    } else {
-        if(!document.getElementById('loginModal')) createLoginModalHTML();
-        openModal('loginModal');
-    }
-}
-
-function attemptLogin() {
-    const pass = document.getElementById('adminPass').value;
-    if(pass === ADMIN_PASSWORD) {
-        isAdminLoggedIn = true;
-        closeAllModals();
-        document.getElementById('btn-login-trigger').innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Logout</span>';
-        if(document.getElementById('btn-admin-panel')) document.getElementById('btn-admin-panel').style.display = 'flex';
-        alert("Login Berhasil!");
-        toggleSidebar();
-        openAdminPanel(); // Buka panel admin otomatis setelah login
-    } else {
-        alert("Password Salah!");
-    }
-}
-
-function openAdminPanel() {
-    if(!document.getElementById('adminPanelModal')) createAdminPanelHTML();
-    renderAdminTable();
-    openModal('adminPanelModal');
-}
-
-function renderAdminTable() {
-    const tbody = document.getElementById('adminTableBody');
-    if(!tbody) return;
-    tbody.innerHTML = '';
-    // Tampilkan 50 data teratas
-    rawData.slice(0, 50).forEach(row => {
-        let tr = document.createElement('tr');
-        tr.style.borderBottom = "1px solid var(--border-subtle)";
-        tr.innerHTML = `
-            <td style="padding:10px;"><button class="btn btn-primary" style="padding:4px 8px; font-size:11px;" onclick='alert("Fitur Edit: Gunakan POST ke Apps Script")'>Edit</button></td>
-            <td style="padding:10px; font-size:12px;">${row['SEKTOR_RAW']}</td>
-            <td style="padding:10px; font-size:12px;">${row['PRODUK_RAW']}</td>
-            <td style="padding:10px; font-size:12px;">${row['JENIS_RAW']}</td>
-            <td style="padding:10px; font-size:12px;">${row['PROVINSI_RAW']}</td>
-            <td style="padding:10px; font-size:12px;">${formatNumber(row['TONASE'])}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-function openModal(id) {
-    document.getElementById(id).classList.add('open');
-    document.querySelector('.backdrop').classList.add('open');
-}
-
-function closeAllModals() {
-    document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
-    document.querySelectorAll('.backdrop').forEach(b => b.classList.remove('open'));
-}
-
-document.addEventListener('click', (e) => {
-    if(e.target.classList.contains('backdrop')) closeAllModals();
-});
-
-function createLoginModalHTML() {
-    const div = document.createElement('div');
-    div.innerHTML = `<div class="modal" id="loginModal"><div class="modal-header"><h3 class="modal-title">Admin Login</h3><button class="btn-close" onclick="closeAllModals()">&times;</button></div><div class="modal-body"><input type="password" id="adminPass" class="form-control" placeholder="Password..."></div><div class="modal-footer"><button class="btn btn-primary" onclick="attemptLogin()">Masuk</button></div></div>`;
-    document.body.appendChild(div);
-}
-
-function createAdminPanelHTML() {
-    const div = document.createElement('div');
-    div.innerHTML = `<div class="modal large" id="adminPanelModal" style="width:95%; max-width:800px;"><div class="modal-header"><h3 class="modal-title">Kelola Data</h3><button class="btn-close" onclick="closeAllModals()">&times;</button></div><div class="modal-body"><div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; color:var(--text-primary);"><thead><tr style="border-bottom:1px solid var(--border-color); text-align:left;"><th style="padding:10px;">Aksi</th><th>Sektor</th><th>Produk</th><th>Jenis</th><th>Prov</th><th>Tonase</th></tr></thead><tbody id="adminTableBody"></tbody></table></div></div></div>`;
-    document.body.appendChild(div);
-}
+// ADMIN FUNCTIONS (Dummy agar tidak error)
+function openLoginModal() { alert("Mode Diagnosa: Login dinonaktifkan sementara."); }
+function attemptLogin() { }
+function openAdminPanel() { }
+function renderAdminTable() { }
+function openModal(id) { document.getElementById(id).classList.add('open'); document.querySelector('.backdrop').classList.add('open'); }
+function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.querySelectorAll('.backdrop').forEach(b => b.classList.remove('open')); }
+document.addEventListener('click', (e) => { if(e.target.classList.contains('backdrop')) closeAllModals(); });
