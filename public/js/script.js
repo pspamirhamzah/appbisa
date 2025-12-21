@@ -1,11 +1,11 @@
-/* ===============================
-   DASHBOARD SCRIPT – STABLE PROD
-   =============================== */
+/* =================================================
+   DASHBOARD SCRIPT – FINAL STABLE (DATA AKTIF)
+   ================================================= */
 
 /* ---------- CONFIG ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
 
-const CACHE_KEY = 'dashboard_cache_v1';
+const CACHE_KEY = 'dashboard_cache_v2';
 const CACHE_TTL = 5 * 60 * 1000; // 5 menit
 
 /* ---------- STATE ---------- */
@@ -21,18 +21,14 @@ let chartNasional = null;
 let chartProvinsi = null;
 let loaderTimeout = null;
 
-/* ---------- DOM UTILS ---------- */
+/* ---------- DOM ---------- */
 const $ = (id) => document.getElementById(id);
 
-/* ---------- LOADER (ANTI NGGANTUNG) ---------- */
+/* ---------- LOADER ---------- */
 const showLoader = () => {
     const l = $('loader');
     if (l) l.style.display = 'flex';
-
-    loaderTimeout = setTimeout(() => {
-        hideLoader();
-        console.warn('Loader force hidden (timeout)');
-    }, 15000);
+    loaderTimeout = setTimeout(hideLoader, 15000);
 };
 
 const hideLoader = () => {
@@ -60,11 +56,9 @@ const saveCache = (data) => {
     }));
 };
 
-/* ---------- SAFE HELPERS ---------- */
+/* ---------- HELPERS ---------- */
 const safeDestroy = (chart) => {
-    if (chart && typeof chart.destroy === 'function') {
-        chart.destroy();
-    }
+    if (chart && typeof chart.destroy === 'function') chart.destroy();
 };
 
 const parseIndoNumber = (val) => {
@@ -72,8 +66,6 @@ const parseIndoNumber = (val) => {
     if (!val) return 0;
     return parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
 };
-
-const formatNumber = (num) => new Intl.NumberFormat('id-ID').format(num);
 
 const normalizeMonth = (str) => {
     const m = {
@@ -113,7 +105,7 @@ window.addEventListener('resize', () => {
     window.__rs = setTimeout(checkScreenSize, 300);
 });
 
-/* ---------- FETCH DATA ---------- */
+/* ---------- FETCH ---------- */
 const fetchData = async () => {
     const cached = loadCache();
     if (cached) {
@@ -145,7 +137,6 @@ const processData = (data) => {
         BULAN: normalizeMonth(r.BULAN),
         SEKTOR: String(r.SEKTOR || '').toUpperCase(),
         PRODUK: String(r.PRODUK || '').toUpperCase(),
-        JENIS: String(r.JENIS || '').toUpperCase(),
         PROVINSI: toTitleCase(String(r.PROVINSI || '')),
         TONASE: parseIndoNumber(r.TONASE)
     }));
@@ -156,20 +147,38 @@ const processData = (data) => {
         ys.innerHTML = '';
         years.forEach(y => {
             const o = document.createElement('option');
-            o.value = y; o.textContent = y;
+            o.value = y;
+            o.textContent = y;
             ys.appendChild(o);
         });
-        if (!years.includes(state.selectedYear)) state.selectedYear = years[0];
+        state.selectedYear = years[0];
         ys.value = state.selectedYear;
     }
 
     updateDashboard();
 };
 
+/* ---------- AGGREGATION ---------- */
+const aggregateNasionalBulanan = () => {
+    const result = Array(12).fill(0);
+
+    state.rawData
+        .filter(r =>
+            r.TAHUN === state.selectedYear &&
+            r.SEKTOR.includes(state.sector) &&
+            r.PRODUK === state.activeProduct &&
+            r.BULAN >= 0
+        )
+        .forEach(r => {
+            result[r.BULAN] += r.TONASE;
+        });
+
+    return result;
+};
+
 /* ---------- DASHBOARD ---------- */
 const updateDashboard = () => {
     renderNasionalChart();
-    renderProvChart();
 };
 
 /* ---------- CHART OPTIONS ---------- */
@@ -180,43 +189,26 @@ const chartOptions = () => ({
     scales: { y: { beginAtZero: true } }
 });
 
-/* ---------- NASIONAL ---------- */
+/* ---------- NASIONAL CHART (AKTIF DATA) ---------- */
 const renderNasionalChart = () => {
     const c = $('chartNasional');
     if (!c) return;
 
     safeDestroy(chartNasional);
 
+    const dataBulanan = aggregateNasionalBulanan();
+
     chartNasional = new Chart(c, {
         type: 'line',
         data: {
             labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
             datasets: [{
-                label: state.activeProduct,
-                data: Array(12).fill(0),
+                label: `${state.activeProduct} ${state.selectedYear}`,
+                data: dataBulanan,
                 borderColor: '#fbbf24',
+                backgroundColor: 'rgba(251,191,36,0.2)',
+                fill: true,
                 tension: 0.4
-            }]
-        },
-        options: chartOptions()
-    });
-};
-
-/* ---------- PROVINSI ---------- */
-const renderProvChart = () => {
-    const c = $('chartProvinsi');
-    if (!c) return;
-
-    safeDestroy(chartProvinsi);
-
-    chartProvinsi = new Chart(c, {
-        type: 'bar',
-        data: {
-            labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
-            datasets: [{
-                label: 'Provinsi',
-                data: Array(12).fill(0),
-                backgroundColor: '#38bdf8'
             }]
         },
         options: chartOptions()
@@ -229,18 +221,12 @@ const renderSidebar = () => {
     const mc = $('main-content');
     if (!sb || !mc) return;
 
-    if (state.sidebarOpen) {
-        sb.classList.remove('closed');
-        mc.classList.remove('closed');
-    } else {
-        sb.classList.add('closed');
-        mc.classList.add('closed');
-    }
+    sb.classList.toggle('closed', !state.sidebarOpen);
+    mc.classList.toggle('closed', !state.sidebarOpen);
 };
 
-/* ---------- EXPOSE ---------- */
+/* ---------- PUBLIC API ---------- */
 window.app = {
-    init,
     toggleSidebar: () => {
         state.sidebarOpen = !state.sidebarOpen;
         renderSidebar();
@@ -256,8 +242,7 @@ window.app = {
     changeYear: (y) => {
         state.selectedYear = +y;
         updateDashboard();
-    },
-    renderProvChart
+    }
 };
 
 window.addEventListener('load', init);
