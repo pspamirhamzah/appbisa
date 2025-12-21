@@ -1,48 +1,33 @@
-/* =========================================
-   1. VARIABLES & THEME SETUP
-   ========================================= */
+/* 1. VARIABLES & THEME */
 :root {
-    /* Background Colors (TEMA ASLI ANDA) */
     --bg-body: #212121;
     --bg-sidebar: #171717;
     --bg-card: #2f2f2f;
     --bg-hover: #424242;
     
-    /* Text Colors */
     --text-primary: #ececec;
     --text-secondary: #b3b3b3;
     --text-muted: #666666;
     
-    /* Borders */
     --border-color: #424242;
     --border-subtle: #3a3a3a;
     
-    /* Brand & Sentiment Colors */
+    /* Brand Colors */
     --color-urea: #fbbf24;      /* Amber */
     --color-npk: #38bdf8;       /* Sky Blue */
     --color-success: #4ade80;   /* Green */
-    --color-danger: #ff5252;    /* Red Accent */
-    --color-primary: #a5b4fc;   /* Indigo Light */
+    --color-danger: #f87171;    /* Red */
     --color-stock: #a8a29e;     /* Stone */
-    --color-accent-1: #ffffff;
+    --color-accent-1: #ffffff; /* Putih */
 
-    /* Layout Dimensions */
+    /* Layout */
     --sidebar-width: 260px;
     --header-height: 64px;
     --card-radius: 16px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* =========================================
-   2. GLOBAL RESET
-   ========================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-body); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #666; }
 
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -51,40 +36,84 @@ body {
     height: 100vh;
     display: flex;
     overflow: hidden;
-    font-size: 14px; /* Ukuran standar dikembalikan */
+    font-size: 14px;
 }
 
-/* =========================================
-   3. SIDEBAR
-   ========================================= */
+/* 2. SIDEBAR */
 .sidebar {
     width: var(--sidebar-width);
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
-    display: flex; flex-direction: column;
+    display: flex;
+    flex-direction: column;
     padding: 20px 16px;
-    position: fixed; top: 0; bottom: 0; left: 0; z-index: 50;
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    z-index: 50;
     transition: transform var(--transition);
-    transform: translateX(0);
+    transform: translateX(0); /* Default Desktop Visible */
 }
-.sidebar.closed { transform: translateX(-100%); }
+
+.sidebar.closed {
+    transform: translateX(-100%);
+}
 
 .brand {
-    padding-bottom: 20px; border-bottom: none; margin-bottom: 10px;
-    white-space: nowrap; overflow: hidden; display: flex; align-items: center; min-height: 50px; 
+    padding-bottom: 20px;
+    border-bottom: none;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-height: 50px; 
 }
-.brand-content { display: flex; flex-direction: column; margin-left: 10px; }
-.brand h2 { font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2; letter-spacing: 0.5px; }
-.brand h2 span { font-weight: 400; color: var(--color-urea); }
-.brand p { font-size: 11px; color: var(--text-secondary); margin: 2px 0 0 0; font-weight: 400; letter-spacing: 0.5px; }
 
-.nav-header { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin: 16px 12px 8px; letter-spacing: 1px; white-space: nowrap; }
+.brand-content {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.brand h2 { 
+    font-size: 20px; 
+    font-weight: 800; 
+    color: var(--text-primary); 
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+}
+
+.brand h2 span {
+    font-weight: 400; /* "bisa" tipis & lowercase */
+    color: var(--color-urea); 
+}
+
+.brand p {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin: 2px 0 0 0;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.nav-header { 
+    font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); 
+    margin: 16px 12px 8px; letter-spacing: 1px; white-space: nowrap; transition: opacity 0.2s; 
+}
 
 .nav-item {
     display: flex; align-items: center; gap: 14px;
-    padding: 12px; border-radius: 12px; cursor: pointer;
-    color: var(--text-secondary); font-size: 14px; font-weight: 500;
-    transition: all 0.2s; margin-bottom: 4px; white-space: nowrap; overflow: hidden;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .nav-item i { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
 .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
@@ -92,23 +121,34 @@ body {
 .nav-item.active i { color: var(--color-urea); }
 
 .nav-spacer { flex-grow: 1; }
-.nav-login { margin-top: auto; padding-top: 10px; }
 
-/* =========================================
-   4. MAIN CONTENT
-   ========================================= */
+.nav-login { 
+    margin-top: auto; 
+    border-top: none; 
+    padding-top: 10px; 
+}
+
+/* 3. MAIN CONTENT */
 .main-content {
-    flex: 1; margin-left: var(--sidebar-width);
-    display: flex; flex-direction: column;
-    height: 100vh; overflow: hidden;
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
     transition: margin-left var(--transition);
 }
 .main-content.closed { margin-left: 0; }
 
+/* HEADER */
 header {
-    height: var(--header-height); background: var(--bg-body); 
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 32px; flex-shrink: 0;
+    height: var(--header-height);
+    background: var(--bg-body); 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    flex-shrink: 0;
 }
 .header-left { display: flex; align-items: center; gap: 20px; }
 
@@ -118,134 +158,53 @@ header {
 }
 .btn-toggle-sidebar:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-.page-title h1 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 0px; }
-.page-title p { font-size: 11px; color: var(--text-secondary); }
+.page-title h1 { 
+    font-size: 16px; 
+    font-weight: 700; 
+    color: var(--text-primary); 
+    margin-bottom: 0px; 
+}
+.page-title p { 
+    font-size: 11px;
+    color: var(--text-secondary); 
+}
 
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
-/* =========================================
-   5. CUSTOM DROPDOWN (GITHUB STYLE - TEMA ANDA)
-   ========================================= */
-/* Sembunyikan Select Asli */
-select.custom-select { display: none !important; }
-
-/* Wrapper */
-.custom-dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-    font-family: inherit;
-}
-
-/* Tombol Pemicu (Trigger) */
-.dropdown-trigger {
-    background-color: var(--bg-card); /* Pakai warna kartu tema Anda */
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 8px 16px; /* Padding lebih lega agar tidak kekecilan */
-    padding-right: 36px;
-    border-radius: 8px;
-    font-size: 13px; /* Ukuran font nyaman */
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-width: 120px;
-    height: 40px; /* Tinggi fix agar seragam */
-    transition: all 0.2s;
-    position: relative;
-}
-
-.dropdown-trigger:hover {
-    border-color: var(--text-secondary);
-    background-color: var(--bg-hover);
-}
-
-/* Ikon Panah Kecil */
-.dropdown-trigger::after {
-    content: '';
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--text-secondary); /* Segitiga abu */
-    transition: transform 0.2s;
-}
-
-/* Menu Dropdown (Popup) */
-.dropdown-menu {
-    position: absolute;
-    top: 115%; /* Jarak sedikit dari tombol */
-    right: 0; 
-    background-color: var(--bg-card); /* Warna background tema */
-    border: 1px solid var(--border-color);
-    border-radius: 10px; /* Sudut membulat */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Shadow lebih lembut */
-    padding: 6px;
-    min-width: 220px;
-    z-index: 999;
+/* CUSTOM DROPDOWN STYLE */
+.custom-select {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    background-color: var(--bg-body); 
+    border: 1px solid var(--border-color); 
+    color: var(--text-secondary); 
     
-    opacity: 0; visibility: hidden; transform: translateY(-10px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* State Aktif */
-.custom-dropdown-wrapper.active .dropdown-menu {
-    opacity: 1; visibility: visible; transform: translateY(0);
-}
-.custom-dropdown-wrapper.active .dropdown-trigger {
-    border-color: var(--color-urea); /* Border kuning saat aktif */
-}
-.custom-dropdown-wrapper.active .dropdown-trigger::after {
-    transform: translateY(-50%) rotate(180deg); /* Panah putar */
-}
-
-/* Header Label di dalam menu (misal: "Pilih Provinsi") */
-.dropdown-header-label {
-    padding: 8px 12px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 4px;
-}
-
-/* Item Pilihan */
-.dropdown-item {
-    padding: 10px 12px;
-    padding-left: 32px; /* Ruang untuk centang */
-    font-size: 13px; /* Ukuran font item */
-    color: var(--text-primary);
-    cursor: pointer;
-    border-radius: 6px;
-    position: relative;
-    transition: background 0.2s;
-}
-
-.dropdown-item:hover {
-    background-color: var(--color-urea);
-    color: #1a1a1a; /* Teks hitam agar kontras dengan kuning */
+    width: auto; 
+    min-width: 90px; 
+    padding: 8px 14px;
+    padding-right: 36px;
+    border-radius: 10px; 
+    
+    font-size: 11px; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b3b3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    
+    transition: all 0.2s ease;
 }
 
-/* Tanda Centang (Checkmark) */
-.dropdown-item.selected::before {
-    content: '✓';
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    font-weight: 800; color: var(--color-urea);
-}
-.dropdown-item:hover.selected::before { color: #1a1a1a; }
+.custom-select:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.custom-select:focus { background-color: var(--bg-card); border-color: var(--color-urea); color: var(--text-primary); }
+.custom-select option { background-color: var(--bg-card); color: var(--text-primary); padding: 10px; }
 
-/* Scrollbar di dalam Menu */
-.dropdown-scroll { max-height: 250px; overflow-y: auto; }
-.dropdown-scroll::-webkit-scrollbar { width: 4px; }
-.dropdown-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
-
-
-/* =========================================
-   6. GRID & CARDS
-   ========================================= */
+/* CONTENT AREA */
 .content-scroll { flex: 1; overflow-y: auto; padding: 20px 32px 40px; }
+
+/* GRIDS & CARDS */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
 .chart-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 20px; }
 .ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -260,9 +219,7 @@ select.custom-select { display: none !important; }
 }
 .card:hover { border-color: var(--border-subtle); }
 
-/* =========================================
-   7. KPI CARDS
-   ========================================= */
+/* 4. KPI CARDS */
 .kpi-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .kpi-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 .kpi-icon { 
@@ -288,17 +245,9 @@ select.custom-select { display: none !important; }
 .growth-up { background: rgba(74, 222, 128, 0.15); color: var(--color-success); }
 .growth-down { background: rgba(248, 113, 113, 0.15); color: var(--color-danger); }
 
-/* =========================================
-   8. CHARTS & HEADERS
-   ========================================= */
-.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; min-height: 36px; }
+/* 5. CHARTS */
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .chart-title { font-size: 15px; font-weight: 700; color: var(--text-primary); transition: color 0.3s; }
-
-/* FIX: Judul Ranking & Icon (Kiri Teks, Kanan Icon) */
-.ranking-grid .chart-header .chart-title {
-    display: flex; justify-content: space-between; align-items: center; width: 100%;
-}
-.ranking-grid .chart-header .chart-title i { font-size: 1.25rem; opacity: 0.8; }
 
 .btn-group { 
     background: var(--bg-body); padding: 4px; border-radius: 10px; 
@@ -315,13 +264,12 @@ select.custom-select { display: none !important; }
 
 .chart-canvas-container { position: relative; height: 280px; width: 100%; }
 
-/* =========================================
-   9. RANKING LIST
-   ========================================= */
+/* 6. RANKINGS */
 .rank-list { display: flex; flex-direction: column; gap: 0; }
 .rank-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 0; border-bottom: 1px solid var(--border-color);
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
 }
 .rank-item:last-child { border-bottom: none; }
 
@@ -333,16 +281,14 @@ select.custom-select { display: none !important; }
     font-size: 11px; font-weight: 800; 
 }
 .rank-num.best { background: rgba(255, 255, 255, 0.1); color: var(--color-accent-1); }
-.rank-num.warn { background: transparent; color: var(--color-danger); width: auto; padding-right: 4px; font-size: 12px; }
+.rank-num.warn { background: rgba(239, 68, 68, 0.15); color: var(--color-danger); }
 
 .rank-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .rank-val { font-size: 13px; font-weight: 700; text-align: right; }
 .val-best { color: var(--color-accent-1); }
 .val-warn { color: var(--color-danger); }
 
-/* =========================================
-   10. LOADER & RESPONSIVE
-   ========================================= */
+/* LOADER */
 #loader {
     position: fixed; inset: 0; background: var(--bg-body); z-index: 9999;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -354,6 +300,7 @@ select.custom-select { display: none !important; }
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
+/* RESPONSIVE */
 @media (max-width: 1200px) { 
     .kpi-grid { grid-template-columns: 1fr 1fr; } 
     .chart-grid, .ranking-grid { grid-template-columns: 1fr; } 
