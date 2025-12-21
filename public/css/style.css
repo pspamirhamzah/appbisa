@@ -44,7 +44,7 @@ body {
 .nav-item.active i { color: var(--urea); }
 .nav-spacer { flex: 1; }
 
-/* MAIN */
+/* MAIN CONTENT */
 .main-content { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; transition: 0.3s ease; }
 .main-content.closed { margin-left: 0; }
 header { height: 64px; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
@@ -53,16 +53,23 @@ header { height: 64px; padding: 0 30px; display: flex; align-items: center; just
 .page-title h1 { font-size: 16px; font-weight: 700; }
 .page-title p { font-size: 11px; color: var(--text-s); }
 
-.content-scroll { flex: 1; overflow-y: auto; padding: 10px 30px 40px; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
+.content-scroll { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 10px 30px 20px; 
+    display: flex; 
+    flex-direction: column; 
+    -webkit-overflow-scrolling: touch; 
+}
 
 /* GRIDS */
-.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px; }
-.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-shrink: 0; }
 
 .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; min-width: 0; }
 
-/* KPI */
+/* KPI CARDS */
 .kpi-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
 .kpi-title { font-size: 11px; font-weight: 600; color: var(--text-s); text-transform: uppercase; }
 .kpi-value { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
@@ -73,45 +80,44 @@ header { height: 64px; padding: 0 30px; display: flex; align-items: center; just
 .bg-npk { background: var(--npk); }
 .growth-badge { font-weight: 700; font-size: 11px; }
 
-/* CHARTS */
+/* CHART AREA */
 .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .chart-title { font-size: 14px; font-weight: 700; }
 .chart-container { position: relative; height: 260px; }
 .placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12px; }
 
-/* RANKING (FIX VERTIKAL) */
+/* RANKING (KUNCI HORIZONTAL) */
 .rank-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; font-weight: 700; }
 .rank-header .up { color: var(--npk); }
 .rank-header .down { color: var(--danger); }
-.rank-list { display: flex; flex-direction: column; gap: 8px; }
 
+.rank-list { display: flex; flex-direction: column; gap: 4px; }
 .rank-item { 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-    padding: 8px 0; 
+    padding: 10px 0; 
     border-bottom: 1px solid var(--border);
-    width: 100%;
 }
 .rank-item:last-child { border-bottom: none; }
-.rank-left { 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    flex: 1; /* Ambil ruang sisa agar nama provinsi lebar */
-    min-width: 0;
-}
-.rank-num { font-size: 11px; font-weight: 800; color: var(--text-m); width: 20px; }
+.rank-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.rank-num { font-size: 11px; font-weight: 800; color: var(--text-m); width: 22px; flex-shrink: 0; }
 .rank-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rank-val { font-size: 13px; font-weight: 700; margin-left: 10px; flex-shrink: 0; }
 
-/* FOOTER FIX */
-.footer { margin-top: 40px; padding: 20px 0; text-align: center; border-top: 1px solid var(--border); }
+/* FOOTER (PAS & RAPI) */
+.footer { 
+    margin-top: 50px; 
+    padding: 30px 0 20px; 
+    text-align: center; 
+    border-top: 1px solid var(--border); 
+    flex-shrink: 0;
+}
 .footer p { font-size: 11px; color: var(--text-m); font-weight: 600; }
-.footer .designer { font-size: 10px; opacity: 0.5; margin-top: 5px; }
+.footer .designer { font-size: 10px; opacity: 0.5; margin-top: 4px; }
 
 /* UTILS */
-.custom-select { background: var(--bg-body); border: 1px solid var(--border); color: var(--text-s); padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+.custom-select { background: var(--bg-body); border: 1px solid var(--border); color: var(--text-s); padding: 5px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; }
 .btn-group { background: var(--bg-body); padding: 3px; border-radius: 8px; display: flex; gap: 2px; }
 .btn-filter { background: none; border: none; color: var(--text-s); padding: 5px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 600; }
 .btn-filter.active { background: var(--bg-card); color: var(--text-p); }
@@ -129,5 +135,6 @@ header { height: 64px; padding: 0 30px; display: flex; align-items: center; just
     .sidebar { transform: translateX(-100%); }
     .sidebar.show { transform: translateX(0); }
     .main-content { margin-left: 0; }
+    header { padding: 0 15px; }
     .content-scroll { padding: 15px; }
 }
