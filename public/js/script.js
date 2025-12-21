@@ -109,34 +109,33 @@ function initDashboard(jsonString) {
 }
 
 // =========================================================
-// 4. ADMIN FEATURES (LOGIN, SAVE, DELETE)
+// 4. ADMIN FEATURES (AUTO LOGIN)
 // =========================================================
+
+// Password Admin Hardcoded (Untuk akses cepat)
+// Pastikan password ini SAMA dengan yang ada di Code.gs
+const CLIENT_PASSWORD = 'pso123'; 
 
 function openLoginModal() {
     if(isAdminLoggedIn) {
+        // LOGOUT
         isAdminLoggedIn = false;
         document.getElementById('btn-login-trigger').innerHTML = '<i class="fas fa-lock"></i> <span>Login Admin</span>';
         if(document.getElementById('btn-admin-panel')) document.getElementById('btn-admin-panel').style.display = 'none'; 
         toggleSidebar();
-        alert("Anda telah logout.");
+        alert("Mode Admin Non-Aktif.");
     } else {
-        if(!document.getElementById('loginModal')) createLoginModalHTML();
-        openModal('loginModal');
-    }
-}
-
-function attemptLogin() {
-    const pass = document.getElementById('adminPass').value;
-    if(pass === 'pso123') { 
+        // AUTO LOGIN (Tanpa ketik password)
         isAdminLoggedIn = true;
-        closeAllModals();
-        document.getElementById('adminPass').value = '';
         document.getElementById('btn-login-trigger').innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Logout</span>';
         if(document.getElementById('btn-admin-panel')) document.getElementById('btn-admin-panel').style.display = 'flex';
         toggleSidebar();
-        openAdminPanel(); 
-    } else {
-        alert("Password Salah!");
+        
+        // Langsung buka panel data
+        openAdminPanel();
+        
+        // Opsional: Beri notifikasi kecil
+        // alert("Mode Admin Aktif!"); 
     }
 }
 
