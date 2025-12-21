@@ -1,7 +1,7 @@
 // =========================================================
 // 1. KONFIGURASI
 // =========================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbw8idschHLJfy7Uy81bUQG4cuJtFvCwhPdNK1wjMxALbFBKic9IMy1EfmwsXGkDmIiNrA/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbxvQc8_pnXd6PrcU9bQZ28Trh0Ad0P5OHrCKs9203wwY-Sk7u9KvCeKKHpucoQmAyBunA/exec"; 
 
 // =========================================================
 // 2. VARIABEL GLOBAL & INIT
