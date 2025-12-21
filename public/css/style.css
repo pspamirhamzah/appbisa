@@ -1,5 +1,5 @@
 /* ========================================= */
-/* 1. CONFIG: WARNA & LAYOUT PRESISI         */
+/* 1. CONFIG: WARNA & GRID PRESISI           */
 /* ========================================= */
 :root {
     /* --- WARNA DASAR (DARK MODE) --- */
@@ -22,14 +22,11 @@
     
     --shadow-card: 0 4px 12px rgba(0,0,0,0.5);
 
-    /* --- LAYOUT GRID (KUNCI SIMETRIS) --- */
-    --gap-std: 24px;         
-    --card-radius: 16px;     
+    /* --- LAYOUT GRID --- */
+    --gap-std: 24px;         /* Jarak Antar Kartu (KUNCI SIMETRIS) */
+    --card-radius: 12px;     
     --header-height: 64px;
     --sidebar-width: 260px;
-    
-    /* TINGGI KARTU SERAGAM */
-    --kpi-height: 220px; /* Tinggi Fix untuk semua kartu atas */
 }
 
 [data-theme="light"] {
@@ -52,7 +49,7 @@
 }
 
 /* ========================================= */
-/* 2. RESET & BASE                           */
+/* 2. BASE STYLES                            */
 /* ========================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { background-color: var(--bg-body); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; overflow: hidden; display: flex; transition: background 0.2s; }
@@ -125,18 +122,19 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 .container { padding: var(--gap-std); max-width: 1600px; margin: 0 auto; }
 
 /* ========================================= */
-/* 5. GRID SYSTEM (AUTO ALIGN)               */
+/* 5. GRID SYSTEM (SIMETRIS PRESISI)         */
 /* ========================================= */
 .kpi-grid { 
     display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
+    grid-template-columns: repeat(4, 1fr); /* 4 Kolom Sama Lebar */
     gap: var(--gap-std); 
     margin-bottom: var(--gap-std); 
+    align-items: stretch; /* Paksa tinggi kartu sama dalam satu baris */
 }
 
 .charts-row { 
     display: grid; 
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr 1fr; /* 2 Kolom Sama Lebar */
     gap: var(--gap-std); 
     margin-bottom: var(--gap-std); 
 }
@@ -148,7 +146,7 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 }
 
 /* ========================================= */
-/* 6. CARDS (UKURAN SAMA & RATA)             */
+/* 6. CARDS (TINGGI NATURAL & RATA)          */
 /* ========================================= */
 .kpi-card, .chart-section {
     background: var(--bg-card); 
@@ -157,13 +155,16 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
     padding: 24px;
     box-shadow: var(--shadow-card);
     display: flex; flex-direction: column; 
+    
+    /* KUNCI: Tinggi kartu 100% mengikuti teman sebarisnya */
+    height: 100%; 
+    min-width: 0; /* Mencegah kartu melebar keluar grid */
 }
 
+/* Isi Kartu Atas */
 .kpi-card { 
     justify-content: space-between; 
-    /* KUNCI: Paksa semua kartu minimal 220px agar Urea dan Growth SAMA TINGGI */
-    min-height: var(--kpi-height); 
-    height: 100%;
+    min-height: 160px; /* Tinggi minimal wajar, tidak dipaksa melar */
 }
 
 .kpi-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; }
@@ -174,15 +175,13 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 
 .progress-track { height: 6px; background: var(--bg-body); border-radius: 10px; overflow: hidden; margin-bottom: 12px; border: 1px solid var(--border-color); }
 .progress-bar { height: 100%; border-radius: 10px; }
-.kpi-footer { padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary); display: flex; gap: 6px; align-items: center; margin-top: auto; /* Footer dorong ke bawah */ }
+.kpi-footer { padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary); display: flex; gap: 6px; align-items: center; margin-top: auto; }
 
-/* FIX GROWTH CHART */
+/* Grafik Growth (Tanpa Paksaan Melar) */
 .sparkline-container { 
     width: 100%; 
-    /* Paksa grafik mengisi sisa ruang kosong agar kartu terlihat penuh */
-    flex-grow: 1; 
-    min-height: 80px; /* Minimal tinggi grafik */
-    margin-top: 10px; 
+    height: 60px; /* Tinggi standar grafik kecil */
+    margin-top: auto; /* Dorong ke bawah */
     position: relative; 
 }
 .sparkline-val { position: absolute; bottom: 0; right: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); }
