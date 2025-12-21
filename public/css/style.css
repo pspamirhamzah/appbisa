@@ -410,3 +410,68 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 .nav-item.active i {
     color: var(--color-urea); /* Ikon menyala Kuning Urea */
 }
+
+/* ========================================= */
+/* FIX FINAL: POSISI ADMIN & KONTRAS LIGHT   */
+/* ========================================= */
+
+/* 1. PINDAHKAN MENU ADMIN KE BAWAH */
+/* Trik: Mendorong elemen label ke-3 (Label Admin) ke dasar sidebar */
+.sidebar .menu-label:nth-of-type(3) {
+    margin-top: auto !important; /* Kunci agar turun ke bawah */
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle); /* Opsional: Garis pemisah halus */
+}
+
+/* 2. GARIS HEADER LEBIH HALUS (ABU-ABU) */
+.brand {
+    border-bottom: 1px solid #d0d7de !important; /* Abu-abu soft ala GitHub */
+}
+/* Koreksi khusus Dark Mode agar garisnya tidak terlalu terang */
+[data-theme="dark"] .brand {
+    border-bottom: 1px solid #30363d !important;
+}
+
+/* 3. PERBAIKAN KONTRAS KHUSUS MODE TERANG (LIGHT MODE) */
+/* Agar teks terbaca jelas di background putih */
+
+[data-theme="light"] .sidebar {
+    background-color: #ffffff !important; /* Pastikan background putih bersih */
+    border-right: 1px solid #d0d7de !important;
+}
+
+[data-theme="light"] .brand-title {
+    color: #24292f !important; /* Judul Hitam Pekat */
+}
+
+[data-theme="light"] .menu-label {
+    color: #57606a !important; /* Label Abu Tua */
+    font-weight: 700;
+}
+
+[data-theme="light"] .nav-item {
+    color: #24292f !important; /* Teks Menu Hitam Arang (JELAS) */
+}
+
+[data-theme="light"] .nav-item i {
+    color: #57606a !important; /* Ikon Abu Tua */
+}
+
+/* Efek Sorot (Hover) di Mode Terang */
+[data-theme="light"] .nav-item:hover {
+    background-color: #f6f8fa !important; /* Abu sangat muda */
+    color: #0969da !important; /* Teks jadi Biru GitHub */
+}
+[data-theme="light"] .nav-item:hover i {
+    color: #0969da !important;
+}
+
+/* Menu Aktif di Mode Terang */
+[data-theme="light"] .nav-item.active {
+    background-color: #ddf4ff !important; /* Biru muda lembut */
+    color: #0969da !important; /* Teks Biru */
+    font-weight: 700 !important;
+}
+[data-theme="light"] .nav-item.active i {
+    color: #0969da !important;
+}
