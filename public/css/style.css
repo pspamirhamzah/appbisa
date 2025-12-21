@@ -475,3 +475,38 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 [data-theme="light"] .nav-item.active i {
     color: #0969da !important;
 }
+
+/* ========================================= */
+/* ADMIN LOGIN: DUKUNGAN LIGHT MODE          */
+/* ========================================= */
+
+/* 1. Ubah Background Kotak Modal jadi Putih */
+[data-theme="light"] #loginModal {
+    background-color: #ffffff !important; /* Putih bersih */
+    border: 1px solid #d0d7de !important; /* Border abu halus */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; /* Bayangan lebih soft */
+}
+
+/* 2. Ubah Warna Judul jadi Hitam */
+[data-theme="light"] #loginModal .modal-title {
+    color: #24292f !important;
+}
+
+/* 3. Ubah Tombol Close (X) jadi Gelap */
+[data-theme="light"] #loginModal .btn-close {
+    color: #24292f !important;
+    opacity: 0.5;
+}
+
+/* 4. Ubah Kolom Input Password */
+[data-theme="light"] #adminPass {
+    background-color: #f6f8fa !important; /* Abu sangat muda ala GitHub */
+    border: 1px solid #d0d7de !important;
+    color: #24292f !important; /* Teks ketikan jadi hitam */
+}
+
+/* Efek saat input diklik di Mode Terang */
+[data-theme="light"] #adminPass:focus {
+    background-color: #ffffff !important;
+    border-color: var(--color-urea) !important;
+}
