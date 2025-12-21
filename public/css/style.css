@@ -1,308 +1,433 @@
-/* ========================================= */
-/* 1. CONFIG: MONOCHROME THEME               */
-/* ========================================= */
-:root {
-    /* --- DARK MODE (DEFAULT) --- */
-    --bg-body: #121212;        
-    --bg-sidebar: #1e1e1e;     
-    --bg-card: #1e1e1e;        
-    --bg-input: #121212;
-    --bg-hover: rgba(255, 255, 255, 0.1); /* Hover lebih terang dikit */
-    
-    --text-primary: #ffffff;   /* Putih Murni */
-    --text-secondary: #a0a0a0; /* Abu Terang */
-    
-    --border-color: #333333;   
-    --border-subtle: #2a2a2a;
-    
-    /* REPLACEMENT WARNA (DULU KUNING/BIRU JADI MONOKROM) */
-    --color-accent-1: #ffffff;  /* Pengganti Kuning (Sekarang Putih) */
-    --color-accent-2: #888888;  /* Pengganti Biru (Sekarang Abu) */
-    
-    --color-danger: #ef4444;    /* Merah tetap untuk error/alert */
-    --color-stock: #666666; 
-    
-    --shadow-card: 0 4px 12px rgba(0,0,0,0.5);
+<!-- ================================================================================== -->
+    <!-- [FILE] style.css : PENGATURAN TAMPILAN / DESIGN                                     -->
+    <!-- ================================================================================== -->
+    <style>
+        /* 1. VARIABLES & THEME */
+        :root {
+            --bg-body: #212121;
+            --bg-sidebar: #171717;
+            --bg-card: #2f2f2f;
+            --bg-hover: #424242;
+            
+            --text-primary: #ececec;
+            --text-secondary: #b3b3b3;
+            --text-muted: #666666;
+            
+            --border-color: #424242;
+            --border-subtle: #3a3a3a;
+            
+            /* Brand Colors */
+            --color-urea: #fbbf24;     /* Amber */
+            --color-npk: #38bdf8;      /* Sky Blue */
+            --color-success: #4ade80;  /* Green */
+            --color-danger: #f87171;   /* Red */
+            --color-stock: #a8a29e;    /* Stone */
+            --color-accent-1: #ffffff; /* Putih */
 
-    /* LAYOUT VARS */
-    --gap-std: 24px;         
-    --card-radius: 12px;     
-    --header-height: 64px;
-    --sidebar-width: 260px;
-}
+            /* Layout */
+            --sidebar-width: 260px;
+            --header-height: 64px;
+            --card-radius: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-[data-theme="light"] {
-    /* --- LIGHT MODE --- */
-    --bg-body: #f5f5f5;      
-    --bg-sidebar: #ffffff;     
-    --bg-card: #ffffff;
-    --bg-input: #f0f0f0;
-    --bg-hover: #e5e5e5;
-    
-    --text-primary: #121212;   /* Hitam Pekat */
-    --text-secondary: #666666; /* Abu Tua */
-    
-    --border-color: #e0e0e0;   
-    --border-subtle: #f5f5f5;
-    
-    /* MONOKROM LIGHT MODE */
-    --color-accent-1: #121212; /* Hitam sebagai aksen utama */
-    --color-accent-2: #666666; /* Abu tua sebagai aksen kedua */
-    
-    --color-stock: #cccccc; 
-    
-    --shadow-card: 0 2px 10px rgba(0,0,0,0.05);
-}
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 14px;
+        }
 
-/* ========================================= */
-/* 2. BASE STYLES                            */
-/* ========================================= */
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        /* 2. SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 16px;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 50;
+            transition: transform var(--transition);
+            transform: translateX(0); /* Default: Terbuka */
+        }
 
-body { 
-    background-color: var(--bg-body); 
-    color: var(--text-primary); 
-    font-family: 'Plus Jakarta Sans', sans-serif; 
-    height: 100dvh; 
-    width: 100vw;
-    overflow: hidden; 
-    display: flex; 
-    transition: background 0.2s; 
-}
+        .sidebar.closed {
+            transform: translateX(-100%); /* Tertutup */
+        }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .brand {
+            padding-bottom: 20px;
+            border-bottom: none;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            min-height: 50px; 
+        }
+        
+        .brand-content {
+            display: flex;
+            flex-direction: column;
+            margin-left: 10px;
+        }
 
-/* ========================================= */
-/* 3. SIDEBAR (MONOCHROME STYLE)             */
-/* ========================================= */
-.sidebar {
-    position: fixed; left: 0; top: 0; bottom: 0;
-    width: var(--sidebar-width);
-    background-color: var(--bg-sidebar);
-    border-right: 1px solid var(--border-color);
-    display: flex; flex-direction: column;
-    padding: 24px 16px; 
-    z-index: 3000; 
-    transform: translateX(-100%); 
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sidebar.show { transform: translateX(0); }
+        .brand h2 { 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: var(--text-primary); 
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
+        }
+        
+        .brand h2 span {
+            font-weight: 400; 
+            color: var(--color-urea); 
+        }
+        
+        .brand p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin: 2px 0 0 0;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
 
-.brand { padding-bottom: 20px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); }
-.brand-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
-.brand-subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        .nav-header { 
+            font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); 
+            margin: 16px 12px 8px; letter-spacing: 1px; white-space: nowrap; transition: opacity 0.2s; 
+        }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: var(--bg-hover); color: var(--text-primary); font-weight: 600; }
+        .nav-item.active i { color: var(--color-urea); }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        
+        .nav-spacer { flex-grow: 1; }
+        .nav-login { margin-top: auto; border-top: none; padding-top: 10px; }
 
-/* ICON TEMA (Tanpa Warna Warni) */
-.theme-btn-header {
-    background: transparent; 
-    border: none; 
-    color: var(--text-secondary); 
-    cursor: pointer;
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    padding: 0;
-}
-.theme-btn-header:hover { color: var(--text-primary); } /* Jadi Putih/Hitam saat hover */
-.theme-btn-header i { font-size: 16px; }
+        /* 3. MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            transition: margin-left var(--transition);
+        }
+        .main-content.closed { margin-left: 0; }
 
-.menu-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin: 16px 10px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* HEADER */
+        header {
+            height: var(--header-height);
+            background: var(--bg-body); 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        
+        .btn-toggle-sidebar {
+            background: transparent; border: none; color: var(--text-secondary);
+            font-size: 18px; cursor: pointer; padding: 8px; border-radius: 8px;
+        }
+        .btn-toggle-sidebar:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-.nav-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 4px; 
-    border-radius: 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
-}
-.nav-item:hover, .nav-item.active { background-color: var(--bg-hover); color: var(--text-primary); }
-.nav-item.active { font-weight: 600; }
-.nav-item i { width: 20px; text-align: center; font-size: 15px; }
+        .page-title h1 { 
+            font-size: 16px; 
+            font-weight: 700; 
+            color: var(--text-primary); 
+            margin-bottom: 0px; 
+        }
+        .page-title p { 
+            font-size: 11px;
+            color: var(--text-secondary); 
+        }
+        
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        
+        /* CUSTOM DROPDOWN STYLE */
+        .custom-select {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            background-color: var(--bg-body); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-secondary); 
+            width: auto; 
+            min-width: 90px; 
+            padding: 8px 14px;
+            padding-right: 36px;
+            border-radius: 10px; 
+            font-size: 11px; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b3b3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: all 0.2s ease;
+        }
 
-/* MENU AKTIF: PUTIH (Dark) / HITAM (Light) - TIDAK KUNING/BIRU */
-.nav-item.active i { color: var(--color-accent-1); }
+        .custom-select:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+        .custom-select:focus { background-color: var(--bg-card); border-color: var(--color-urea); color: var(--text-primary); }
+        .custom-select option { background-color: var(--bg-card); color: var(--text-primary); padding: 10px; }
 
-/* Tombol Login Admin */
-#btn-login-trigger {
-    margin-top: auto; 
-    margin-bottom: 20px;
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
-    font-weight: 600;
-}
-#admin-label-hidden { display: none !important; }
+        /* CONTENT AREA */
+        .content-scroll { flex: 1; overflow-y: auto; padding: 20px 32px 40px; }
 
-/* ========================================= */
-/* 4. MAIN CONTENT & HEADER                  */
-/* ========================================= */
-.main-content { 
-    flex-grow: 1; 
-    overflow-y: auto; 
-    height: 100dvh; 
-    width: 100%; 
-    position: relative;
-    scroll-behavior: smooth;
-}
+        /* GRIDS & CARDS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+        .chart-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 20px; }
+        .ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-.header {
-    position: sticky; top: 0; 
-    z-index: 100;
-    background: var(--bg-sidebar); 
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 32px; height: var(--header-height);
-    display: flex; align-items: center; justify-content: space-between;
-}
-.header-left { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 0; }
-.mobile-toggle { 
-    display: flex; width: 36px; height: 36px; align-items: center; justify-content: center;
-    background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; 
-    color: var(--text-primary); cursor: pointer; flex-shrink: 0;
-}
-.page-info h2 { font-size: 18px; font-weight: 700; margin: 0; }
-.page-info p { font-size: 12px; color: var(--text-secondary); margin: 0; }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 24px;
+            display: flex; flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .card:hover { border-color: var(--border-subtle); }
 
-.container { padding: var(--gap-std); max-width: 1600px; margin: 0 auto; padding-bottom: 40px; }
+        /* KPI COMPONENTS */
+        .kpi-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .kpi-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-icon { 
+            width: 36px; height: 36px; border-radius: 10px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 16px; background: var(--bg-hover); color: var(--text-primary);
+        }
+        .icon-urea { color: var(--color-urea); }
+        .icon-npk { color: var(--color-npk); }
+        .kpi-value { font-size: 26px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+        .kpi-sub { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 12px; }
+        
+        .progress-track { height: 4px; background: var(--bg-body); border-radius: 4px; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 4px; }
+        .bg-urea { background: var(--color-urea); }
+        .bg-npk { background: var(--color-npk); }
 
-/* ========================================= */
-/* 5. GRID SYSTEM                            */
-/* ========================================= */
-.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-std); margin-bottom: var(--gap-std); align-items: stretch; }
-.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-std); margin-bottom: var(--gap-std); }
-.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-std); }
+        .growth-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+        }
+        .growth-up { background: rgba(74, 222, 128, 0.15); color: var(--color-success); }
+        .growth-down { background: rgba(248, 113, 113, 0.15); color: var(--color-danger); }
 
-/* ========================================= */
-/* 6. CARDS                                  */
-/* ========================================= */
-.kpi-card, .chart-section {
-    background: var(--bg-card); 
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-radius);
-    padding: 24px;
-    box-shadow: var(--shadow-card);
-    display: flex; flex-direction: column; 
-    height: 100%; min-width: 0;
-}
-.kpi-card { justify-content: space-between; min-height: 160px; }
-.kpi-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; }
-.kpi-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        /* CHART HEADERS & TOOLS */
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .chart-title { font-size: 15px; font-weight: 700; color: var(--text-primary); transition: color 0.3s; }
+        
+        .btn-group { background: var(--bg-body); padding: 4px; border-radius: 10px; display: flex; gap: 2px; width: auto; }
+        .btn-filter {
+            background: transparent; border: none; color: var(--text-secondary);
+            padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-filter.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .btn-filter.active.f-urea { color: var(--color-urea); }
+        .btn-filter.active.f-npk { color: var(--color-npk); }
 
-/* ICON KPI: Hitam Putih Saja */
-.kpi-icon { 
-    width: 32px; height: 32px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; 
-    background: var(--bg-body); 
-    color: var(--text-primary); /* Mengikuti warna teks utama */
-}
+        .chart-canvas-container { position: relative; height: 280px; width: 100%; }
 
-.kpi-main-val { font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
-.kpi-sub-val { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 12px; }
-.progress-track { height: 6px; background: var(--bg-body); border-radius: 10px; overflow: hidden; margin-bottom: 12px; border: 1px solid var(--border-color); }
-.progress-bar { height: 100%; border-radius: 10px; background-color: var(--text-primary); /* Bar progress mengikuti warna teks (Putih/Hitam) */ }
+        /* RANKING LISTS */
+        .rank-list { display: flex; flex-direction: column; gap: 0; }
+        .rank-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rank-item:last-child { border-bottom: none; }
+        
+        .rank-left { display: flex; align-items: center; gap: 12px; }
+        
+        .rank-num { 
+            width: 24px; height: 24px; border-radius: 6px; background: var(--bg-body); 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; 
+        }
+        .rank-num.best { background: rgba(255, 255, 255, 0.1); color: var(--color-accent-1); }
+        .rank-num.warn { background: rgba(239, 68, 68, 0.15); color: var(--color-danger); }
 
-.kpi-footer { padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary); display: flex; gap: 6px; align-items: center; margin-top: auto; }
-.sparkline-container { width: 100%; height: 60px; margin-top: auto; position: relative; }
-.sparkline-val { position: absolute; bottom: 0; right: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .rank-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .rank-val { font-size: 13px; font-weight: 700; text-align: right; }
+        .val-best { color: var(--color-accent-1); }
+        .val-warn { color: var(--color-danger); }
 
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
-.section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-.chart-wrapper { position: relative; height: 300px; width: 100%; flex-grow: 1; }
-.chart-actions { flex-grow: 1; display: flex; justify-content: flex-end; }
+        /* LOADER */
+        #loader {
+            position: fixed; inset: 0; background: var(--bg-body); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid var(--border-color);
+            border-top-color: var(--color-urea); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin-bottom: 16px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* Toggle Buttons (Monokrom) */
-.btn-group { display: flex; background: var(--bg-body); padding: 3px; border-radius: 8px; border: 1px solid var(--border-color); }
-.btn-toggle { padding: 6px 14px; font-size: 12px; font-weight: 600; color: var(--text-secondary); border: none; background: transparent; cursor: pointer; border-radius: 6px; }
-.btn-toggle.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-/* Hapus warna khusus Urea/NPK, ganti jadi standar aktif */
-.btn-toggle.active.t-urea, .btn-toggle.active.t-npk { color: var(--text-primary); }
+        /* RESPONSIVE */
+        @media (max-width: 1200px) { 
+            .kpi-grid { grid-template-columns: 1fr 1fr; } 
+            .chart-grid, .ranking-grid { grid-template-columns: 1fr; } 
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 240px; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            header { padding: 0 20px; }
+            .content-scroll { padding: 20px; }
+            .brand h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
 
-/* Ranking List */
-.rank-item { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
-.rank-item:last-child { border-bottom: none; }
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="font-size: 12px; color: var(--text-secondary); letter-spacing: 2px;">MEMUAT APP...</div>
+    </div>
 
-/* Badge Ranking (Abu-abu, bukan kuning) */
-.rank-badge { 
-    width: 32px; height: 32px; border-radius: 8px; 
-    display: flex; align-items: center; justify-content: center; 
-    font-weight: 700; font-size: 13px; 
-    border: 1px solid var(--border-color); 
-    color: var(--text-primary); 
-    background: var(--bg-body);
-    flex-shrink: 0; 
-}
-.badge-1 { 
-    background: rgba(255, 255, 255, 0.1); 
-    color: var(--text-primary); 
-    border-color: var(--border-color); 
-}
-[data-theme="light"] .badge-1 { background: #e0e0e0; color: #000; }
+    <!-- Sidebar HTML -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-content">
+                <h2>APP <span>bisa</span></h2>
+                <p>Adm Pemasaran & Penjualan</p>
+            </div>
+        </div>
+        <div class="nav-header">PSO DAN RETAIL</div>
+        <div class="nav-item active" id="nav-subsidi" onclick="app.setSector('SUBSIDI')">
+            <i class="fas fa-industry"></i> <span>Subsidi</span>
+        </div>
+        <div class="nav-item" id="nav-retail" onclick="app.setSector('RETAIL')">
+            <i class="fas fa-store"></i> <span>Retail</span>
+        </div>
+        <div class="nav-spacer"></div>
+        <div class="nav-login">
+            <div class="nav-item" onclick="alert('Fitur Login Admin')">
+                <i class="fas fa-sign-in-alt"></i> <span>Login Admin</span>
+            </div>
+        </div>
+    </aside>
 
-.rank-name { font-size: 14px; font-weight: 600; color: var(--text-primary); flex: 1; overflow: hidden; text-overflow: ellipsis; }
-.rank-meta { font-size: 11px; color: var(--text-secondary); display: block; }
-.rank-val { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-/* Text Good/Bad jadi netral atau tetap merah jika kritis */
-.text-good { color: var(--text-primary); } 
-.text-bad { color: var(--color-danger); }
+    <!-- Main Content HTML -->
+    <main class="main-content" id="main-content">
+        <header>
+            <div class="header-left">
+                <button class="btn-toggle-sidebar" onclick="app.toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <div class="page-title">
+                    <h1 id="page-title-text">Subsidi</h1>
+                    <p>Overview Performa Penjualan</p>
+                </div>
+            </div>
+            <!-- Filter Tahun (Pojok Kanan) -->
+            <div class="header-actions">
+                <select class="custom-select" id="year-select" onchange="app.changeYear(this.value)"></select>
+            </div>
+        </header>
 
-/* ========================================= */
-/* 7. DROPDOWN & INPUTS                      */
-/* ========================================= */
-.select-wrapper { position: relative; width: 200px; max-width: 100%; }
-.year-wrapper { width: 100px !important; }
-.select-trigger { display: flex; justify-content: space-between; align-items: center; background: var(--bg-body); border: 1px solid var(--border-color); padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-primary); cursor: pointer; height: 38px; }
-.select-trigger span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px; flex: 1; }
-.select-options { position: absolute; top: 110%; right: 0; left: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 250px; overflow-y: auto; z-index: 100; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; }
-.select-options.open { opacity: 1; visibility: visible; transform: translateY(0); }
-.option { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border-subtle); font-size: 13px; color: var(--text-secondary); }
-.option:hover { background: var(--bg-hover); color: var(--text-primary); }
-.option.selected { color: var(--text-primary); font-weight: 700; background: var(--bg-hover); }
+        <div class="content-scroll">
+            
+            <!-- KPI Grid -->
+            <div class="kpi-grid">
+                <div class="card">
+                    <div class="kpi-head"><div class="kpi-title">Realisasi Urea</div><div class="kpi-icon icon-urea"><i class="fas fa-cubes"></i></div></div>
+                    <div class="kpi-value" id="val-urea-real">0</div>
+                    <div class="kpi-sub"><span>Target: <span id="val-urea-target">0</span></span><span id="val-urea-pct">0%</span></div>
+                    <div class="progress-track"><div class="progress-bar bg-urea" id="prog-urea" style="width: 0%"></div></div>
+                </div>
+                <div class="card">
+                    <div class="kpi-head"><div class="kpi-title">Realisasi NPK</div><div class="kpi-icon icon-npk"><i class="fas fa-leaf"></i></div></div>
+                    <div class="kpi-value" id="val-npk-real">0</div>
+                    <div class="kpi-sub"><span>Target: <span id="val-npk-target">0</span></span><span id="val-npk-pct">0%</span></div>
+                    <div class="progress-track"><div class="progress-bar bg-npk" id="prog-npk" style="width: 0%"></div></div>
+                </div>
+                <div class="card">
+                    <div class="kpi-head"><div class="kpi-title">Growth Urea (YoY)</div><div class="kpi-icon"><i class="fas fa-chart-line"></i></div></div>
+                    <div class="kpi-value" id="growth-urea-val">0%</div>
+                    <div class="kpi-sub"><span style="font-size: 11px; opacity: 0.7;">vs Tahun Lalu</span><div id="growth-urea-badge" class="growth-badge growth-up"><i class="fas fa-arrow-up"></i> 0%</div></div>
+                </div>
+                <div class="card">
+                    <div class="kpi-head"><div class="kpi-title">Growth NPK (YoY)</div><div class="kpi-icon"><i class="fas fa-chart-line"></i></div></div>
+                    <div class="kpi-value" id="growth-npk-val">0%</div>
+                    <div class="kpi-sub"><span style="font-size: 11px; opacity: 0.7;">vs Tahun Lalu</span><div id="growth-npk-badge" class="growth-badge growth-down"><i class="fas fa-arrow-down"></i> 0%</div></div>
+                </div>
+            </div>
 
-/* ========================================= */
-/* 8. MODAL & OVERLAY                        */
-/* ========================================= */
-.overlay, .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; visibility: hidden; transition: 0.2s; backdrop-filter: blur(4px); }
-.overlay.active, .backdrop.open { opacity: 1; visibility: visible; }
+            <!-- Chart Grid -->
+            <div class="chart-grid">
+                <!-- Chart Nasional -->
+                <div class="card">
+                    <div class="chart-header">
+                        <div class="chart-title">Realisasi Nasional</div>
+                        <div class="btn-group">
+                            <button class="btn-filter active f-urea" id="btn-nas-urea" onclick="app.setChartProduct('UREA')">UREA</button>
+                            <button class="btn-filter" id="btn-nas-npk" onclick="app.setChartProduct('NPK')">NPK</button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-container"><canvas id="chartNasional"></canvas></div>
+                </div>
+                <!-- Chart Provinsi -->
+                <div class="card">
+                    <div class="chart-header">
+                        <div class="chart-title" id="prov-chart-title">Realisasi Provinsi</div>
+                        <select class="custom-select" id="dropdown-provinsi" onchange="app.renderProvChart()"></select>
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="chartProvinsi"></canvas>
+                        <div id="prov-placeholder" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); color:var(--text-primary); border-radius:8px; backdrop-filter: blur(2px);">
+                            <span style="background:var(--bg-body); padding:8px 16px; border-radius:20px; border:1px solid var(--border-color); font-size:12px;">
+                                <i class="fas fa-arrow-up"></i> Pilih Provinsi
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-.modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 4000; border-radius: 16px; opacity: 0; visibility: hidden; transition: 0.2s; display: flex; flex-direction: column; }
-.modal.open { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
-
-#loginModal { width: 90%; max-width: 320px; }
-.modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-#loginModal .modal-header { justify-content: center; border-bottom: none; }
-.modal-title { font-size: 14px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 1px; }
-.modal-body { padding: 20px; overflow-y: auto; }
-#loginModal .modal-body { padding: 10px 30px; }
-.form-control { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px; border-radius: 6px; font-size: 14px; }
-.form-control:focus { outline: none; border-color: var(--text-primary); }
-#adminPass { text-align: center; letter-spacing: 3px; font-size: 16px; height: 44px; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
-#loginModal .modal-footer { justify-content: center; border-top: none; padding-top: 5px; padding-bottom: 25px; }
-
-/* TOMBOL LOGIN MONOKROM */
-.btn { padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; border: none; transition: 0.2s; }
-.btn-primary { 
-    background: var(--text-primary); /* Putih di dark, Hitam di light */
-    color: var(--bg-card); /* Teks kebalikan dari background */
-    min-width: 100px; 
-}
-.btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-.btn-close { background: none; border: none; font-size: 18px; color: var(--text-secondary); cursor: pointer; }
-
-#loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.spinner { width: 32px; height: 32px; border: 3px solid var(--border-color); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.footer-copyright { text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 40px; }
-
-/* ========================================= */
-/* 9. RESPONSIVE                             */
-/* ========================================= */
-@media (max-width: 1200px) { .container { max-width: 100%; } }
-@media (max-width: 1024px) { .kpi-grid { grid-template-columns: 1fr 1fr; } .charts-row, .ranking-grid { grid-template-columns: 1fr; } .chart-wrapper { height: 260px; } }
-@media (max-width: 768px) {
-    .header { padding: 0 20px; }
-    .container { padding: 16px; padding-bottom: 80px; }
-    .kpi-grid, .charts-row { gap: 16px; margin-bottom: 16px; }
-    .kpi-card { padding: 16px; }
-    .kpi-main-val { font-size: 24px; }
-    .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .chart-actions { width: 100%; }
-    #prov-select-wrapper { width: 100% !important; max-width: none; }
-    .select-trigger { width: 100%; }
-}
+            <!-- Ranking Grid -->
+            <div class="ranking-grid">
+                <div class="card">
+                    <div class="chart-header"><div class="chart-title">🏆 Top 5 Provinsi</div></div>
+                    <div id="list-top5" class="rank-list"></div>
+                </div>
+                <div class="card">
+                    <div class="chart-header"><div class="chart-title" style="color: var(--color-danger);">⚠️ Perlu Perhatian (Sisa Provinsi)</div></div>
+                    <div id="list-others" class="rank-list"></div>
+                </div>
+            </div>
+            
+            <div style="height: 40px;"></div>
+            <div style="text-align: center; font-size: 11px; color: var(--text-muted);">
+                &copy; 2025 Dashboard Monitoring Penjualan.
+            </div>
+            <div style="height: 20px;"></div>
+        </div>
+    </main>
