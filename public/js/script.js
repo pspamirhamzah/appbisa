@@ -2,7 +2,7 @@
    1. CONFIGURATION
    ========================================================= */
 // ⚠️ PASTE URL /exec ANDA DISINI
-const API_URL = 'https://script.google.com/macros/s/AKfycbwsKVwPmUMxc72ZFIq3q6NJCEHadQ5pBcHmF2bP3rybCtiluyLQCRkBj-TONJkFhMmMYQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzTg_zhIghrwMz5X2SMH30i-QWE58eIgYjXVWurPKxdOyvSVXD76rYf57dOVwDydiwR0g/exec';
 const ADMIN_PASSWORD = 'pso123';
 
 /* =========================================================
