@@ -1,7 +1,7 @@
 // =========================================================
 // 1. KONFIGURASI
 // =========================================================
-const API_URL = "ISI_URL_WEB_APP_ANDA_DISINI"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbw8idschHLJfy7Uy81bUQG4cuJtFvCwhPdNK1wjMxALbFBKic9IMy1EfmwsXGkDmIiNrA/exec"; 
 
 // =========================================================
 // 2. VARIABEL GLOBAL & INIT
