@@ -1,512 +1,305 @@
-/* --- RESET & BASE --- */
+/* ========================================= */
+/* 1. VARIABEL WARNA (OTAK TEMA)             */
+/* ========================================= */
 :root {
+    /* --- TEMA DEFAULT (DARK MODE) --- */
     --bg-body: #121212;        
     --bg-sidebar: #1e1e1e;     
-    --bg-card: #1e1e1e;
-    --bg-card-hover: #2c2c2c;
-    --bg-glass: rgba(30, 30, 30, 0.85);
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --border-color: #333333;
-    --border-subtle: #27272a;
+    --bg-card: #1e1e1e;        
+    --bg-input: #121212;
+    --bg-hover: rgba(255, 255, 255, 0.05);
+    
+    --text-primary: #f0f6fc;   /* Putih GitHub */
+    --text-secondary: #8b949e; /* Abu GitHub */
+    --text-muted: #6e7681;
+    
+    --border-color: #30363d;   /* Border Gelap GitHub */
+    
     --color-urea: #F7DA19;     
-    --color-npk: #055AA1;     
-    --color-stock: #64748b;
-    --color-warning: #F7DA19;
+    --color-npk: #055AA1;
     --color-danger: #ef4444;
-    --radius-lg: 16px;
-    --radius-md: 12px;
-    --radius-sm: 8px;
-    --sidebar-width: 280px;
-    --header-height: 70px;
+    
+    --shadow-card: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 [data-theme="light"] {
-    --bg-body: #f3f4f6;
-    --bg-sidebar: #ffffff;
+    /* --- TEMA TERANG (LIGHT MODE) --- */
+    --bg-body: #f6f8fa;        /* Abu sangat muda (GitHub Light) */
+    --bg-sidebar: #ffffff;     /* Putih bersih */
     --bg-card: #ffffff;
-    --bg-card-hover: #f9fafb;
-    --bg-glass: rgba(255, 255, 255, 0.85);
-    --text-primary: #111827;
-    --text-secondary: #4b5563;
-    --text-muted: #9ca3af;
-    --border-color: #e5e7eb;
-    --border-subtle: #f3f4f6;
-    --color-urea: #F7DA19;
-    --color-npk: #055AA1;
+    --bg-input: #f6f8fa;
+    --bg-hover: #f3f4f6;
+    
+    --text-primary: #24292f;   /* Hitam Arang */
+    --text-secondary: #57606a; /* Abu Tua */
+    --text-muted: #8c959f;
+    
+    --border-color: #d0d7de;   /* Border Abu Halus */
+    
+    --shadow-card: 0 5px 20px rgba(0,0,0,0.1);
 }
 
+/* ========================================= */
+/* 2. BASE STYLES                            */
+/* ========================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { background-color: var(--bg-body); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; overflow: hidden; display: flex; transition: background 0.3s ease; }
+body { background-color: var(--bg-body); color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; overflow: hidden; display: flex; transition: background 0.2s ease; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-/* --- SIDEBAR --- */
+/* ========================================= */
+/* 3. SIDEBAR (GAYA GITHUB COMPACT)          */
+/* ========================================= */
 .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
-    transform: translateX(-100%); 
-    width: var(--sidebar-width);
+    width: 260px; /* Lebih ramping */
     background-color: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     display: flex; flex-direction: column;
-    padding: 24px; height: 100%; z-index: 50;
-    box-shadow: 5px 0 25px rgba(0,0,0,0.5); 
+    padding: 16px; 
+    z-index: 50;
+    transform: translateX(-100%); 
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar.show { transform: translateX(0); }
 
-.brand { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 40px; color: var(--text-primary); }
-.brand-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; }
-.brand-subtitle { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.2px; }
-
-.menu-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; margin-top: 12px; }
-
-.nav-item {
-    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
-    margin-bottom: 8px; border-radius: var(--radius-md);
-    cursor: pointer; color: var(--text-secondary); font-size: 14px; font-weight: 500;
-    transition: all 0.2s; border: 1px solid transparent; 
+/* Header Brand */
+.brand {
+    padding-bottom: 16px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
 }
-.nav-item:hover { background-color: var(--bg-card-hover); color: var(--text-primary); }
-.nav-item.active { background: transparent; color: var(--color-urea); font-weight: 700; border-left: none; }
-.nav-item i { width: 20px; text-align: center; }
+.brand-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.brand-subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 
-/* --- MAIN CONTENT --- */
-.main-content { flex-grow: 1; overflow-y: auto; height: 100vh; position: relative; width: 100%; }
+/* Menu Labels */
+.menu-label {
+    font-size: 11px; font-weight: 600; 
+    color: var(--text-secondary); 
+    margin: 12px 8px 6px 8px; 
+    text-transform: capitalize;
+}
+
+/* Nav Items (Tombol Menu) */
+.nav-item {
+    display: flex; align-items: center; gap: 10px; 
+    padding: 6px 10px; /* Padding Rapat */
+    margin-bottom: 2px; 
+    border-radius: 6px; /* Sudut tumpul ala GitHub */
+    font-size: 14px; 
+    color: var(--text-secondary); 
+    cursor: pointer; 
+    transition: none; /* Instan */
+}
+
+/* Icon */
+.nav-item i { width: 20px; text-align: center; color: var(--text-secondary); }
+
+/* Hover Effect */
+.nav-item:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+.nav-item:hover i { color: var(--text-primary); }
+
+/* Active State */
+.nav-item.active {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.nav-item.active i { color: var(--color-urea); } /* Icon kuning saat aktif */
+
+/* FITUR: ADMIN DI BAWAH */
+/* Mendorong label ke-3 (Admin) ke dasar sidebar */
+.sidebar .menu-label:nth-of-type(3) {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ========================================= */
+/* 4. MAIN CONTENT & HEADER                  */
+/* ========================================= */
+.main-content { flex-grow: 1; overflow-y: auto; height: 100vh; width: 100%; position: relative; }
 
 .header {
     position: sticky; top: 0; z-index: 40;
-    background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 0 24px; height: var(--header-height);
+    background: var(--bg-sidebar); /* Mengikuti tema */
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 20px; height: 60px;
     display: flex; align-items: center; justify-content: space-between;
 }
-.header-left { display: flex; align-items: center; gap: 16px; }
-.header-right { display: flex; align-items: center; gap: 12px; }
+.header-left { display: flex; align-items: center; gap: 16px; overflow: hidden; }
+.header-right { flex-shrink: 0; }
+.page-info h2 { font-size: 16px; font-weight: 600; margin: 0; color: var(--text-primary); }
+.page-info p { font-size: 11px; color: var(--text-secondary); margin: 0; }
+.mobile-toggle { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
 
-.page-info h2 { font-size: 18px; font-weight: 700; margin: 0; }
-.page-info p { font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0; }
+.container { padding: 20px; max-width: 1200px; margin: 0 auto; }
 
-.mobile-toggle {
-    display: flex; width: 40px; height: 40px;
-    align-items: center; justify-content: center;
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm); color: var(--text-primary); cursor: pointer;
-}
-.mobile-toggle:hover { background: var(--bg-card-hover); }
-
-.container { padding: 24px; max-width: 1400px; margin: 0 auto; }
-
-/* KPI & CHARTS */
-.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+/* ========================================= */
+/* 5. COMPONENTS (CARD, KPI, CHART)          */
+/* ========================================= */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 .kpi-card {
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg); padding: 20px;
-    position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 16px;
+    display: flex; flex-direction: column; justify-content: space-between;
 }
-.kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.kpi-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
-.kpi-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-.kpi-main-val { font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.5px; }
-.kpi-sub-val { font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 12px; }
-.progress-track { height: 6px; background: var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
-.progress-bar { height: 100%; border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
-.kpi-footer { display: flex; align-items: center; gap: 8px; font-size: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+.kpi-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.kpi-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
+.kpi-main-val { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.kpi-sub-val { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+.progress-track { height: 4px; background: var(--border-color); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 10px; }
+.kpi-footer { padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-secondary); }
 
-.sparkline-container { width: 100%; height: 60px; margin-top: auto; position: relative; }
-.sparkline-val { position: absolute; bottom: 0; right: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.sparkline-container { width: 100%; height: 50px; margin-top: auto; }
 
-.chart-section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-.section-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.chart-section { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; padding: 20px; margin-bottom: 20px; 
+}
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.section-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 .chart-wrapper { position: relative; height: 300px; width: 100%; }
 
-.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-
-.btn-group { display: flex; background: var(--bg-body); padding: 3px; border-radius: 8px; border: 1px solid var(--border-color); }
-.btn-toggle { padding: 6px 16px; font-size: 12px; font-weight: 600; color: var(--text-secondary); border: none; background: transparent; cursor: pointer; border-radius: 6px; transition: 0.2s; }
-.btn-toggle.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.btn-group { display: flex; background: var(--bg-body); padding: 2px; border-radius: 6px; border: 1px solid var(--border-color); }
+.btn-toggle { padding: 4px 12px; font-size: 11px; font-weight: 600; color: var(--text-secondary); border: none; background: transparent; cursor: pointer; border-radius: 4px; }
+.btn-toggle.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 .btn-toggle.active.t-urea { color: var(--color-urea); }
 .btn-toggle.active.t-npk { color: var(--color-npk); }
 
 /* RANKING */
-.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.rank-list { list-style: none; margin-top: 10px; }
-.rank-item { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.rank-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
 .rank-item:last-child { border-bottom: none; }
-.rank-badge { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-.badge-1 { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-.badge-def { background: var(--bg-body); color: var(--text-secondary); border: 1px solid var(--border-color); }
-.rank-content { flex-grow: 1; min-width: 0; }
-.rank-name { font-size: 14px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-.rank-meta { font-size: 12px; color: var(--text-secondary); display: block; margin-top: 2px; }
-.rank-val { font-size: 14px; font-weight: 700; text-align: right; }
+.rank-badge { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 1px solid var(--border-color); color: var(--text-secondary); }
+.badge-1 { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+.rank-name { font-size: 13px; font-weight: 600; color: var(--text-primary); display: block; }
+.rank-meta { font-size: 11px; color: var(--text-secondary); }
+.rank-val { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--text-primary); }
 .text-good { color: var(--color-npk); }
 .text-bad { color: var(--color-danger); }
 
-/* DROPDOWN & INPUTS */
-.select-wrapper { position: relative; width: 190px; max-width: 100%; }
-.year-wrapper { width: 90px !important; }
+/* ========================================= */
+/* 6. DROPDOWN, MODAL & INPUTS (AUTO THEME)  */
+/* ========================================= */
 .select-trigger { 
-    display: flex; justify-content: space-between; align-items: center; 
     background: var(--bg-body); border: 1px solid var(--border-color); 
-    padding: 8px 12px; border-radius: 8px; font-size: 13px; 
-    color: var(--text-primary); cursor: pointer; width: 100%; height: 38px; overflow: hidden; 
+    color: var(--text-primary); padding: 6px 12px; border-radius: 6px; font-size: 12px; 
+    display: flex; align-items: center; justify-content: space-between; cursor: pointer;
 }
-.select-trigger span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-right: 8px; flex: 1; text-align: left; min-width: 0; }
-.select-trigger i { flex-shrink: 0; }
 .select-options { 
-    position: absolute; top: 110%; right: 0; left: 0; width: 100%; min-width: 100%;
     background: var(--bg-card); border: 1px solid var(--border-color); 
-    border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-    max-height: 250px; overflow-y: auto; z-index: 100; 
-    opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; 
+    border-radius: 6px; position: absolute; top: 110%; left: 0; right: 0; z-index: 100;
+    max-height: 200px; overflow-y: auto; opacity: 0; visibility: hidden; transition: 0.2s;
+    box-shadow: var(--shadow-card);
 }
-.select-options.open { opacity: 1; visibility: visible; transform: translateY(0); }
-.option { 
-    padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--border-subtle); 
-    font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-}
-.option:hover { background: var(--bg-card-hover); color: var(--text-primary); }
-.option.selected { color: var(--color-urea); font-weight: 600; background: rgba(247, 218, 25, 0.1); }
+.select-options.open { opacity: 1; visibility: visible; top: 105%; }
+.option { padding: 8px 12px; font-size: 12px; color: var(--text-secondary); cursor: pointer; border-bottom: 1px solid var(--border-color); }
+.option:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-/* LOADER & MODALS */
-#loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 999; display: flex; flex-direction: column; gap: 16px; justify-content: center; align-items: center; transition: opacity 0.5s; }
-.spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--color-urea); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 45; opacity: 0; visibility: hidden; transition: 0.3s; }
-.overlay.active { opacity: 1; visibility: visible; }
-
+/* MODAL LOGIN & FORM - SUDAH OTOMATIS IKUT TEMA */
 .modal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    width: 90%; max-width: 600px; max-height: 90vh;
-    z-index: 1000; border-radius: var(--radius-lg);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-card);
+    z-index: 1000; border-radius: 12px;
+    opacity: 0; visibility: hidden; transition: 0.2s;
     display: flex; flex-direction: column;
-    opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .modal.open { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
-.modal.large { max-width: 900px; }
-.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; }
-.modal-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-.btn-close { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px; }
-.modal-body { padding: 24px; overflow-y: auto; flex-grow: 1; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 12px; }
 
-/* FORM ELEMENTS */
-.form-group { margin-bottom: 16px; }
-.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-.form-control { width: 100%; background: var(--bg-body); border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 14px; }
+/* Spesifik Login Box (Kecil & Kotak) */
+#loginModal { width: 90%; max-width: 300px; }
+.modal.large { width: 95%; max-width: 900px; max-height: 90vh; }
+
+.modal-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+/* Judul Login di Tengah */
+#loginModal .modal-header { justify-content: center; border-bottom: none; padding-bottom: 0; }
+.modal-title { font-size: 14px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.modal-body { padding: 16px; overflow-y: auto; }
+
+/* Input Styles */
+.form-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+.form-control { 
+    width: 100%; background: var(--bg-input); 
+    border: 1px solid var(--border-color); 
+    color: var(--text-primary); 
+    padding: 8px 12px; border-radius: 6px; font-size: 13px; 
+}
 .form-control:focus { outline: none; border-color: var(--color-urea); }
 
-/* BUTTONS */
-.btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-.btn-primary { background: var(--color-urea); color: white; }
+/* Input Password Spesifik Login */
+#adminPass { text-align: center; letter-spacing: 3px; font-size: 16px; height: 40px; }
+
+.modal-footer { padding: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+#loginModal .modal-footer { justify-content: center; border-top: none; padding-top: 0; }
+
+.btn { padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; border: none; }
+.btn-primary { 
+    background: var(--color-urea); color: #000; 
+    min-width: 100px; /* Lebar tombol login */
+} 
+.btn-primary:hover { background: #ffe03d; transform: translateY(-1px); }
 .btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
-.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); border: 1px solid var(--color-danger); }
+.btn-close { background: none; border: none; font-size: 18px; color: var(--text-secondary); cursor: pointer; }
 
-.footer-copyright { margin-top: 40px; padding-top: 20px; padding-bottom: 24px; border-top: none; text-align: center; color: var(--text-muted); font-size: 12px; }
-.footer-copyright p { margin: 4px 0; letter-spacing: 0.5px; }
-.footer-copyright strong { font-weight: 600; color: var(--text-secondary); }
-.backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 900; opacity: 0; visibility: hidden; transition: 0.3s; }
+/* ========================================= */
+/* 7. LAIN-LAIN                              */
+/* ========================================= */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 45; opacity: 0; visibility: hidden; transition: 0.2s; backdrop-filter: blur(2px); }
+.overlay.active { opacity: 1; visibility: visible; }
+.backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 900; opacity: 0; visibility: hidden; transition: 0.2s; backdrop-filter: blur(2px); }
 .backdrop.open { opacity: 1; visibility: visible; }
+#loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.spinner { width: 30px; height: 30px; border: 3px solid var(--border-color); border-top-color: var(--color-urea); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.footer-copyright { text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 30px; }
+.footer-copyright strong { color: var(--text-secondary); }
 
-@media (max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
-@media (max-width: 768px) {
-    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .kpi-card { padding: 12px; min-width: 0; }
-    .kpi-main-val { font-size: 20px; } 
-    .kpi-sub-val { font-size: 11px; }
-    .chart-section { padding: 16px; min-width: 0; width: 100%; }
-    .ranking-grid { grid-template-columns: 1fr; }
+/* RESPONSIVE */
+@media (max-width: 1024px) { .charts-row, .ranking-grid, .kpi-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { 
+    .kpi-grid { grid-template-columns: 1fr 1fr; } 
+    .header { padding: 0 16px; }
     .container { padding: 16px; padding-bottom: 80px; }
-    .header { padding: 0 16px; height: var(--header-height); min-height: auto; flex-wrap: nowrap; gap: 12px; justify-content: space-between; }
-    .header-left { width: auto; justify-content: flex-start; margin-bottom: 0; flex: 1; overflow: hidden; }
-    .page-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .header-right { width: auto; justify-content: flex-end; margin-top: 0; padding-bottom: 0; flex-shrink: 0; }
-    .year-wrapper { width: 90px !important; } 
-    .section-header { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: nowrap; }
-    .section-title { width: auto; margin-bottom: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chart-actions { width: auto; display: flex; justify-content: flex-end; flex-grow: 0; }
-    #prov-select-wrapper { width: 190px !important; flex-shrink: 0; }
 }
 
 /* ========================================= */
-/* MODIFIKASI LOGIN ADMIN (FINAL COMPACT)    */
+/* STYLE TOMBOL TEMA DI HEADER SIDEBAR       */
 /* ========================================= */
 
-/* 1. Kotak Modal */
-#loginModal {
-    max-width: 300px !important; /* Lebar kotak diperkecil */
-    width: 90%;
-    border: 1px solid #333;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    background: #1e1e1e;
-    border-radius: 12px;
-}
-
-/* 2. Header */
-#loginModal .modal-header {
+.theme-btn-header {
+    background: transparent;
+    border: 1px solid var(--border-color); /* Ada kotak tipis */
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    border-bottom: none;
-    padding: 20px 20px 5px;
-    position: relative;
-}
-#loginModal .modal-title {
-    font-size: 16px; /* Ukuran judul pas */
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-primary);
-}
-#loginModal .btn-close {
-    position: absolute; right: 12px; top: 12px; opacity: 0.6; font-size: 16px;
-}
-
-/* 3. Input Password */
-#loginModal .modal-body {
-    padding: 10px 25px;
-}
-#adminPass {
-    text-align: center;
-    font-size: 14px;
-    letter-spacing: 3px;
-    background: #121212;
-    border: 1px solid #333;
-    height: 40px; /* Tinggi input standar */
-    color: var(--text-primary);
-    border-radius: 6px;
-    width: 100%;
-}
-#adminPass:focus {
-    border-color: var(--color-urea);
-    box-shadow: none;
-}
-
-/* 4. Footer & Tombol */
-#loginModal .modal-footer {
-    justify-content: center; /* Mengatur tombol pas di tengah */
-    border-top: none;
-    padding-top: 5px;
-    padding-bottom: 20px;
-}
-
-/* 5. TOMBOL MASUK (Kecil & Tengah) */
-.btn-primary {
-    background: var(--color-urea) !important;
-    color: #000000 !important; /* Teks Hitam (Kontras) */
-    font-weight: 700;
-    font-size: 12px; /* Font tombol kecil */
-    text-transform: uppercase;
-    padding: 8px 25px; /* Padding pas, tidak terlalu lebar */
-    letter-spacing: 0.5px;
-    border-radius: 6px;
-    border: none;
-    box-shadow: none;
     transition: all 0.2s ease;
-    
-    /* KUNCI AGAR KECIL & DI TENGAH: */
-    width: auto !important; /* Jangan biarkan lebar 100% */
-    min-width: 100px; /* Lebar minimal agar rapi */
 }
 
-.btn-primary:hover {
-    background: #ffe03d !important;
-    transform: translateY(-1px);
+.theme-btn-header:hover {
+    background-color: var(--bg-hover);
+    color: var(--color-urea); /* Ikon menyala kuning saat disorot */
+    border-color: var(--text-secondary);
 }
 
-/* ========================================= */
-/* MODIFIKASI SIDEBAR STYLE GITHUB           */
-/* ========================================= */
-
-/* 1. Container Sidebar (Warna Tetap Default Anda) */
-.sidebar {
-    background-color: var(--bg-sidebar); /* Tetap Dark Grey #1e1e1e */
-    border-right: 1px solid #30363d; /* Garis pemisah tipis ala GitHub */
-    padding: 16px; /* Padding lebih kecil agar compact */
-    width: 260px; /* Sedikit dirampingkan */
-}
-
-/* 2. Header Brand (Judul Dashboard) */
-.brand {
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #30363d; /* Garis pemisah bawah judul */
-    gap: 4px;
-}
-.brand-title {
-    font-size: 16px; /* Ukuran font judul mirip nama Repo GitHub */
-    font-weight: 600;
-    color: var(--text-primary);
-}
-.brand-subtitle {
-    font-size: 11px;
-    color: var(--text-muted);
-}
-
-/* 3. Label Kategori (Sektor Penjualan, Admin, dll) */
-.menu-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #8b949e; /* Warna teks label GitHub (Abu pudar) */
-    margin: 16px 8px 8px 8px; /* Jarak antar seksi */
-    text-transform: capitalize; /* Huruf besar di awal kata saja */
-    letter-spacing: normal;
-}
-
-/* 4. Item Menu (Tombol Navigasi) */
-.nav-item {
-    padding: 6px 10px; /* Padding rapat (Compact) */
-    margin-bottom: 2px; /* Jarak antar tombol sangat dekat */
-    border-radius: 6px; /* Sudut membulat khas GitHub */
-    font-size: 14px; /* Ukuran font standar GitHub */
-    color: #c9d1d9; /* Warna teks menu (Abu terang) */
-    font-weight: 400; /* Font normal, tidak tebal */
-    border: 1px solid transparent; /* Persiapan untuk border */
-    transition: none; /* GitHub style biasanya instan/cepat */
-}
-
-/* Ikon di dalam menu */
-.nav-item i {
-    width: 20px;
-    font-size: 14px;
-    color: #8b949e; /* Warna ikon abu pudar */
-    text-align: center;
-    margin-right: 8px;
-}
-
-/* 5. Efek Hover (Saat Disorot) */
-.nav-item:hover {
-    background-color: rgba(177, 186, 196, 0.12); /* Efek highlight abu transparan */
-    color: #f0f6fc; /* Teks jadi putih saat hover */
-}
-.nav-item:hover i {
-    color: #f0f6fc; /* Ikon jadi putih saat hover */
-}
-
-/* 6. Menu Aktif (Yang Sedang Dipilih) */
-.nav-item.active {
-    background-color: rgba(177, 186, 196, 0.12); /* Background sama seperti hover */
-    color: var(--text-primary); /* Teks putih terang */
-    font-weight: 600; /* Teks agak tebal */
-    border-left: none; /* Hapus garis kuning lama jika ada */
-}
-/* Penanda Aktif ala GitHub (Garis Tipis di Kiri) - Opsional */
-.nav-item.active::before {
-    content: '';
-    position: absolute;
-    left: 10px;
-    width: 3px;
-    height: 20px;
-    /* background: var(--color-urea); */ /* Aktifkan jika ingin ada garis kecil */
-    border-radius: 2px;
-}
-.nav-item.active i {
-    color: var(--color-urea); /* Ikon menyala Kuning Urea */
-}
-
-/* ========================================= */
-/* FIX FINAL: POSISI ADMIN & KONTRAS LIGHT   */
-/* ========================================= */
-
-/* 1. PINDAHKAN MENU ADMIN KE BAWAH */
-/* Trik: Mendorong elemen label ke-3 (Label Admin) ke dasar sidebar */
-.sidebar .menu-label:nth-of-type(3) {
-    margin-top: auto !important; /* Kunci agar turun ke bawah */
-    padding-top: 20px;
-    border-top: 1px solid var(--border-subtle); /* Opsional: Garis pemisah halus */
-}
-
-/* 2. GARIS HEADER LEBIH HALUS (ABU-ABU) */
-.brand {
-    border-bottom: 1px solid #d0d7de !important; /* Abu-abu soft ala GitHub */
-}
-/* Koreksi khusus Dark Mode agar garisnya tidak terlalu terang */
-[data-theme="dark"] .brand {
-    border-bottom: 1px solid #30363d !important;
-}
-
-/* 3. PERBAIKAN KONTRAS KHUSUS MODE TERANG (LIGHT MODE) */
-/* Agar teks terbaca jelas di background putih */
-
-[data-theme="light"] .sidebar {
-    background-color: #ffffff !important; /* Pastikan background putih bersih */
-    border-right: 1px solid #d0d7de !important;
-}
-
-[data-theme="light"] .brand-title {
-    color: #24292f !important; /* Judul Hitam Pekat */
-}
-
-[data-theme="light"] .menu-label {
-    color: #57606a !important; /* Label Abu Tua */
-    font-weight: 700;
-}
-
-[data-theme="light"] .nav-item {
-    color: #24292f !important; /* Teks Menu Hitam Arang (JELAS) */
-}
-
-[data-theme="light"] .nav-item i {
-    color: #57606a !important; /* Ikon Abu Tua */
-}
-
-/* Efek Sorot (Hover) di Mode Terang */
-[data-theme="light"] .nav-item:hover {
-    background-color: #f6f8fa !important; /* Abu sangat muda */
-    color: #0969da !important; /* Teks jadi Biru GitHub */
-}
-[data-theme="light"] .nav-item:hover i {
-    color: #0969da !important;
-}
-
-/* Menu Aktif di Mode Terang */
-[data-theme="light"] .nav-item.active {
-    background-color: #ddf4ff !important; /* Biru muda lembut */
-    color: #0969da !important; /* Teks Biru */
-    font-weight: 700 !important;
-}
-[data-theme="light"] .nav-item.active i {
-    color: #0969da !important;
-}
-
-/* ========================================= */
-/* ADMIN LOGIN: DUKUNGAN LIGHT MODE          */
-/* ========================================= */
-
-/* 1. Ubah Background Kotak Modal jadi Putih */
-[data-theme="light"] #loginModal {
-    background-color: #ffffff !important; /* Putih bersih */
-    border: 1px solid #d0d7de !important; /* Border abu halus */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; /* Bayangan lebih soft */
-}
-
-/* 2. Ubah Warna Judul jadi Hitam */
-[data-theme="light"] #loginModal .modal-title {
-    color: #24292f !important;
-}
-
-/* 3. Ubah Tombol Close (X) jadi Gelap */
-[data-theme="light"] #loginModal .btn-close {
-    color: #24292f !important;
-    opacity: 0.5;
-}
-
-/* 4. Ubah Kolom Input Password */
-[data-theme="light"] #adminPass {
-    background-color: #f6f8fa !important; /* Abu sangat muda ala GitHub */
-    border: 1px solid #d0d7de !important;
-    color: #24292f !important; /* Teks ketikan jadi hitam */
-}
-
-/* Efek saat input diklik di Mode Terang */
-[data-theme="light"] #adminPass:focus {
-    background-color: #ffffff !important;
-    border-color: var(--color-urea) !important;
+.theme-btn-header i {
+    font-size: 14px; /* Ukuran ikon pas */
 }
