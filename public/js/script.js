@@ -142,7 +142,6 @@ const app = (() => {
 
             let isReal = r.JENIS.includes('REALISASI') || r.JENIS.includes('PENJUALAN');
             let isTarget = r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET') || r.JENIS.includes('RKO');
-            // PERBAIKAN LOGIKA PENCARIAN STOK
             let isStock = r.JENIS.includes('STOK') || r.JENIS.includes('STOCK') || r.JENIS.includes('PERSEDIAAN') || r.JENIS.includes('AKTUAL');
 
             if (r.TAHUN === selectedYear) {
@@ -261,7 +260,7 @@ const app = (() => {
         }
     };
 
-    // --- CHART NASIONAL (UPDATE WARNA & TIPE STOK) ---
+    // --- CHART NASIONAL (WARNA STOK GELAP/KALEM) ---
     const renderNasionalChart = (nasStats) => {
         const ctx = document.getElementById('chartNasional').getContext('2d');
         if(chartNasional) chartNasional.destroy();
@@ -277,7 +276,7 @@ const app = (() => {
         const targetIcon = createDashedCircle('#999'); 
 
         chartNasional = new Chart(ctx, {
-            type: 'bar', // Wajib BAR agar stok muncul
+            type: 'bar',
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
@@ -293,9 +292,9 @@ const app = (() => {
                     },
                     {
                         label: 'Stok', data: data.stock, type: 'bar', 
-                        // WARNA ABU-ABU SOLID AGAR TERLIHAT JELAS
-                        backgroundColor: '#9ca3af', // Gray-400 solid
-                        borderColor: '#6b7280',     // Gray-500 border
+                        // WARNA ABU-ABU GELAP & KALEM DENGAN TRANSPARANSI
+                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Gray-600
+                        borderColor: '#374151',                   // Gray-700
                         borderWidth: 1, 
                         barPercentage: 0.5, order: 2
                     }
@@ -310,7 +309,7 @@ const app = (() => {
         });
     };
 
-    // --- CHART PROVINSI ---
+    // --- CHART PROVINSI (WARNA STOK GELAP/KALEM) ---
     const renderProvChart = () => {
         const provName = document.getElementById('dropdown-provinsi').value;
         const placeholder = document.getElementById('prov-placeholder');
@@ -351,7 +350,7 @@ const app = (() => {
         const targetIcon = createDashedCircle('#999');
 
         chartProvinsi = new Chart(ctx, {
-            type: 'bar', // Tipe Utama BAR
+            type: 'bar',
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
@@ -367,7 +366,10 @@ const app = (() => {
                     },
                     {
                         label: 'Stok', data: mStock, type: 'bar', 
-                        backgroundColor: '#9ca3af', borderColor: '#6b7280', borderWidth: 1, // Warna Abu Solid
+                        // WARNA ABU-ABU GELAP & KALEM DENGAN TRANSPARANSI
+                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Gray-600
+                        borderColor: '#374151',                   // Gray-700
+                        borderWidth: 1, 
                         barPercentage: 0.5, order: 2
                     }
                 ]
