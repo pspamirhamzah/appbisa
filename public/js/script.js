@@ -1,20 +1,19 @@
 /* =========================================================
-   SCRIPT HYBRID - FULL FEATURE
+   SCRIPT FINAL (FIXED RANKING & CHART)
    ========================================================= */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
 const ADMIN_PASSWORD = 'pso123';
 
-// GLOBAL VARS
+// DATA GLOBAL
 let rawData = [];
 let currentSector = 'SUBSIDI'; 
 let currentChartProduct = 'UREA';
 let selectedYear = new Date().getFullYear();
 
-// KAMUS BULAN
+// MAP BULAN
 const MONTH_MAP = {
-    'JAN': 0, 'JANUARI': 0, 'FEB': 1, 'FEBRUARI': 1, 
-    'MAR': 2, 'MARET': 2, 'APR': 3, 'APRIL': 3, 
-    'MEI': 4, 'MAY': 4, 'JUN': 5, 'JUNI': 5,
+    'JAN': 0, 'JANUARI': 0, 'FEB': 1, 'FEBRUARI': 1, 'MAR': 2, 'MARET': 2,
+    'APR': 3, 'APRIL': 3, 'MEI': 4, 'MAY': 4, 'JUN': 5, 'JUNI': 5,
     'JUL': 6, 'JULI': 6, 'AGU': 7, 'AGUSTUS': 7, 'AUG': 7,
     'SEP': 8, 'SEPTEMBER': 8, 'OKT': 9, 'OKTOBER': 9,
     'NOV': 10, 'NOVEMBER': 10, 'DES': 11, 'DESEMBER': 11
@@ -22,8 +21,7 @@ const MONTH_MAP = {
 const CHART_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
 // CHART INSTANCES
-let chartNasional, sparkUrea, sparkNpk;
-let isAdminLoggedIn = false;
+let chartNasional, chartProvInstance, sparkUrea, sparkNpk;
 
 // 1. INIT
 window.onload = function() {
@@ -41,8 +39,11 @@ function loadData() {
     .then(res => res.json())
     .then(data => {
         if (!Array.isArray(data)) { console.error("Data Error"); return; }
-        processData(data); 
-        updateDashboard(); 
+        
+        processData(data); // 1. Bersihkan Data
+        populateProvDropdown(); // 2. Isi Dropdown Provinsi
+        updateDashboard(); // 3. Tampilkan
+        
         if(loader) loader.style.display = 'none';
     })
     .catch(err => {
@@ -51,15 +52,12 @@ function loadData() {
     });
 }
 
-// 3. PROCESS DATA (Logika Pembersihan Data)
+// 3. PROCESS DATA
 function processData(data) {
     rawData = data.map(r => {
         let valStr = String(r['TONASE']).replace(/\./g, '').replace(/,/g, '.');
         let val = parseFloat(valStr) || 0;
-
-        let year = parseInt(r['TAHUN']) || 0;
-        if (year === 0) year = new Date().getFullYear();
-
+        let year = parseInt(r['TAHUN']) || new Date().getFullYear();
         let txtBulan = String(r['BULAN'] || '').toUpperCase().trim();
         let monthIdx = MONTH_MAP[txtBulan] !== undefined ? MONTH_MAP[txtBulan] : -1;
 
@@ -71,18 +69,18 @@ function processData(data) {
             PRODUK_RAW: String(r['PRODUK'] || '').toUpperCase().trim(),
             JENIS_RAW: String(r['JENIS'] || '').toUpperCase().trim(),
             PROVINSI_RAW: String(r['PROVINSI'] || '').toUpperCase().trim(),
+            PROVINSI_CLEAN: toTitleCase(String(r['PROVINSI'] || '')), // Untuk dropdown
             TONASE: val
         };
     });
 
-    // Auto-Switch Tahun
+    // Auto Switch Tahun
     const hasData = rawData.some(r => r.TAHUN === selectedYear);
     if (!hasData && rawData.length > 0) {
         const uniqueYears = [...new Set(rawData.map(r => r.TAHUN))].sort((a,b) => b-a);
         if(uniqueYears.length > 0) {
             selectedYear = uniqueYears[0];
-            const el = document.getElementById('year-label');
-            if(el) el.innerText = `Data Tahun: ${selectedYear}`;
+            updateEl('year-label', `Data Tahun: ${selectedYear}`);
         }
     }
 }
@@ -91,14 +89,13 @@ function processData(data) {
 function updateDashboard() {
     if (rawData.length === 0) return;
 
-    // A. Setup Wadah
+    // Wadah Data
     let stats = {
         UREA: { real: 0, rkap: 0, realMonthly: Array(12).fill(0), rkapMonthly: Array(12).fill(0) },
         NPK:  { real: 0, rkap: 0, realMonthly: Array(12).fill(0), rkapMonthly: Array(12).fill(0) }
     };
     let provStats = {}; 
 
-    // B. Loop Data
     rawData.forEach(r => {
         if (r.TAHUN !== selectedYear) return;
 
@@ -108,7 +105,7 @@ function updateDashboard() {
         if (!isSectorMatch) return;
 
         const isReal = r.JENIS_RAW.includes('REALISASI') || r.JENIS_RAW.includes('PENJUALAN');
-        const isTarget = r.JENIS_RAW.includes('RKAP') || r.JENIS_RAW.includes('TARGET') || r.JENIS_RAW.includes('RKO');
+        const isTarget = r.JENIS_RAW.includes('RKAP') || r.JENIS_RAW.includes('TARGET');
         
         let pKey = '';
         if (r.PRODUK_RAW.includes('UREA') || r.PRODUK_RAW.includes('NITREA')) pKey = 'UREA';
@@ -116,7 +113,7 @@ function updateDashboard() {
 
         if (!pKey) return;
 
-        // Init Provinsi jika belum ada
+        // Init Provinsi
         let prov = r.PROVINSI_RAW || 'LAINNYA';
         if (!provStats[prov]) provStats[prov] = { real: 0, rkap: 0 };
 
@@ -133,18 +130,25 @@ function updateDashboard() {
         }
     });
 
-    // C. Update UI
+    // Update Kartu & Progress
     updateCard('urea', stats.UREA);
     updateCard('npk', stats.NPK);
 
+    // Update Sparklines
     drawSparkline('sparkUrea', stats.UREA.realMonthly, 'var(--color-urea)');
     drawSparkline('sparkNpk', stats.NPK.realMonthly, 'var(--color-npk)');
 
+    // Update Ranking (Pastikan ID list-best ada di HTML)
     renderRankings(provStats);
-    renderMainChart(stats);
+
+    // Update Grafik Nasional
+    renderNasionalChart(stats);
+    
+    // Update Grafik Provinsi
+    renderProvChart();
 }
 
-// 5. HELPER FUNCTIONS
+// 5. HELPER FUNGSI (CHART, RANKING, DLL)
 
 function updateCard(type, data) {
     const real = data.real;
@@ -166,23 +170,23 @@ function renderRankings(stats) {
     const listWarn = document.getElementById('list-warn');
     if (!listBest) return;
 
-    let rankArray = Object.keys(stats).map(prov => {
-        let d = stats[prov];
-        return { name: toTitleCase(prov), real: d.real };
-    });
+    let rankArray = Object.keys(stats).map(prov => ({ 
+        name: toTitleCase(prov), 
+        real: stats[prov].real 
+    }));
 
-    // Sort by Realisasi (Terbesar)
+    // Sort Descending (Terbesar)
     rankArray.sort((a,b) => b.real - a.real);
 
-    // Render Top 5
+    // Top 5
     listBest.innerHTML = rankArray.slice(0, 5).map((item, i) => createRankItem(i+1, item, true)).join('');
     
-    // Render Bottom 5 (jika ada data)
+    // Bottom 5 (Reverse dari bawah)
     if (rankArray.length > 5) {
         let bottom = rankArray.slice(-5).reverse();
         listWarn.innerHTML = bottom.map((item, i) => createRankItem(i+1, item, false)).join('');
     } else {
-        listWarn.innerHTML = '<p style="padding:10px; font-size:12px; color:grey">Data kurang</p>';
+        listWarn.innerHTML = '<div style="padding:10px; color:grey; font-size:12px">Data kurang</div>';
     }
 }
 
@@ -202,7 +206,8 @@ function createRankItem(idx, item, isBest) {
     </div>`;
 }
 
-function renderMainChart(stats) {
+// --- CHART NASIONAL ---
+function renderNasionalChart(stats) {
     const ctx = document.getElementById('chartNasional');
     if (!ctx) return;
     if (chartNasional) chartNasional.destroy();
@@ -228,27 +233,85 @@ function renderMainChart(stats) {
     });
 }
 
+// --- CHART PROVINSI (FITUR FILTER) ---
+function populateProvDropdown() {
+    const dropdown = document.getElementById('prov-select');
+    if (!dropdown) return;
+    dropdown.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
+    
+    // Ambil list unik provinsi
+    const uniqueProvs = [...new Set(rawData.map(r => r.PROVINSI_CLEAN))].sort();
+    uniqueProvs.forEach(prov => {
+        if(prov){
+            const opt = document.createElement('option');
+            opt.value = prov;
+            opt.innerText = prov;
+            dropdown.appendChild(opt);
+        }
+    });
+}
+
+function renderProvChart() {
+    const selectedProv = document.getElementById('prov-select').value;
+    const ctx = document.getElementById('chartProv');
+    if (!ctx) return;
+    if (chartProvInstance) chartProvInstance.destroy();
+
+    if (!selectedProv) return; // Jika belum pilih, biarkan kosong
+
+    // Siapkan Data Provinsi Terpilih
+    let ureaData = Array(12).fill(0);
+    let npkData = Array(12).fill(0);
+
+    rawData.forEach(r => {
+        if (r.TAHUN !== selectedYear) return;
+        // Filter Provinsi
+        if (r.PROVINSI_CLEAN !== selectedProv) return;
+        // Filter Jenis
+        if (!r.JENIS_RAW.includes('REALISASI') && !r.JENIS_RAW.includes('PENJUALAN')) return;
+
+        if (r.BULAN_IDX >= 0) {
+            if (r.PRODUK_RAW.includes('UREA') || r.PRODUK_RAW.includes('NITREA')) ureaData[r.BULAN_IDX] += r.TONASE;
+            else if (r.PRODUK_RAW.includes('NPK') || r.PRODUK_RAW.includes('PHONSKA')) npkData[r.BULAN_IDX] += r.TONASE;
+        }
+    });
+
+    chartProvInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: CHART_LABELS,
+            datasets: [
+                { label: 'Urea', data: ureaData, borderColor: '#F7DA19', backgroundColor: '#F7DA1920', tension: 0.4 },
+                { label: 'NPK', data: npkData, borderColor: '#055AA1', backgroundColor: '#055AA120', tension: 0.4 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#333' } } }
+        }
+    });
+}
+
+// --- SPARKLINES ---
 function drawSparkline(id, data, colorVar) {
     const ctx = document.getElementById(id);
     if (!ctx) return;
-    
     const color = getComputedStyle(document.body).getPropertyValue(colorVar.replace('var(','').replace(')','')).trim() || '#fff';
     
-    if (id === 'sparkUrea' && sparkUrea) sparkUrea.destroy();
-    if (id === 'sparkNpk' && sparkNpk) sparkNpk.destroy();
+    if (id === 'sparkUrea') { if(sparkUrea) sparkUrea.destroy(); }
+    if (id === 'sparkNpk') { if(sparkNpk) sparkNpk.destroy(); }
 
-    const config = {
+    const chart = new Chart(ctx, {
         type: 'line',
         data: { labels: CHART_LABELS, datasets: [{ data: data, borderColor: color, borderWidth: 2, fill: false, pointRadius: 0 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, tooltip: {enabled: false} }, scales: { x: {display:false}, y: {display:false} } }
-    };
+    });
 
-    const chart = new Chart(ctx, config);
     if (id === 'sparkUrea') sparkUrea = chart;
     if (id === 'sparkNpk') sparkNpk = chart;
 }
 
-// UI UTILS
+// --- UTILS ---
 function setSector(s) {
     currentSector = s;
     updateEl('nav-subsidi', '', el => el.className = s === 'SUBSIDI' ? 'nav-item active' : 'nav-item');
@@ -262,32 +325,18 @@ function setChartProduct(p) {
     currentChartProduct = p;
     updateEl('btn-chart-urea', '', el => el.className = p === 'UREA' ? 'btn-toggle active' : 'btn-toggle');
     updateEl('btn-chart-npk', '', el => el.className = p === 'NPK' ? 'btn-toggle active' : 'btn-toggle');
-    updateDashboard(); 
+    updateDashboard();
 }
 
 function updateEl(id, val, cb) {
     const el = document.getElementById(id);
-    if(el) {
-        if(val !== '') el.innerText = val;
-        if(cb) cb(el);
-    }
+    if(el) { if(val !== '') el.innerText = val; if(cb) cb(el); }
 }
 function formatNumber(n) { return new Intl.NumberFormat('id-ID').format(n || 0); }
 function toTitleCase(s) { return s.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase()); }
-function toggleTheme() {
-    const cur = localStorage.getItem('theme') || 'dark';
-    setTheme(cur === 'dark' ? 'light' : 'dark');
-}
-function setTheme(t) {
-    document.documentElement.setAttribute('data-theme', t);
-    localStorage.setItem('theme', t);
-}
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('show');
-    document.querySelector('.overlay').classList.toggle('active');
-}
-
-// ADMIN (Dummy Placeholder)
-function openLoginModal() { alert("Fitur Login akan segera hadir"); }
-function openAdminPanel() { }
+function toggleTheme() { const c = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'; setTheme(c); }
+function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); document.querySelector('.overlay').classList.toggle('active'); }
+function openLoginModal() { alert("Login Admin"); }
+function openAdminPanel() { alert("Panel Admin"); }
 function closeAllModals() { document.querySelector('.backdrop').classList.remove('open'); }
