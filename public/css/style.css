@@ -320,3 +320,93 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
     background: #ffe03d !important;
     transform: translateY(-1px);
 }
+
+/* ========================================= */
+/* MODIFIKASI SIDEBAR STYLE GITHUB           */
+/* ========================================= */
+
+/* 1. Container Sidebar (Warna Tetap Default Anda) */
+.sidebar {
+    background-color: var(--bg-sidebar); /* Tetap Dark Grey #1e1e1e */
+    border-right: 1px solid #30363d; /* Garis pemisah tipis ala GitHub */
+    padding: 16px; /* Padding lebih kecil agar compact */
+    width: 260px; /* Sedikit dirampingkan */
+}
+
+/* 2. Header Brand (Judul Dashboard) */
+.brand {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #30363d; /* Garis pemisah bawah judul */
+    gap: 4px;
+}
+.brand-title {
+    font-size: 16px; /* Ukuran font judul mirip nama Repo GitHub */
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.brand-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* 3. Label Kategori (Sektor Penjualan, Admin, dll) */
+.menu-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b949e; /* Warna teks label GitHub (Abu pudar) */
+    margin: 16px 8px 8px 8px; /* Jarak antar seksi */
+    text-transform: capitalize; /* Huruf besar di awal kata saja */
+    letter-spacing: normal;
+}
+
+/* 4. Item Menu (Tombol Navigasi) */
+.nav-item {
+    padding: 6px 10px; /* Padding rapat (Compact) */
+    margin-bottom: 2px; /* Jarak antar tombol sangat dekat */
+    border-radius: 6px; /* Sudut membulat khas GitHub */
+    font-size: 14px; /* Ukuran font standar GitHub */
+    color: #c9d1d9; /* Warna teks menu (Abu terang) */
+    font-weight: 400; /* Font normal, tidak tebal */
+    border: 1px solid transparent; /* Persiapan untuk border */
+    transition: none; /* GitHub style biasanya instan/cepat */
+}
+
+/* Ikon di dalam menu */
+.nav-item i {
+    width: 20px;
+    font-size: 14px;
+    color: #8b949e; /* Warna ikon abu pudar */
+    text-align: center;
+    margin-right: 8px;
+}
+
+/* 5. Efek Hover (Saat Disorot) */
+.nav-item:hover {
+    background-color: rgba(177, 186, 196, 0.12); /* Efek highlight abu transparan */
+    color: #f0f6fc; /* Teks jadi putih saat hover */
+}
+.nav-item:hover i {
+    color: #f0f6fc; /* Ikon jadi putih saat hover */
+}
+
+/* 6. Menu Aktif (Yang Sedang Dipilih) */
+.nav-item.active {
+    background-color: rgba(177, 186, 196, 0.12); /* Background sama seperti hover */
+    color: var(--text-primary); /* Teks putih terang */
+    font-weight: 600; /* Teks agak tebal */
+    border-left: none; /* Hapus garis kuning lama jika ada */
+}
+/* Penanda Aktif ala GitHub (Garis Tipis di Kiri) - Opsional */
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    width: 3px;
+    height: 20px;
+    /* background: var(--color-urea); */ /* Aktifkan jika ingin ada garis kecil */
+    border-radius: 2px;
+}
+.nav-item.active i {
+    color: var(--color-urea); /* Ikon menyala Kuning Urea */
+}
