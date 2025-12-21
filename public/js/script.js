@@ -240,7 +240,7 @@ const app = (() => {
         }
     };
 
-    // --- CHART CONFIG (LEGEND DOT MINIMALIS) ---
+    // --- CHART CONFIG (PERBAIKAN UKURAN LEGENDA) ---
     const getChartOptions = () => ({
         responsive: true, 
         maintainAspectRatio: false,
@@ -252,12 +252,13 @@ const app = (() => {
                 align: 'end',
                 labels: { 
                     usePointStyle: true, 
-                    boxWidth: 6,         // UKURAN DOT: Kecil (6px)
-                    boxHeight: 6,        
+                    // PERBAIKAN DISINI: Memperbesar wadah ikon menjadi 9px
+                    // Agar kotak (Stok) terlihat lebih besar dan seimbang
+                    // Sedangkan lingkaran (Realisasi/Target) tetap kecil karena pointRadius-nya.
+                    boxWidth: 9,
+                    boxHeight: 9,
                     padding: 15,
-                    font: { size: 11 },
-                    // Fungsi ini sekarang tidak lagi memaksa semua jadi circle
-                    // Biarkan pointStyle dari dataset yang menentukan bentuknya
+                    font: { size: 11 }
                 } 
             },
             tooltip: { 
@@ -310,7 +311,7 @@ const app = (() => {
                         label: 'Target', 
                         data: data.target, 
                         type: 'line',
-                        borderColor: '#ff5252', 
+                        borderColor: '#ff5252', // Merah
                         backgroundColor: '#ff5252', // Untuk warna Dot Legenda
                         borderDash: [6, 6],
                         borderWidth: 2, 
