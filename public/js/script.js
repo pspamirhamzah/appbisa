@@ -240,7 +240,7 @@ const app = (() => {
         }
     };
 
-    // --- CHART CONFIG (LEGEND DOT MINIMALIS) ---
+    // --- CHART CONFIG (LEGEND DOT SEIMBANG) ---
     const getChartOptions = () => ({
         responsive: true, 
         maintainAspectRatio: false,
@@ -251,9 +251,8 @@ const app = (() => {
                 position: 'top',
                 align: 'end',
                 labels: { 
-                    usePointStyle: true, // KUNCI: Gunakan Point, bukan Kotak
-                    boxWidth: 6,         // UKURAN DOT: Kecil (6px)
-                    boxHeight: 6,        // Memastikan bulat sempurna jika rasio font berubah
+                    usePointStyle: true, 
+                    // boxWidth & boxHeight DIHAPUS agar menggunakan pointRadius
                     padding: 15,
                     font: { size: 11 }
                 } 
@@ -296,12 +295,12 @@ const app = (() => {
                         data: data.real, 
                         type: 'line',
                         borderColor: color, 
-                        backgroundColor: color, // Untuk warna Dot Legenda
+                        backgroundColor: color, 
                         fill: { target: 'origin', above: gradient }, 
                         tension: 0.4, 
                         borderWidth: 3, 
-                        pointRadius: 3, 
-                        pointStyle: 'circle', // DOT
+                        pointRadius: 3, // Ukuran Dot di Legenda
+                        pointStyle: 'circle',
                         order: 1
                     },
                     {
@@ -309,13 +308,13 @@ const app = (() => {
                         data: data.target, 
                         type: 'line',
                         borderColor: '#ff5252', 
-                        backgroundColor: '#ff5252', // Untuk warna Dot Legenda
+                        backgroundColor: '#ff5252',
                         borderDash: [6, 6],
                         borderWidth: 2, 
                         fill: false, 
                         tension: 0.4, 
-                        pointRadius: 0, // Tidak ada dot di grafik
-                        pointStyle: 'circle', // TAPI ada Dot di Legenda
+                        pointRadius: 3, // Ukuran Dot di Legenda (di grafik 0)
+                        pointStyle: 'circle', 
                         order: 0 
                     },
                     {
@@ -323,10 +322,11 @@ const app = (() => {
                         data: data.stock, 
                         type: 'bar', 
                         backgroundColor: 'rgba(75, 85, 99, 0.8)', 
-                        borderColor: 'rgba(75, 85, 99, 0.8)', // Untuk warna Dot Legenda
+                        borderColor: 'rgba(75, 85, 99, 0.8)',
                         borderWidth: 0, 
                         barPercentage: 0.5, 
-                        pointStyle: 'circle', // Paksa Bar jadi Dot di Legenda
+                        pointRadius: 3, // Ukuran Dot di Legenda
+                        pointStyle: 'circle',
                         order: 2
                     }
                 ]
@@ -383,11 +383,11 @@ const app = (() => {
                         data: mReal, 
                         type: 'line', 
                         borderColor: colorMain, 
-                        backgroundColor: colorMain, // Dot Color
+                        backgroundColor: colorMain, 
                         fill: { target: 'origin', above: gradient },
                         tension: 0.3, 
                         borderWidth: 2, 
-                        pointRadius: 4, 
+                        pointRadius: 3, // Ukuran Dot di Legenda
                         pointStyle: 'circle',
                         order: 1
                     },
@@ -396,12 +396,12 @@ const app = (() => {
                         data: mTarget, 
                         type: 'line', 
                         borderColor: '#ff5252', 
-                        backgroundColor: '#ff5252', // Dot Color
+                        backgroundColor: '#ff5252', 
                         borderDash: [4, 4], 
                         borderWidth: 1, 
-                        pointRadius: 0, 
+                        pointRadius: 3, // Ukuran Dot di Legenda (di grafik 0)
                         tension: 0.3, 
-                        pointStyle: 'circle', // Dot Legend
+                        pointStyle: 'circle', 
                         order: 0
                     },
                     {
@@ -409,10 +409,11 @@ const app = (() => {
                         data: mStock, 
                         type: 'bar', 
                         backgroundColor: 'rgba(75, 85, 99, 0.8)', 
-                        borderColor: 'rgba(75, 85, 99, 0.8)', // Dot Color
+                        borderColor: 'rgba(75, 85, 99, 0.8)', 
                         borderWidth: 0, 
                         barPercentage: 0.5, 
-                        pointStyle: 'circle', // Dot Legend
+                        pointRadius: 3, // Ukuran Dot di Legenda
+                        pointStyle: 'circle', 
                         order: 2
                     }
                 ]
