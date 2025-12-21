@@ -240,7 +240,7 @@ const app = (() => {
         }
     };
 
-    // --- CHART CONFIG (CUSTOM LEGEND: DOT/RECT SOLID) ---
+    // --- CHART CONFIG (FIX: TEXT COLOR & SIZE BALANCE) ---
     const getChartOptions = () => ({
         responsive: true, 
         maintainAspectRatio: false,
@@ -252,27 +252,29 @@ const app = (() => {
                 align: 'end',
                 labels: { 
                     usePointStyle: true, 
-                    boxWidth: 8,         // Ukuran Icon Legenda (Cukup 8px, seimbang dengan teks)
+                    boxWidth: 6, // Ukuran Dot/Kotak KECIL (6px) agar seimbang
                     padding: 15,
                     font: { size: 11 },
                     // --- CUSTOM LABEL GENERATOR ---
-                    // Fungsi ini mengabaikan pointRadius dataset, sehingga legenda selalu konsisten
                     generateLabels: (chart) => {
                         return chart.data.datasets.map((dataset, i) => {
-                            // Tentukan warna SOLID untuk legenda (Ambil borderColor untuk line, backgroundColor untuk bar)
-                            let color = dataset.type === 'line' ? dataset.borderColor : dataset.backgroundColor;
-                            
-                            // Tentukan bentuk: Rect untuk Stok, Circle untuk lainnya
+                            let color = dataset.borderColor; 
+                            // Jika dataset adalah bar (Stok), ambil background color
+                            if(dataset.type === 'bar' || dataset.label === 'Stok') {
+                                color = dataset.backgroundColor;
+                            }
+                            // Bentuk: Stok = Kotak, Sisanya = Bulat
                             let shape = dataset.label === 'Stok' ? 'rect' : 'circle';
 
                             return {
                                 text: dataset.label,
-                                fillStyle: color,        // Warna isi penuh (solid)
-                                strokeStyle: 'transparent', // Tidak ada garis pinggir
-                                pointStyle: shape,       // Bentuk ikon
+                                fillStyle: color,        // Warna Solid
+                                strokeStyle: 'transparent',
+                                pointStyle: shape,       // Bentuk
                                 lineWidth: 0,
                                 hidden: !chart.isDatasetVisible(i),
-                                datasetIndex: i
+                                datasetIndex: i,
+                                fontColor: '#b3b3b3'     // <--- FIX: PAKSA WARNA TEKS JADI ABU TERANG
                             };
                         });
                     }
@@ -316,11 +318,11 @@ const app = (() => {
                         data: data.real, 
                         type: 'line',
                         borderColor: color, 
-                        backgroundColor: gradient, // Gradient untuk area grafik
-                        fill: { target: 'origin', above: gradient }, 
+                        backgroundColor: gradient,
+                        fill: true, 
                         tension: 0.4, 
                         borderWidth: 3, 
-                        pointRadius: 3, // Dot di grafik
+                        pointRadius: 3, 
                         pointStyle: 'circle',
                         order: 1
                     },
@@ -333,7 +335,8 @@ const app = (() => {
                         borderWidth: 2, 
                         fill: false, 
                         tension: 0.4, 
-                        pointRadius: 0, // Grafik Target BERSIH (Tanpa Dot)
+                        pointRadius: 0, 
+                        pointStyle: 'circle', 
                         order: 0 
                     },
                     {
@@ -348,7 +351,7 @@ const app = (() => {
                     }
                 ]
             },
-            options: getChartOptions() // Menggunakan opsi legenda custom di atas
+            options: getChartOptions()
         });
     };
 
@@ -401,7 +404,7 @@ const app = (() => {
                         type: 'line', 
                         borderColor: colorMain, 
                         backgroundColor: gradient,
-                        fill: { target: 'origin', above: gradient },
+                        fill: true, 
                         tension: 0.3, 
                         borderWidth: 2, 
                         pointRadius: 4, 
@@ -413,11 +416,11 @@ const app = (() => {
                         data: mTarget, 
                         type: 'line', 
                         borderColor: '#ff5252', 
-                        backgroundColor: '#ff5252', 
                         borderDash: [4, 4], 
                         borderWidth: 1, 
-                        pointRadius: 0, // Grafik Target BERSIH (Tanpa Dot)
+                        pointRadius: 0, 
                         tension: 0.3, 
+                        pointStyle: 'circle', 
                         order: 0
                     },
                     {
@@ -432,7 +435,7 @@ const app = (() => {
                     }
                 ]
             },
-            options: getChartOptions() // Menggunakan opsi legenda custom di atas
+            options: getChartOptions()
         });
     };
 
