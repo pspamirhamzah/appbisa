@@ -22,7 +22,7 @@
     --color-npk: #38bdf8;       /* Sky Blue (Biru Muda) */
     --color-success: #4ade80;   /* Green */
     --color-danger: #ff5252;    /* Red Accent */
-    --color-primary: #a5b4fc;   /* Indigo Light (Judul Tertinggi) */
+    --color-primary: #a5b4fc;   /* Indigo Light */
     --color-stock: #a8a29e;     /* Stone (Abu) */
     --color-accent-1: #ffffff;  /* Putih Bersih */
 
@@ -38,10 +38,10 @@
    ========================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
 
-/* Custom Scrollbar (Modern & Dark) */
-::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Custom Scrollbar Modern */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-body); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #666; }
 
 body {
@@ -73,7 +73,7 @@ body {
 
 .sidebar.closed { transform: translateX(-100%); }
 
-/* Brand / Logo Area */
+/* Brand Area */
 .brand {
     padding-bottom: 20px;
     border-bottom: none;
@@ -94,7 +94,6 @@ body {
 .brand h2 span { font-weight: 400; color: var(--color-urea); }
 .brand p { font-size: 11px; color: var(--text-secondary); margin: 2px 0 0 0; font-weight: 400; letter-spacing: 0.5px; }
 
-/* Navigation Items */
 .nav-header { 
     font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); 
     margin: 16px 12px 8px; letter-spacing: 1px; white-space: nowrap; 
@@ -125,7 +124,7 @@ body {
 }
 .main-content.closed { margin-left: 0; }
 
-/* Top Header Bar */
+/* Header Bar */
 header {
     height: var(--header-height); background: var(--bg-body); 
     display: flex; align-items: center; justify-content: space-between;
@@ -145,53 +144,64 @@ header {
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
 /* =========================================
-   5. CUSTOM DROPDOWN (THE FIX FOR TABLET)
+   5. CUSTOM DROPDOWN (NATIVE DARK MODE)
    ========================================= */
 .custom-select {
-    /* Reset Native Styles */
+    /* Reset gaya browser */
     appearance: none; -webkit-appearance: none; -moz-appearance: none;
     
-    /* Box Styling */
-    background-color: var(--bg-card); /* Samakan dengan warna kartu */
+    /* Styling Kotak */
+    background-color: transparent; /* Transparan agar menyatu dengan header/card */
     border: 1px solid var(--border-color); 
-    color: var(--text-primary); /* Teks putih terang */
+    color: var(--text-primary); 
     
-    /* Sizing */
-    min-width: 110px; 
-    height: 36px; /* Tinggi fix agar rapi */
-    padding: 0 36px 0 14px; /* Space kiri teks, kanan panah */
+    /* Dimensi */
+    min-width: 100px; 
+    height: 36px;
+    padding: 0 32px 0 12px; /* Space kanan untuk icon */
     border-radius: 8px; 
     
-    /* Typography */
+    /* Font */
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px; /* Ukuran font pas di tablet */
+    font-size: 13px;
     font-weight: 600;
-    line-height: 36px;
+    line-height: 36px; /* Center vertikal teks */
     cursor: pointer;
+    outline: none;
     
-    /* Custom Arrow Icon (SVG Chevron Down) */
+    /* Ikon Panah Custom (Chevron Abu) */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b3b3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 14px;
     
-    /* PENTING: Force Dark Mode pada Native Element (Android/iOS) */
+    /* PENTING: Memaksa Browser Tablet/HP pakai Mode Gelap untuk Popup Menu */
     color-scheme: dark; 
     
     transition: all 0.2s ease;
 }
 
-.custom-select:hover { border-color: var(--text-secondary); background-color: var(--bg-hover); }
-.custom-select:focus { 
-    border-color: var(--color-urea); 
-    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.15); /* Glow halus */
+/* Hover State */
+.custom-select:hover {
+    border-color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Fallback styling for desktop dropdown options */
-.custom-select option { background-color: var(--bg-card); color: var(--text-primary); padding: 10px; }
+/* Focus/Active State */
+.custom-select:focus {
+    border-color: var(--color-urea); /* Kuning saat diklik */
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Fallback untuk Desktop Windows/Mac (opsional) */
+.custom-select option {
+    background-color: #1e1e1e;
+    color: var(--text-primary);
+    padding: 10px;
+}
 
 /* =========================================
-   6. GRID SYSTEM & CARDS
+   6. GRID & CARDS
    ========================================= */
 .content-scroll { flex: 1; overflow-y: auto; padding: 20px 32px 40px; }
 
@@ -206,12 +216,11 @@ header {
     padding: 24px;
     display: flex; flex-direction: column;
     transition: transform 0.2s;
-    position: relative;
 }
 .card:hover { border-color: var(--border-subtle); }
 
 /* =========================================
-   7. KPI CARDS
+   7. KPI STATS
    ========================================= */
 .kpi-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .kpi-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -239,16 +248,16 @@ header {
 .growth-down { background: rgba(248, 113, 113, 0.15); color: var(--color-danger); }
 
 /* =========================================
-   8. CHARTS & FILTERS
+   8. CHARTS & HEADERS
    ========================================= */
-.chart-header { 
-    display: flex; 
-    justify-content: space-between; /* Judul Kiri, Filter Kanan */
-    align-items: center; /* Vertikal Center */
-    margin-bottom: 24px; 
-    min-height: 36px; /* Tinggi minimum agar sejajar */
-}
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; min-height: 36px; }
 .chart-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+/* Fix Ranking Header (Text Left - Icon Right) */
+.ranking-grid .chart-header .chart-title {
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
+}
+.ranking-grid .chart-header .chart-title i { font-size: 1.25rem; opacity: 0.8; }
 
 .btn-group { 
     background: var(--bg-body); padding: 4px; border-radius: 10px; 
@@ -266,40 +275,26 @@ header {
 .chart-canvas-container { position: relative; height: 280px; width: 100%; }
 
 /* =========================================
-   9. RANKING LIST
+   9. RANKING LIST STYLE
    ========================================= */
-/* Fix Header Ranking: Teks Kiri, Icon Kanan */
-.ranking-grid .chart-header .chart-title {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    width: 100%;
-}
-.ranking-grid .chart-header .chart-title i {
-    font-size: 1.25rem; /* Icon lebih besar */
-    opacity: 0.8;
-}
-
 .rank-list { display: flex; flex-direction: column; gap: 0; }
 .rank-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
+    padding: 12px 0; border-bottom: 1px solid var(--border-color);
 }
 .rank-item:last-child { border-bottom: none; }
 
 .rank-left { display: flex; align-items: center; gap: 12px; }
 
-/* Box Nomor Ranking Top 5 */
+/* Styling Nomor Ranking (Kotak vs Teks) */
 .rank-num { 
     width: 24px; height: 24px; border-radius: 6px; background: var(--bg-body); 
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 800; 
 }
 .rank-num.best { background: rgba(255, 255, 255, 0.1); color: var(--color-accent-1); }
-
-/* Teks Nomor Ranking Terendah (Tanpa Box) */
-.rank-num.warn { background: transparent; color: var(--color-danger); width: auto; font-size: 12px; }
+/* Teks merah untuk ranking bawah */
+.rank-num.warn { background: transparent; color: var(--color-danger); width: auto; padding-right: 4px; font-size: 12px; }
 
 .rank-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .rank-val { font-size: 13px; font-weight: 700; text-align: right; }
@@ -307,7 +302,7 @@ header {
 .val-warn { color: var(--color-danger); }
 
 /* =========================================
-   10. LOADER ANIMATION
+   10. LOADER & RESPONSIVE
    ========================================= */
 #loader {
     position: fixed; inset: 0; background: var(--bg-body); z-index: 9999;
@@ -320,9 +315,6 @@ header {
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* =========================================
-   11. RESPONSIVE DESIGN
-   ========================================= */
 @media (max-width: 1200px) { 
     .kpi-grid { grid-template-columns: 1fr 1fr; } 
     .chart-grid, .ranking-grid { grid-template-columns: 1fr; } 
