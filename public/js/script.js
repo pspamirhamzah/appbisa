@@ -240,7 +240,7 @@ const app = (() => {
         }
     };
 
-    // --- CHART CONFIG (FIX: TEXT COLOR & SIZE BALANCE) ---
+    // --- CHART CONFIG (Semua Ikon Legenda KOTAK) ---
     const getChartOptions = () => ({
         responsive: true, 
         maintainAspectRatio: false,
@@ -252,29 +252,27 @@ const app = (() => {
                 align: 'end',
                 labels: { 
                     usePointStyle: true, 
-                    boxWidth: 6, // Ukuran Dot/Kotak KECIL (6px) agar seimbang
+                    boxWidth: 6,         // Ukuran Kotak KECIL (6px)
                     padding: 15,
                     font: { size: 11 },
                     // --- CUSTOM LABEL GENERATOR ---
                     generateLabels: (chart) => {
                         return chart.data.datasets.map((dataset, i) => {
-                            let color = dataset.borderColor; 
-                            // Jika dataset adalah bar (Stok), ambil background color
-                            if(dataset.type === 'bar' || dataset.label === 'Stok') {
-                                color = dataset.backgroundColor;
-                            }
-                            // Bentuk: Stok = Kotak, Sisanya = Bulat
-                            let shape = dataset.label === 'Stok' ? 'rect' : 'circle';
+                            // Ambil warna (border untuk line, background untuk bar)
+                            let color = dataset.type === 'line' ? dataset.borderColor : dataset.backgroundColor;
+                            
+                            // PAKSA SEMUA JADI KOTAK ('rect')
+                            let shape = 'rect'; 
 
                             return {
                                 text: dataset.label,
                                 fillStyle: color,        // Warna Solid
                                 strokeStyle: 'transparent',
-                                pointStyle: shape,       // Bentuk
+                                pointStyle: shape,       // Bentuk KOTAK
                                 lineWidth: 0,
                                 hidden: !chart.isDatasetVisible(i),
                                 datasetIndex: i,
-                                fontColor: '#b3b3b3'     // <--- FIX: PAKSA WARNA TEKS JADI ABU TERANG
+                                fontColor: '#b3b3b3'     // Warna Teks Abu Terang
                             };
                         });
                     }
