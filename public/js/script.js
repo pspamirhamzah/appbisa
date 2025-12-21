@@ -86,14 +86,10 @@ const app = (() => {
         updateDashboard(); 
     };
 
-    // --- POPULATE DROPDOWN (TANPA "PILIH PROVINSI") ---
     const populateProvDropdown = (provKeys) => {
         const s = document.getElementById('dropdown-provinsi');
         const prevVal = s.value; 
         s.innerHTML = '';
-
-        // JANGAN TAMBAHKAN OPSI DEFAULT INI LAGI
-        // const optDefault = document.createElement('option'); ...
 
         if(!provKeys || provKeys.length === 0) {
             let opt = document.createElement('option');
@@ -109,9 +105,6 @@ const app = (() => {
             s.appendChild(opt);
         });
         
-        // LOGIKA AUTO-SELECT:
-        // 1. Jika ada pilihan user sebelumnya yang masih valid, pertahankan.
-        // 2. Jika tidak, pilih yang paling atas (index 0).
         if (prevVal && sortedProvs.includes(prevVal)) {
             s.value = prevVal; 
         } else if (sortedProvs.length > 0) {
@@ -161,7 +154,6 @@ const app = (() => {
             }
             if (r.TAHUN === (selectedYear - 1) && isReal) kpiStats.prev[prodKey].real += r.TONASE;
 
-            // Logic Dropdown (Hanya Produk Aktif)
             if (prodKey === activeProduct && r.TAHUN === selectedYear) {
                 if (r.PROVINSI && r.PROVINSI !== 'LAINNYA') {
                     dropdownProvs.add(r.PROVINSI);
@@ -172,15 +164,10 @@ const app = (() => {
             }
         });
 
-        // 1. Isi Dropdown dulu (ini akan auto-select item pertama jika kosong)
         populateProvDropdown([...dropdownProvs]);
-        
-        // 2. Render komponen lain
         renderKPI(kpiStats);
         renderRankings(rankStats);
         renderNasionalChart(kpiStats.nasional);
-        
-        // 3. Render Chart Provinsi (mengambil value dari dropdown yang baru diisi)
         renderProvChart(); 
     };
 
@@ -350,17 +337,13 @@ const app = (() => {
         const provName = document.getElementById('dropdown-provinsi').value;
         const placeholder = document.getElementById('prov-placeholder');
         const ctx = document.getElementById('chartProvinsi').getContext('2d');
-        const titleEl = document.getElementById('prov-chart-title');
         
         if (!provName) {
             placeholder.style.display = 'flex';
             if(chartProvinsi) chartProvinsi.clear();
-            titleEl.innerText = "Detail Provinsi"; // Default Title
             return;
         }
-        
         placeholder.style.display = 'none';
-        titleEl.innerText = `Detail: ${provName}`; // Update Judul dengan Nama Provinsi
 
         let mReal = Array(12).fill(0), mTarget = Array(12).fill(0), mStock = Array(12).fill(0);
 
