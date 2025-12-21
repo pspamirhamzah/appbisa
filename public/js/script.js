@@ -11,12 +11,28 @@ const ADMIN_PASSWORD = 'pso123';
 let rawData = [];
 let currentSector = 'SUBSIDI'; 
 let currentChartProduct = 'UREA';
-let selectedYear = new Date().getFullYear(); // Default Tahun Ini
+let selectedYear = new Date().getFullYear(); 
 let chartNasional, chartProv;
 let isAdminLoggedIn = false;
 
-// Label Bulan untuk Grafik
+// Label untuk Grafik
 const indoMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+// KAMUS BULAN (PENTING: Agar script mengerti "Jan" itu bulan ke-0)
+const MONTH_MAP = {
+    'JAN': 0, 'JANUARI': 0,
+    'FEB': 1, 'FEBRUARI': 1,
+    'MAR': 2, 'MARET': 2,
+    'APR': 3, 'APRIL': 3,
+    'MEI': 4, 'MAY': 4,
+    'JUN': 5, 'JUNI': 5,
+    'JUL': 6, 'JULI': 6,
+    'AGU': 7, 'AGUSTUS': 7, 'AUG': 7,
+    'SEP': 8, 'SEPTEMBER': 8,
+    'OKT': 9, 'OKTOBER': 9, 'OCT': 9,
+    'NOV': 10, 'NOVEMBER': 10,
+    'DES': 11, 'DESEMBER': 11, 'DEC': 11
+};
 
 /* =========================================================
    3. INITIALIZATION
@@ -26,9 +42,9 @@ window.onload = function() {
     setTheme(savedTheme);
     loadData();
     
-    // Set tampilan tahun di pojok kanan atas
-    const yearSelect = document.querySelector('.page-info p');
-    if(yearSelect) yearSelect.innerText = `Data Tahun: ${selectedYear}`;
+    // Update label tahun di pojok kanan atas
+    const yearLabel = document.querySelector('.page-info p');
+    if(yearLabel) yearLabel.innerText = `Data Tahun: ${selectedYear}`;
 };
 
 function loadData() {
@@ -44,10 +60,7 @@ function loadData() {
             return;
         }
 
-        // PROSES DATA
         processData(data);
-        
-        // UPDATE DASHBOARD
         updateAll();
         
         if(loader) loader.style.display = 'none';
@@ -70,25 +83,34 @@ function processData(data) {
             val = Number(val) || 0;
         }
 
-        // 2. AMBIL TAHUN DARI KOLOM BANTU (KOLOM A)
-        // Ini kunci agar filter tahun akurat
+        // 2. AMBIL TAHUN (PRIORITAS KOLOM 'TAHUN')
         let year = Number(r['TAHUN']) || 0;
         
-        // 3. AMBIL BULAN UNTUK GRAFIK (KOLOM B)
-        // Google Sheet mengirim tanggal format ISO (contoh: 2024-12-31T17:00...)
-        // Kita konversi ke Index Bulan (0 = Jan, 11 = Des)
+        // 3. TERJEMAHKAN BULAN ("Jan" -> 0)
+        let rawBulan = String(r['BULAN'] || '').toUpperCase().trim();
         let monthIdx = -1;
-        if (r['BULAN']) {
+
+        // Cek di Kamus Bulan
+        if (MONTH_MAP.hasOwnProperty(rawBulan)) {
+            monthIdx = MONTH_MAP[rawBulan];
+        } 
+        // Jika bukan teks, coba parsing sebagai Tanggal biasa
+        else {
             let d = new Date(r['BULAN']);
             if (!isNaN(d.getTime())) {
-                monthIdx = d.getMonth(); 
+                monthIdx = d.getMonth();
+                // Jika tahun belum ada, ambil dari tanggal ini
+                if (!year) year = d.getFullYear();
             }
         }
+
+        // Fallback tahun jika masih kosong
+        if (!year) year = new Date().getFullYear();
 
         return {
             ...r,
             TAHUN: year,
-            BULAN_IDX: monthIdx, // Simpan index bulan untuk grafik
+            BULAN_IDX: monthIdx, 
             SEKTOR: String(r['SEKTOR'] || '').toUpperCase().trim(),
             PRODUK: String(r['PRODUK'] || '').toUpperCase().trim(),
             JENIS: String(r['JENIS'] || '').toUpperCase().trim(),
@@ -98,17 +120,14 @@ function processData(data) {
         };
     });
     
-    // Cek apakah ada data tahun ini
+    // Auto-Switch Tahun jika data tahun ini kosong
     const dataThisYear = rawData.filter(r => r.TAHUN === selectedYear);
     if (dataThisYear.length === 0 && rawData.length > 0) {
-        // Jika kosong, coba cari tahun yang tersedia
         const uniqueYears = [...new Set(rawData.map(item => item.TAHUN))].sort((a,b)=>b-a);
         if(uniqueYears.length > 0) {
-            selectedYear = uniqueYears[0]; // Pindah ke tahun terbaru yang ada datanya
-            console.log("Auto-switch Tahun ke:", selectedYear);
-            // Update label tahun
-            const yearDisplay = document.querySelector('.page-info p');
-            if(yearDisplay) yearDisplay.innerText = `Data Tahun: ${selectedYear}`;
+            selectedYear = uniqueYears[0];
+            const yearLabel = document.querySelector('.page-info p');
+            if(yearLabel) yearLabel.innerText = `Data Tahun: ${selectedYear}`;
         }
     }
 }
@@ -119,11 +138,13 @@ function processData(data) {
 function setSector(sector) {
     currentSector = sector;
     
+    // Update Menu Visual
     const navSubsidi = document.getElementById('nav-subsidi');
     const navRetail = document.getElementById('nav-retail');
     if(navSubsidi) navSubsidi.className = sector === 'SUBSIDI' ? 'nav-item active' : 'nav-item';
     if(navRetail) navRetail.className = sector === 'RETAIL' ? 'nav-item active' : 'nav-item';
     
+    // Update Judul Halaman
     const title = document.querySelector('.page-info h2');
     if(title) title.innerText = sector === 'SUBSIDI' ? 'Subsidi' : 'Retail';
 
@@ -134,41 +155,39 @@ function setSector(sector) {
 function updateAll() {
     if (rawData.length === 0) return;
 
-    // A. HITUNG TOTAL & RANKING
+    // A. SETUP VARIABEL
     let totalUrea = 0;
     let totalNPK = 0;
     let provStats = {};
     
-    // B. SIAPKAN DATA GRAFIK (Array 12 Bulan)
+    // Array 12 Bulan untuk Grafik
     let chartData = {
         UREA: { real: Array(12).fill(0), target: Array(12).fill(0) },
         NPK: { real: Array(12).fill(0), target: Array(12).fill(0) }
     };
 
+    // B. LOOPING DATA
     rawData.forEach(r => {
-        // FILTER DASAR
-        // 1. Sektor (Pakai Includes agar fleksibel)
+        // 1. FILTER SEKTOR (Flexible Check)
         let isSectorMatch = false;
         if (currentSector === 'SUBSIDI') isSectorMatch = r.SEKTOR.includes('SUBSIDI') && !r.SEKTOR.includes('NON');
         else isSectorMatch = r.SEKTOR.includes('RETAIL') || r.SEKTOR.includes('NON');
         
         if (!isSectorMatch) return;
-        
-        // 2. Tahun (Wajib sama)
         if (r.TAHUN !== selectedYear) return;
 
-        // IDENTIFIKASI JENIS DATA
+        // 2. IDENTIFIKASI JENIS DATA
         const isReal = r.JENIS === 'REALISASI' || r.JENIS === 'PENJUALAN';
         const isTarget = r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET');
         
-        // IDENTIFIKASI PRODUK
+        // 3. IDENTIFIKASI PRODUK
         let prodKey = '';
         if (r.PRODUK.includes('UREA') || r.PRODUK.includes('NITREA')) prodKey = 'UREA';
         else if (r.PRODUK.includes('NPK') || r.PRODUK.includes('PHONSKA')) prodKey = 'NPK';
 
-        if (!prodKey) return; // Skip jika produk tidak dikenal
+        if (!prodKey) return; 
 
-        // --- AGGREGASI DATA ---
+        // 4. AGGREGASI
         if (isReal) {
             // Total Kartu Atas
             if (prodKey === 'UREA') totalUrea += r.TONASE;
@@ -179,19 +198,19 @@ function updateAll() {
             if (!provStats[prov]) provStats[prov] = 0;
             provStats[prov] += r.TONASE;
 
-            // Grafik Bulanan (Realisasi)
+            // Masukkan ke Grafik Realisasi
             if (r.BULAN_IDX >= 0 && r.BULAN_IDX < 12) {
                 chartData[prodKey].real[r.BULAN_IDX] += r.TONASE;
             }
         } else if (isTarget) {
-            // Grafik Bulanan (Target)
+            // Masukkan ke Grafik Target
             if (r.BULAN_IDX >= 0 && r.BULAN_IDX < 12) {
                 chartData[prodKey].target[r.BULAN_IDX] += r.TONASE;
             }
         }
     });
 
-    // C. UPDATE UI
+    // C. UPDATE TAMPILAN
     updateElement('val-urea', formatNumber(totalUrea));
     updateElement('val-npk', formatNumber(totalNPK));
     
@@ -217,7 +236,7 @@ function renderRanking(provStats) {
                 </div>
                 <div>
                     <span class="rank-name" style="font-weight: 600; font-size: 13px; display: block;">${item.name}</span>
-                    <span class="rank-meta" style="font-size: 11px; color: var(--text-secondary);">Realisasi</span>
+                    <span class="rank-meta" style="font-size: 11px; color: var(--text-secondary);">Realisasi Total</span>
                 </div>
             </div>
             <div class="rank-val" style="font-weight: 700; font-size: 13px;">${formatNumber(item.val)}</div>
@@ -229,27 +248,22 @@ function renderRanking(provStats) {
 }
 
 function renderCharts(data) {
-    // Pastikan elemen canvas ada di HTML Anda (id="chartNasional")
-    // Jika Anda ingin grafik per produk (Urea vs NPK), kita bisa gabung atau pilih salah satu
-    // Untuk simplifikasi, kita tampilkan grafik UREA di canvas utama dulu
-    
+    // Grafik Nasional (Menampilkan UREA sebagai default/contoh)
     drawChart('chartNasional', data.UREA.real, data.UREA.target, 'UREA');
-    // Jika ada canvas kedua untuk NPK, tambahkan disini:
+    
+    // Jika ingin grafik Provinsi (misal default Lampung atau NPK), bisa panggil lagi drawChart ke canvas ID lain
     // drawChart('chartProv', data.NPK.real, data.NPK.target, 'NPK'); 
 }
 
 function drawChart(canvasId, dReal, dTarget, label) {
     const ctx = document.getElementById(canvasId);
-    if (!ctx) return; // Skip jika canvas tidak ketemu
+    if (!ctx) return;
 
     const context = ctx.getContext('2d');
-    
-    // Warna tema
     const styles = getComputedStyle(document.body);
     const colorMain = label === 'UREA' ? styles.getPropertyValue('--color-urea').trim() || '#F7DA19' : styles.getPropertyValue('--color-npk').trim() || '#055AA1';
     const colorText = styles.getPropertyValue('--text-secondary').trim() || '#888';
     
-    // Hapus chart lama jika ada
     if (canvasId === 'chartNasional' && chartNasional) chartNasional.destroy();
     if (canvasId === 'chartProv' && chartProv) chartProv.destroy();
 
@@ -262,11 +276,11 @@ function drawChart(canvasId, dReal, dTarget, label) {
                     label: 'Realisasi',
                     data: dReal,
                     borderColor: colorMain,
-                    backgroundColor: colorMain + '20', // Transparan
+                    backgroundColor: colorMain + '20',
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
-                    pointRadius: 2
+                    pointRadius: 3
                 },
                 {
                     label: 'Target',
@@ -300,7 +314,7 @@ function drawChart(canvasId, dReal, dTarget, label) {
 }
 
 /* =========================================================
-   5. ADMIN & UI UTILS
+   5. UTILS & ADMIN
    ========================================================= */
 function updateElement(id, value) {
     const el = document.getElementById(id);
@@ -330,7 +344,7 @@ function toggleSidebar() {
     if(overlay) overlay.classList.toggle('active');
 }
 
-// Modal Logic
+// Modal & Login Logic (Standard)
 function openLoginModal() {
     if(isAdminLoggedIn) {
         isAdminLoggedIn = false;
