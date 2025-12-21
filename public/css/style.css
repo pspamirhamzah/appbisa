@@ -298,6 +298,27 @@ header {
 .val-best { color: var(--color-accent-1); }
 .val-warn { color: var(--color-danger); }
 
+/* 7. FOOTER STYLING */
+.footer-container {
+    margin-top: 40px;
+    text-align: center;
+    padding: 0 32px;
+}
+
+.footer-copyright {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.footer-design {
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.6; /* Membuat warna lebih redup */
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+}
+
 /* LOADER */
 #loader {
     position: fixed; inset: 0; background: var(--bg-body); z-index: 9999;
@@ -323,4 +344,5 @@ header {
     header { padding: 0 20px; }
     .content-scroll { padding: 20px; }
     .brand h2 { font-size: 18px; }
+    .footer-container { padding: 0 20px; }
 }
