@@ -4,7 +4,7 @@ Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
 Chart.defaults.font.size = 11;
 
 const app = (() => {
-    // ⚠️ PASTIKAN URL WEB APP ANDA BENAR DI SINI ⚠️
+    // ⚠️ PASTIKAN URL INI BENAR ⚠️
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     let state = {
@@ -47,7 +47,7 @@ const app = (() => {
         let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
     }
 
-    // --- INIT & LOAD ---
+    // --- INIT ---
     const init = () => { fetchData(); checkScreenSize(); };
 
     const checkScreenSize = () => {
@@ -142,9 +142,9 @@ const app = (() => {
 
             let isReal = r.JENIS.includes('REALISASI') || r.JENIS.includes('PENJUALAN');
             let isTarget = r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET') || r.JENIS.includes('RKO');
-            let isStock = r.JENIS.includes('STOK') || r.JENIS.includes('STOCK');
+            // PERBAIKAN LOGIKA PENCARIAN STOK
+            let isStock = r.JENIS.includes('STOK') || r.JENIS.includes('STOCK') || r.JENIS.includes('PERSEDIAAN') || r.JENIS.includes('AKTUAL');
 
-            // -- Logic KPI Global --
             if (r.TAHUN === selectedYear) {
                 if (isReal) {
                     kpiStats.curr[prodKey].real += r.TONASE;
@@ -158,7 +158,6 @@ const app = (() => {
             }
             if (r.TAHUN === (selectedYear - 1) && isReal) kpiStats.prev[prodKey].real += r.TONASE;
 
-            // -- Logic Ranking (Hanya Produk Aktif) --
             if (prodKey === activeProduct && r.TAHUN === selectedYear) {
                 if (r.PROVINSI && r.PROVINSI !== 'LAINNYA') {
                     dropdownProvs.add(r.PROVINSI);
@@ -247,7 +246,7 @@ const app = (() => {
 
         const listOthers = document.getElementById('list-others');
         if(activeData.length > 5) {
-            const bottom5 = activeData.slice(5).reverse().slice(0, 5); // Ambil Sisa, lalu Balik, lalu Ambil 5 Terbawah
+            const bottom5 = activeData.slice(5).reverse().slice(0, 5); 
             listOthers.innerHTML = bottom5.map((item, i) => `
                 <div class="rank-item">
                     <div class="rank-left">
@@ -258,11 +257,11 @@ const app = (() => {
                 </div>
             `).join('');
         } else {
-            listOthers.innerHTML = '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Semua data masuk Top 5</div>';
+            listOthers.innerHTML = '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Data kurang</div>';
         }
     };
 
-    // --- CHART NASIONAL (DENGAN STOK) ---
+    // --- CHART NASIONAL (UPDATE WARNA & TIPE STOK) ---
     const renderNasionalChart = (nasStats) => {
         const ctx = document.getElementById('chartNasional').getContext('2d');
         if(chartNasional) chartNasional.destroy();
@@ -278,24 +277,26 @@ const app = (() => {
         const targetIcon = createDashedCircle('#999'); 
 
         chartNasional = new Chart(ctx, {
-            type: 'bar', // Tipe Utama BAR agar Stok bisa tampil sebagai Bar
+            type: 'bar', // Wajib BAR agar stok muncul
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
                     {
-                        label: 'Realisasi', data: data.real, type: 'line', // Override ke Line
+                        label: 'Realisasi', data: data.real, type: 'line',
                         borderColor: color, backgroundColor: gradient,
                         fill: true, tension: 0.4, borderWidth: 3, pointRadius: 3, order: 1
                     },
                     {
-                        label: 'Target', data: data.target, type: 'line', // Override ke Line
+                        label: 'Target', data: data.target, type: 'line',
                         borderColor: '#666', borderDash: [6, 6],
                         borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0, pointStyle: targetIcon, order: 0 
                     },
                     {
-                        label: 'Stok', data: data.stock, type: 'bar', // Tetap Bar
-                        backgroundColor: '#a8a29e80', // Warna Abu-abu (Stone) Transparan
-                        borderColor: '#a8a29e', borderWidth: 1, 
+                        label: 'Stok', data: data.stock, type: 'bar', 
+                        // WARNA ABU-ABU SOLID AGAR TERLIHAT JELAS
+                        backgroundColor: '#9ca3af', // Gray-400 solid
+                        borderColor: '#6b7280',     // Gray-500 border
+                        borderWidth: 1, 
                         barPercentage: 0.5, order: 2
                     }
                 ]
@@ -350,7 +351,7 @@ const app = (() => {
         const targetIcon = createDashedCircle('#999');
 
         chartProvinsi = new Chart(ctx, {
-            type: 'bar', // Tipe Utama BAR agar Stok muncul
+            type: 'bar', // Tipe Utama BAR
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
@@ -366,7 +367,7 @@ const app = (() => {
                     },
                     {
                         label: 'Stok', data: mStock, type: 'bar', 
-                        backgroundColor: '#a8a29e80', borderColor: '#a8a29e', borderWidth: 1, 
+                        backgroundColor: '#9ca3af', borderColor: '#6b7280', borderWidth: 1, // Warna Abu Solid
                         barPercentage: 0.5, order: 2
                     }
                 ]
