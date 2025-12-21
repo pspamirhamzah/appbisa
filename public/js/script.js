@@ -1,7 +1,7 @@
 /* =========================================================
    APP SCRIPT CONFIGURATION
    ========================================================= */
-// ⚠️ GANTI LAGI URL INI DENGAN YANG /exec JIKA BERUBAH
+// ⚠️ PASTE URL /exec ANDA DISINI (JANGAN SALAH)
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvQc8_pnXd6PrcU9bQZ28Trh0Ad0P5OHrCKs9203wwY-Sk7u9KvCeKKHpucoQmAyBunA/exec';
 
 const ADMIN_PASSWORD = 'pso123';
@@ -10,17 +10,14 @@ const ADMIN_PASSWORD = 'pso123';
    GLOBAL VARIABLES
    ========================================================= */
 let rawData = [];
-let currentSector = 'SUBSIDI'; // Default
+let currentSector = 'SUBSIDI'; 
 
 /* =========================================================
    1. INITIALIZATION
    ========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Set Tema
     const savedTheme = localStorage.getItem('theme') || 'dark';
     setTheme(savedTheme);
-    
-    // 2. Ambil Data
     fetchData();
 });
 
@@ -31,109 +28,112 @@ function fetchData() {
     fetch(GOOGLE_SCRIPT_URL)
         .then(response => response.json())
         .then(data => {
-            console.log("Data Mentah:", data); // Cek di Console Browser
-            
+            // DIAGNOSA DATA
+            console.log("Data Diterima:", data); 
+
             if (Array.isArray(data) && data.length > 0) {
                 rawData = data;
-                updateDashboard(); // Hitung Data
                 
-                // Matikan Loading
+                // Cek isi data baris pertama untuk memastikan kolom terbaca
+                const firstRow = data[0];
+                console.log("Contoh Baris Pertama:", firstRow);
+                
+                updateDashboard(); 
                 if(loader) loader.style.display = 'none';
             } else {
                 if(loader) loader.style.display = 'none';
-                alert("Data kosong atau format salah.");
+                alert("Data berhasil terhubung, tapi isinya KOSONG []. Cek Google Sheet Anda.");
             }
         })
         .catch(error => {
             console.error(error);
             if(loader) loader.style.display = 'none';
-            // Jangan alert error agar tidak mengganggu jika hanya masalah koneksi sesaat
         });
 }
 
 /* =========================================================
-   2. DATA CALCULATION (PERBAIKAN LOGIKA)
+   2. SMART CALCULATION (AUTO DETECT COLUMN NAME)
    ========================================================= */
 function setSector(sector) {
     currentSector = sector;
     
-    // Update Menu Aktif (Visual Sidebar)
+    // Update Menu Aktif
     const navSubsidi = document.getElementById('nav-subsidi');
     const navRetail = document.getElementById('nav-retail');
-    
     if(navSubsidi) navSubsidi.className = sector === 'SUBSIDI' ? 'nav-item active' : 'nav-item';
     if(navRetail) navRetail.className = sector === 'RETAIL' ? 'nav-item active' : 'nav-item';
     
     updateDashboard();
     
-    // Tutup Sidebar (Mobile)
+    // Mobile Sidebar
     if(window.innerWidth <= 768) toggleSidebar();
+}
+
+// FUNGSI PINTAR: Mencari nilai kolom tanpa peduli Huruf Besar/Kecil
+function getSmartValue(row, columnName) {
+    // Cari kunci yang cocok (misal: 'Tonase' cocok dengan 'TONASE')
+    const key = Object.keys(row).find(k => k.toUpperCase() === columnName.toUpperCase());
+    return key ? row[key] : null;
 }
 
 function updateDashboard() {
     if (rawData.length === 0) return;
 
-    // --- LOGIKA HITUNG BARU (LEBIH AMAN) ---
     let totalUrea = 0;
     let totalNPK = 0;
 
     rawData.forEach(row => {
-        // 1. BERSIHKAN DATA (Hapus Spasi & Jadi Huruf Besar)
-        // Contoh: " Urea " jadi "UREA"
-        const sektorRaw = row.SEKTOR ? row.SEKTOR.toString().toUpperCase().trim() : '';
-        const produkRaw = row.PRODUK ? row.PRODUK.toString().toUpperCase().trim() : '';
+        // GUNAKAN FUNGSI PINTAR UNTUK AMBIL DATA
+        const valSektor = getSmartValue(row, 'SEKTOR');
+        const valProduk = getSmartValue(row, 'PRODUK');
+        const valTonase = getSmartValue(row, 'TONASE');
+
+        // Bersihkan Data
+        const sektor = valSektor ? valSektor.toString().toUpperCase().trim() : '';
+        const produk = valProduk ? valProduk.toString().toUpperCase().trim() : '';
         
-        // 2. BERSIHKAN ANGKA (Hapus titik ribuan jadi angka murni)
+        // Bersihkan Angka (Handle string "1.000" atau number 1000)
         let tonase = 0;
-        if (typeof row.TONASE === 'string') {
-            // Ubah "1.250" jadi 1250 (Format Indonesia)
-            tonase = parseFloat(row.TONASE.replace(/\./g, '').replace(/,/g, '.')) || 0;
+        if (typeof valTonase === 'string') {
+            tonase = parseFloat(valTonase.replace(/\./g, '').replace(/,/g, '.')) || 0;
         } else {
-            tonase = parseFloat(row.TONASE) || 0;
+            tonase = parseFloat(valTonase) || 0;
         }
 
-        // 3. PENJUMLAHAN
-        // Cek apakah baris ini milik Sektor yang sedang dipilih (Subsidi/Retail)
-        if (sektorRaw === currentSector) {
-            
-            // Cek Jenis Produk
-            if (produkRaw.includes('UREA') || produkRaw.includes('NITREA')) {
+        // Logika Penjumlahan
+        if (sektor === currentSector) {
+            if (produk.includes('UREA') || produk.includes('NITREA')) {
                 totalUrea += tonase;
             } 
-            else if (produkRaw.includes('NPK') || produkRaw.includes('PHONSKA') || produkRaw.includes('NPK')) {
+            else if (produk.includes('NPK') || produk.includes('PHONSKA')) {
                 totalNPK += tonase;
             }
         }
     });
 
-    // --- UPDATE UI ---
-    // 1. Judul Halaman
+    // Update UI
     const pageTitle = document.querySelector('.page-info h2');
     if(pageTitle) pageTitle.innerText = currentSector === 'SUBSIDI' ? 'Subsidi' : 'Retail';
 
-    // 2. Masukkan Angka ke Kotak
     updateElement('val-urea', formatNumber(totalUrea));
     updateElement('val-npk', formatNumber(totalNPK));
 }
 
-// Helper: Update Teks HTML
 function updateElement(id, value) {
     const el = document.getElementById(id);
     if(el) el.innerText = value;
 }
 
-// Helper: Format Ribuan (1000 -> 1.000)
 function formatNumber(num) {
     return new Intl.NumberFormat('id-ID').format(num || 0);
 }
 
 /* =========================================================
-   3. THEME & UI INTERACTION
+   3. THEME & UI
    ========================================================= */
 function toggleTheme() {
     const current = localStorage.getItem('theme') || 'dark';
-    const newTheme = current === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
+    setTheme(current === 'dark' ? 'light' : 'dark');
 }
 
 function setTheme(t) {
