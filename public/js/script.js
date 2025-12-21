@@ -1,6 +1,6 @@
-Chart.defaults.color = '#b3b3b3';
-Chart.defaults.borderColor = '#424242';
-Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
 Chart.defaults.font.size = 11;
 
 const app = (() => {
@@ -16,6 +16,89 @@ const app = (() => {
 
     let chartNasional = null;
     let chartProvinsi = null;
+
+    // --- HELPER UNTUK DROPDOWN GITHUB STYLE ---
+    const initCustomDropdown = (selectId, onChangeCallback) => {
+        const originalSelect = document.getElementById(selectId);
+        if (!originalSelect) return;
+
+        // Cek jika sudah ada wrapper, hapus dulu agar tidak duplikat saat re-render
+        if (originalSelect.nextElementSibling && originalSelect.nextElementSibling.classList.contains('custom-dropdown-wrapper')) {
+            originalSelect.nextElementSibling.remove();
+        }
+
+        // 1. Buat Wrapper
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-dropdown-wrapper';
+
+        // 2. Buat Tombol Trigger
+        const trigger = document.createElement('div');
+        trigger.className = 'dropdown-trigger';
+        // Set teks awal
+        const selectedOption = originalSelect.options[originalSelect.selectedIndex];
+        trigger.innerText = selectedOption ? selectedOption.text : 'Pilih...';
+
+        // 3. Buat Menu Container
+        const menu = document.createElement('div');
+        menu.className = 'dropdown-menu';
+
+        // Label Header Kecil (Opsional, ala GitHub)
+        const headerLabel = document.createElement('div');
+        headerLabel.className = 'dropdown-header-label';
+        headerLabel.innerText = selectId === 'year-select' ? 'Pilih Tahun' : 'Filter Provinsi';
+        menu.appendChild(headerLabel);
+
+        const scrollContainer = document.createElement('div');
+        scrollContainer.className = 'dropdown-scroll';
+
+        // 4. Loop Opsi dari Select Asli
+        Array.from(originalSelect.options).forEach(opt => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            if (opt.selected) item.classList.add('selected');
+            item.innerText = opt.text;
+
+            // Klik Item
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Update Select Asli
+                originalSelect.value = opt.value;
+                // Update Teks Trigger
+                trigger.innerText = opt.text;
+                // Update Visual Selected
+                menu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                // Tutup Menu
+                wrapper.classList.remove('active');
+                // Jalankan Callback (Render Chart)
+                if (onChangeCallback) onChangeCallback(opt.value);
+            });
+
+            scrollContainer.appendChild(item);
+        });
+
+        menu.appendChild(scrollContainer);
+        wrapper.appendChild(trigger);
+        wrapper.appendChild(menu);
+
+        // Masukkan Custom Dropdown SETELAH Select Asli
+        originalSelect.parentNode.insertBefore(wrapper, originalSelect.nextSibling);
+
+        // 5. Event Klik Trigger (Buka/Tutup)
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Tutup dropdown lain
+            document.querySelectorAll('.custom-dropdown-wrapper').forEach(w => {
+                if (w !== wrapper) w.classList.remove('active');
+            });
+            wrapper.classList.toggle('active');
+        });
+
+        // 6. Klik di luar untuk tutup
+        document.addEventListener('click', () => {
+            wrapper.classList.remove('active');
+        });
+    };
 
     // --- UTILS ---
     const parseIndoNumber = (str) => {
@@ -38,87 +121,7 @@ const app = (() => {
         let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
     }
 
-    // --- FITUR BARU: CUSTOM DROPDOWN RENDERER ---
-    const initCustomDropdown = (selectId, onChangeCallback) => {
-        const selectElement = document.getElementById(selectId);
-        if (!selectElement) return;
-
-        // Cek apakah wrapper custom sudah ada? Jika ada, update isinya saja
-        let wrapper = selectElement.nextElementSibling;
-        if (!wrapper || !wrapper.classList.contains('custom-dropdown-wrapper')) {
-            // Buat struktur HTML custom dropdown
-            wrapper = document.createElement('div');
-            wrapper.className = 'custom-dropdown-wrapper';
-            
-            const trigger = document.createElement('div');
-            trigger.className = 'dropdown-trigger';
-            trigger.innerText = 'Pilih...';
-            
-            const menu = document.createElement('div');
-            menu.className = 'dropdown-menu';
-            
-            const scrollContainer = document.createElement('div');
-            scrollContainer.className = 'dropdown-scroll';
-            
-            menu.appendChild(scrollContainer);
-            wrapper.appendChild(trigger);
-            wrapper.appendChild(menu);
-            
-            // Masukkan wrapper SETELAH select asli
-            selectElement.parentNode.insertBefore(wrapper, selectElement.nextSibling);
-
-            // Event: Klik Trigger utk Buka/Tutup
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Tutup dropdown lain jika ada
-                document.querySelectorAll('.custom-dropdown-wrapper.active').forEach(w => {
-                    if (w !== wrapper) w.classList.remove('active');
-                });
-                wrapper.classList.toggle('active');
-            });
-
-            // Event: Klik di luar utk Tutup
-            document.addEventListener('click', () => {
-                wrapper.classList.remove('active');
-            });
-        }
-
-        const trigger = wrapper.querySelector('.dropdown-trigger');
-        const scrollContainer = wrapper.querySelector('.dropdown-scroll');
-        scrollContainer.innerHTML = ''; // Kosongkan opsi lama
-
-        // Ambil opsi dari select asli dan buat item custom
-        Array.from(selectElement.options).forEach(option => {
-            const item = document.createElement('div');
-            item.className = 'dropdown-item';
-            if (option.selected) item.classList.add('selected');
-            item.innerText = option.text;
-            
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Update Select Asli
-                selectElement.value = option.value;
-                
-                // Update UI Custom
-                wrapper.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
-                item.classList.add('selected');
-                trigger.innerText = option.text;
-                wrapper.classList.remove('active');
-
-                // Panggil fungsi callback (misal: render ulang chart)
-                if (onChangeCallback) onChangeCallback(option.value);
-            });
-
-            scrollContainer.appendChild(item);
-        });
-
-        // Set teks awal trigger
-        if (selectElement.options.length > 0 && selectElement.selectedIndex >= 0) {
-            trigger.innerText = selectElement.options[selectElement.selectedIndex].text;
-        }
-    };
-
-    // --- INIT & LOAD ---
+    // --- INIT ---
     const init = () => { fetchData(); checkScreenSize(); };
 
     const checkScreenSize = () => {
@@ -162,7 +165,7 @@ const app = (() => {
         });
         if(!years.includes(state.selectedYear) && years.length > 0) state.selectedYear = years[0];
 
-        // INIT DROPDOWN TAHUN (CUSTOM)
+        // INIT DROPDOWN TAHUN (Github Style)
         initCustomDropdown('year-select', (val) => app.changeYear(val));
 
         updateDashboard(); 
@@ -192,31 +195,24 @@ const app = (() => {
             }
         }
 
-        // INIT DROPDOWN PROVINSI (CUSTOM)
-        // Dipanggil setiap kali data provinsi diupdate
+        // INIT DROPDOWN PROVINSI (Github Style) - Re-init setiap kali data berubah
         initCustomDropdown('dropdown-provinsi', () => app.renderProvChart());
     };
 
-    // --- DASHBOARD LOGIC ---
+    // --- CORE LOGIC ---
     const updateDashboard = () => {
         const { rawData, selectedYear, sector, activeProduct } = state;
-        
         let kpiStats = {
             curr: { UREA: {real:0, target:0}, NPK: {real:0, target:0} },
             prev: { UREA: {real:0}, NPK: {real:0} },
-            nasional: { 
-                UREA: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)}, 
-                NPK: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)} 
-            }
+            nasional: { UREA: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)}, NPK: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)} }
         };
-
         let rankStats = {}; 
         let dropdownProvs = new Set();
 
         rawData.forEach(r => {
             let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL');
             if (!isSectorMatch) return;
-
             let prodKey = '';
             if (r.PRODUK.includes('UREA') || r.PRODUK.includes('NITREA')) prodKey = 'UREA';
             else if (r.PRODUK.includes('NPK') || r.PRODUK.includes('PHONSKA')) prodKey = 'NPK';
@@ -233,9 +229,7 @@ const app = (() => {
                 } else if (isTarget) {
                     kpiStats.curr[prodKey].target += r.TONASE;
                     if(r.BULAN >= 0) kpiStats.nasional[prodKey].target[r.BULAN] += r.TONASE;
-                } else if (isStock) {
-                    if(r.BULAN >= 0) kpiStats.nasional[prodKey].stock[r.BULAN] += r.TONASE;
-                }
+                } else if (isStock && r.BULAN >= 0) kpiStats.nasional[prodKey].stock[r.BULAN] += r.TONASE;
             }
             if (r.TAHUN === (selectedYear - 1) && isReal) kpiStats.prev[prodKey].real += r.TONASE;
 
@@ -262,167 +256,75 @@ const app = (() => {
             const target = stats.curr[key].target;
             const prev = stats.prev[key].real;
             const pct = target > 0 ? (real/target*100) : 0;
-            
             document.getElementById(`val-${key.toLowerCase()}-real`).innerText = formatNumber(real);
             document.getElementById(`val-${key.toLowerCase()}-target`).innerText = formatNumber(target);
             document.getElementById(`val-${key.toLowerCase()}-pct`).innerText = pct.toFixed(1) + '%';
             document.getElementById(`prog-${key.toLowerCase()}`).style.width = Math.min(pct, 100) + '%';
-
-            let growthVal = 0;
-            let isUp = true;
-            if(prev > 0) {
-                growthVal = ((real - prev) / prev) * 100;
-                isUp = growthVal >= 0;
-            } else if (real > 0) growthVal = 100;
-
+            let growthVal = 0, isUp = true;
+            if(prev > 0) { growthVal = ((real - prev) / prev) * 100; isUp = growthVal >= 0; } else if (real > 0) growthVal = 100;
             const badge = document.getElementById(`growth-${key.toLowerCase()}-badge`);
             document.getElementById(`growth-${key.toLowerCase()}-val`).innerText = Math.abs(growthVal).toFixed(1) + '%';
             badge.className = `growth-badge ${isUp ? 'growth-up' : 'growth-down'}`;
             badge.innerHTML = `<i class="fas fa-arrow-${isUp ? 'up' : 'down'}"></i> ${Math.abs(growthVal).toFixed(1)}%`;
         };
-        updateCard('UREA');
-        updateCard('NPK');
+        updateCard('UREA'); updateCard('NPK');
     };
 
     const renderRankings = (provData) => {
         let arr = Object.keys(provData).map(key => {
             const item = provData[key];
-            let sortVal = 0;
-            let displayVal = '';
-
-            if (state.sector === 'SUBSIDI') {
-                sortVal = item.target > 0 ? (item.real / item.target) * 100 : 0;
-                displayVal = sortVal.toFixed(1) + '%';
-            } else {
-                sortVal = item.real;
-                displayVal = formatNumber(item.real);
-            }
-
-            return { name: key, val: sortVal, display: displayVal, rawReal: item.real };
+            let sortVal = state.sector === 'SUBSIDI' ? (item.target > 0 ? (item.real / item.target) * 100 : 0) : item.real;
+            return { name: key, val: sortVal, display: state.sector === 'SUBSIDI' ? sortVal.toFixed(1) + '%' : formatNumber(item.real), rawReal: item.real };
         });
-
-        let activeData = arr.filter(item => item.rawReal > 0);
-        activeData.sort((a,b) => b.val - a.val);
+        let activeData = arr.filter(item => item.rawReal > 0).sort((a,b) => b.val - a.val);
 
         const listTop5 = document.getElementById('list-top5');
-        if (activeData.length > 0) {
-            listTop5.innerHTML = activeData.slice(0, 5).map((item, i) => `
-                <div class="rank-item">
-                    <div class="rank-left">
-                        <div class="rank-num best">${i+1}</div>
-                        <div class="rank-name">${item.name}</div>
-                    </div>
-                    <div class="rank-val val-best">${item.display}</div>
-                </div>
-            `).join('');
-        } else {
-            listTop5.innerHTML = '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Tidak ada data</div>';
-        }
+        listTop5.innerHTML = activeData.length > 0 ? activeData.slice(0, 5).map((item, i) => `
+            <div class="rank-item">
+                <div class="rank-left"><div class="rank-num best">#${i+1}</div><div class="rank-name">${item.name}</div></div>
+                <div class="rank-val val-best">${item.display}</div>
+            </div>`).join('') : '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Tidak ada data</div>';
 
         const listOthers = document.getElementById('list-others');
-        if(activeData.length > 5) {
-            const bottom5 = activeData.slice(5).reverse().slice(0, 5); 
-            listOthers.innerHTML = bottom5.map((item) => {
-                let realRank = activeData.indexOf(item) + 1;
-                return `
-                <div class="rank-item">
-                    <div class="rank-left">
-                        <div class="rank-num warn" style="background:transparent; border:none; color:#ff5252; width:auto; padding-right:8px;">#${realRank}</div>
-                        <div class="rank-name">${item.name}</div>
-                    </div>
-                    <div class="rank-val val-warn">${item.display}</div>
-                </div>
-                `;
-            }).join('');
-        } else {
-            listOthers.innerHTML = '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Data kurang</div>';
-        }
+        listOthers.innerHTML = activeData.length > 5 ? activeData.slice(-5).reverse().map((item) => `
+            <div class="rank-item">
+                <div class="rank-left"><div class="rank-num warn">#${activeData.indexOf(item) + 1}</div><div class="rank-name">${item.name}</div></div>
+                <div class="rank-val val-warn">${item.display}</div>
+            </div>`).join('') : '<div style="padding:15px;text-align:center;color:grey;font-size:12px;">Data kurang</div>';
     };
 
     const getChartOptions = () => ({
-        responsive: true, 
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: { 
             legend: { 
-                display: true, 
-                position: 'top',
-                align: 'center', 
-                labels: { 
-                    usePointStyle: true, 
-                    boxWidth: 6,         
-                    padding: 15,
-                    font: { size: 11 },
-                    generateLabels: (chart) => {
-                        return chart.data.datasets.map((dataset, i) => {
-                            let color = dataset.type === 'line' ? dataset.borderColor : dataset.backgroundColor;
-                            let shape = dataset.label === 'Stok' ? 'rect' : 'circle'; 
-                            return {
-                                text: dataset.label,
-                                fillStyle: color,        
-                                strokeStyle: 'transparent',
-                                pointStyle: shape,       
-                                lineWidth: 0,
-                                hidden: !chart.isDatasetVisible(i),
-                                datasetIndex: i,
-                                fontColor: '#b3b3b3'     
-                            };
-                        });
-                    }
-                } 
+                display: true, position: 'top', align: 'center', 
+                labels: { usePointStyle: true, boxWidth: 6, padding: 15, font: { size: 11 }, generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({ text: ds.label, fillStyle: ds.type === 'line' ? ds.borderColor : ds.backgroundColor, strokeStyle: 'transparent', pointStyle: ds.label === 'Stok' ? 'rect' : 'circle', hidden: !chart.isDatasetVisible(i), datasetIndex: i, fontColor: '#8b949e' })) } 
             },
-            tooltip: { 
-                backgroundColor: 'rgba(33, 33, 33, 0.95)',
-                titleColor: '#ececec', bodyColor: '#b3b3b3',
-                borderColor: '#424242', borderWidth: 1,
-                displayColors: false, 
-                callbacks: {
-                    label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw); }
-                }
-            }
+            tooltip: { backgroundColor: 'rgba(22, 27, 34, 0.95)', titleColor: '#ececec', bodyColor: '#8b949e', borderColor: '#30363d', borderWidth: 1, displayColors: false, callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatNumber(ctx.raw) } }
         },
-        scales: { 
-            x: { grid: { display: false } }, 
-            y: { grid: { color: '#333' }, beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => v >= 1000 ? (v/1000)+' rb' : v } } 
-        }
+        scales: { x: { grid: { display: false } }, y: { grid: { color: '#21262d' }, beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => v >= 1000 ? (v/1000)+' rb' : v } } }
     });
 
     const renderNasionalChart = (nasStats) => {
         const ctx = document.getElementById('chartNasional').getContext('2d');
         if(chartNasional) chartNasional.destroy();
-
         const isUrea = state.activeProduct === 'UREA';
         const data = isUrea ? nasStats.UREA : nasStats.NPK;
         const color = isUrea ? '#fbbf24' : '#38bdf8'; 
-        
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, hexToRgbA(color, 0.4));
-        gradient.addColorStop(1, hexToRgbA(color, 0.0));
+        gradient.addColorStop(0, hexToRgbA(color, 0.4)); gradient.addColorStop(1, hexToRgbA(color, 0.0));
 
         chartNasional = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
-                    {
-                        label: 'Realisasi', data: data.real, type: 'line',
-                        borderColor: color, backgroundColor: gradient,
-                        fill: { target: 'origin', above: gradient }, 
-                        tension: 0.4, borderWidth: 3, pointRadius: 3, pointStyle: 'circle', order: 1
-                    },
-                    {
-                        label: 'Target', data: data.target, type: 'line',
-                        borderColor: '#ff5252', borderDash: [6, 6],
-                        borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0, pointStyle: 'circle', order: 0 
-                    },
-                    {
-                        label: 'Stok', data: data.stock, type: 'bar', 
-                        backgroundColor: 'rgba(75, 85, 99, 0.8)', borderColor: 'rgba(75, 85, 99, 0.8)',
-                        borderWidth: 0, barPercentage: 0.5, pointStyle: 'rect', order: 2
-                    }
+                    { label: 'Realisasi', data: data.real, type: 'line', borderColor: color, backgroundColor: gradient, fill: { target: 'origin', above: gradient }, tension: 0.4, borderWidth: 2, pointRadius: 3, pointStyle: 'circle', order: 1 },
+                    { label: 'Target', data: data.target, type: 'line', borderColor: '#ff5252', borderDash: [4, 4], borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0, pointStyle: 'circle', order: 0 },
+                    { label: 'Stok', data: data.stock, type: 'bar', backgroundColor: '#30363d', borderColor: '#30363d', borderWidth: 0, barPercentage: 0.5, pointStyle: 'rect', order: 2 }
                 ]
-            },
-            options: getChartOptions()
+            }, options: getChartOptions()
         });
     };
 
@@ -430,75 +332,46 @@ const app = (() => {
         const provName = document.getElementById('dropdown-provinsi').value;
         const placeholder = document.getElementById('prov-placeholder');
         const ctx = document.getElementById('chartProvinsi').getContext('2d');
-        
-        if (!provName) {
-            placeholder.style.display = 'flex';
-            if(chartProvinsi) chartProvinsi.clear();
-            return;
-        }
+        if (!provName) { placeholder.style.display = 'flex'; if(chartProvinsi) chartProvinsi.clear(); return; }
         placeholder.style.display = 'none';
 
         let mReal = Array(12).fill(0), mTarget = Array(12).fill(0), mStock = Array(12).fill(0);
-
         state.rawData.forEach(r => {
             if (r.TAHUN !== state.selectedYear || r.PROVINSI !== provName) return;
             let isSectorMatch = (state.sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL');
             if (!isSectorMatch) return;
-
-            let prodKey = '';
-            if (r.PRODUK.includes('UREA') || r.PRODUK.includes('NITREA')) prodKey = 'UREA';
-            else if (r.PRODUK.includes('NPK') || r.PRODUK.includes('PHONSKA')) prodKey = 'NPK';
-            
+            let prodKey = (r.PRODUK.includes('UREA') || r.PRODUK.includes('NITREA')) ? 'UREA' : (r.PRODUK.includes('NPK') || r.PRODUK.includes('PHONSKA')) ? 'NPK' : '';
             if (prodKey !== state.activeProduct) return;
-
             if (r.BULAN >= 0) {
                 if (r.JENIS.includes('REALISASI') || r.JENIS.includes('PENJUALAN')) mReal[r.BULAN] += r.TONASE;
-                else if (r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET') || r.JENIS.includes('RKO')) mTarget[r.BULAN] += r.TONASE;
-                else if (r.JENIS.includes('STOK') || r.JENIS.includes('STOCK') || r.JENIS.includes('PERSEDIAAN') || r.JENIS.includes('AKTUAL')) mStock[r.BULAN] += r.TONASE;
+                else if (r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET')) mTarget[r.BULAN] += r.TONASE;
+                else if (r.JENIS.includes('STOK') || r.JENIS.includes('STOCK')) mStock[r.BULAN] += r.TONASE;
             }
         });
 
         if(chartProvinsi) chartProvinsi.destroy();
         const colorMain = state.activeProduct === 'UREA' ? '#fbbf24' : '#38bdf8';
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, hexToRgbA(colorMain, 0.4));
-        gradient.addColorStop(1, hexToRgbA(colorMain, 0.0));
+        gradient.addColorStop(0, hexToRgbA(colorMain, 0.4)); gradient.addColorStop(1, hexToRgbA(colorMain, 0.0));
 
         chartProvinsi = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
-                    {
-                        label: 'Realisasi', data: mReal, type: 'line', 
-                        borderColor: colorMain, backgroundColor: gradient,
-                        fill: { target: 'origin', above: gradient },
-                        tension: 0.3, borderWidth: 2, pointRadius: 4, pointStyle: 'circle', order: 1
-                    },
-                    {
-                        label: 'Target', data: mTarget, type: 'line', 
-                        borderColor: '#ff5252', borderDash: [4, 4], 
-                        borderWidth: 1, pointRadius: 0, tension: 0.3, pointStyle: 'circle', order: 0
-                    },
-                    {
-                        label: 'Stok', data: mStock, type: 'bar', 
-                        backgroundColor: 'rgba(75, 85, 99, 0.8)', borderColor: 'rgba(75, 85, 99, 0.8)', 
-                        borderWidth: 0, barPercentage: 0.5, pointStyle: 'rect', order: 2
-                    }
+                    { label: 'Realisasi', data: mReal, type: 'line', borderColor: colorMain, backgroundColor: gradient, fill: { target: 'origin', above: gradient }, tension: 0.3, borderWidth: 2, pointRadius: 4, pointStyle: 'circle', order: 1 },
+                    { label: 'Target', data: mTarget, type: 'line', borderColor: '#ff5252', borderDash: [4, 4], borderWidth: 1, pointRadius: 0, tension: 0.3, pointStyle: 'circle', order: 0 },
+                    { label: 'Stok', data: mStock, type: 'bar', backgroundColor: '#30363d', borderColor: '#30363d', borderWidth: 0, barPercentage: 0.5, pointStyle: 'rect', order: 2 }
                 ]
-            },
-            options: getChartOptions()
+            }, options: getChartOptions()
         });
     };
 
     const renderSidebar = () => {
         const sb = document.getElementById('sidebar');
         const main = document.getElementById('main-content');
-        if (state.sidebarOpen) {
-            sb.classList.remove('closed'); sb.classList.add('show'); main.classList.remove('closed');
-        } else {
-            sb.classList.add('closed'); sb.classList.remove('show'); main.classList.add('closed');
-        }
+        if (state.sidebarOpen) { sb.classList.remove('closed'); sb.classList.add('show'); main.classList.remove('closed'); } 
+        else { sb.classList.add('closed'); sb.classList.remove('show'); main.classList.add('closed'); }
     };
 
     return {
