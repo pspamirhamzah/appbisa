@@ -4,7 +4,7 @@ Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
 Chart.defaults.font.size = 11;
 
 const app = (() => {
-    // ⚠️ PASTIKAN URL WEB APP ANDA BENAR DI SINI ⚠️
+    // ⚠️ URL WEB APP ⚠️
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     let state = {
@@ -28,14 +28,6 @@ const app = (() => {
 
     const formatNumber = (num) => new Intl.NumberFormat('id-ID').format(num);
 
-    const createDashedCircle = (color) => {
-        const size = 12; const r = 4.5; const c = document.createElement('canvas');
-        c.width = size; c.height = size; const ctx = c.getContext('2d');
-        ctx.beginPath(); ctx.setLineDash([2, 2]); ctx.lineWidth = 1.5;
-        ctx.strokeStyle = color; ctx.arc(size/2, size/2, r, 0, 2 * Math.PI); ctx.stroke();
-        return c;
-    };
-
     const normalizeMonth = (str) => {
         const map = {'JAN':0, 'JANUARI':0, 'FEB':1, 'FEBRUARI':1, 'MAR':2, 'MARET':2, 'APR':3, 'APRIL':3, 'MEI':4, 'MAY':4, 'JUN':5, 'JUNI':5, 'JUL':6, 'JULI':6, 'AGU':7, 'AGUSTUS':7, 'SEP':8, 'SEPTEMBER':8, 'OKT':9, 'OKTOBER':9, 'NOV':10, 'NOVEMBER':10, 'DES':11, 'DESEMBER':11};
         return map[String(str).toUpperCase().trim()] ?? -1;
@@ -47,7 +39,7 @@ const app = (() => {
         let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
     }
 
-    // --- INIT ---
+    // --- INIT & LOAD ---
     const init = () => { fetchData(); checkScreenSize(); };
 
     const checkScreenSize = () => {
@@ -260,7 +252,31 @@ const app = (() => {
         }
     };
 
-    // --- CHART NASIONAL (TARGET MERAH) ---
+    // --- CHART CONFIG (MODIFIED LEGEND) ---
+    // Fungsi umum untuk opsi chart agar konsisten
+    const getChartOptions = () => ({
+        responsive: true, 
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { 
+            legend: { 
+                display: true, 
+                position: 'top',
+                align: 'end',
+                labels: { 
+                    usePointStyle: true, // GUNAKAN DOT/CIRCLE
+                    boxWidth: 8,         // UKURAN KECIL SESUAI TEKS
+                    padding: 15,
+                    font: { size: 11 }
+                } 
+            } 
+        },
+        scales: { 
+            x: { grid: { display: false } }, 
+            y: { grid: { color: '#333' }, beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => v >= 1000 ? (v/1000)+' rb' : v } } 
+        }
+    });
+
     const renderNasionalChart = (nasStats) => {
         const ctx = document.getElementById('chartNasional').getContext('2d');
         if(chartNasional) chartNasional.destroy();
@@ -273,43 +289,54 @@ const app = (() => {
         gradient.addColorStop(0, hexToRgbA(color, 0.4));
         gradient.addColorStop(1, hexToRgbA(color, 0.0));
 
-        // WARNA TARGET MERAH (#ff5252)
-        const targetIcon = createDashedCircle('#ff5252'); 
-
         chartNasional = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
                     {
-                        label: 'Realisasi', data: data.real, type: 'line',
-                        borderColor: color, backgroundColor: gradient,
-                        fill: true, tension: 0.4, borderWidth: 3, pointRadius: 3, order: 1
+                        label: 'Realisasi', 
+                        data: data.real, 
+                        type: 'line',
+                        borderColor: color, 
+                        backgroundColor: gradient,
+                        fill: true, 
+                        tension: 0.4, 
+                        borderWidth: 3, 
+                        pointRadius: 3, 
+                        pointStyle: 'circle', // Pastikan DOT
+                        order: 1
                     },
                     {
-                        label: 'Target', data: data.target, type: 'line',
-                        // GARIS TARGET MERAH
-                        borderColor: '#ff5252', borderDash: [6, 6],
-                        borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0, pointStyle: targetIcon, order: 0 
+                        label: 'Target', 
+                        data: data.target, 
+                        type: 'line',
+                        borderColor: '#ff5252', // Merah
+                        borderDash: [6, 6],
+                        borderWidth: 2, 
+                        fill: false, 
+                        tension: 0.4, 
+                        pointRadius: 0, 
+                        pointStyle: 'circle', // Pastikan DOT di Legenda
+                        order: 0 
                     },
                     {
-                        label: 'Stok', data: data.stock, type: 'bar', 
-                        backgroundColor: 'rgba(75, 85, 99, 0.8)', 
-                        borderColor: '#374151', borderWidth: 1, 
-                        barPercentage: 0.5, order: 2
+                        label: 'Stok', 
+                        data: data.stock, 
+                        type: 'bar', 
+                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Abu Gelap Kalem
+                        borderColor: '#374151',
+                        borderWidth: 1, 
+                        barPercentage: 0.5, 
+                        pointStyle: 'circle', // Pastikan DOT di Legenda (Override default box)
+                        order: 2
                     }
                 ]
             },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 6 } } },
-                scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' }, beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => v >= 1000 ? (v/1000)+' rb' : v } } }
-            }
+            options: getChartOptions()
         });
     };
 
-    // --- CHART PROVINSI (TARGET MERAH) ---
     const renderProvChart = () => {
         const provName = document.getElementById('dropdown-provinsi').value;
         const placeholder = document.getElementById('prov-placeholder');
@@ -338,7 +365,7 @@ const app = (() => {
             if (r.BULAN >= 0) {
                 if (r.JENIS.includes('REALISASI') || r.JENIS.includes('PENJUALAN')) mReal[r.BULAN] += r.TONASE;
                 else if (r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET') || r.JENIS.includes('RKO')) mTarget[r.BULAN] += r.TONASE;
-                else if (r.JENIS.includes('STOK') || r.JENIS.includes('STOCK') || r.JENIS.includes('PERSEDIAAN') || r.JENIS.includes('AKTUAL')) mStock[r.BULAN] += r.TONASE;
+                else if (r.JENIS.includes('STOK') || r.JENIS.includes('STOCK')) mStock[r.BULAN] += r.TONASE;
             }
         });
 
@@ -347,9 +374,6 @@ const app = (() => {
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
         gradient.addColorStop(0, hexToRgbA(colorMain, 0.4));
         gradient.addColorStop(1, hexToRgbA(colorMain, 0.0));
-        
-        // WARNA TARGET MERAH (#ff5252)
-        const targetIcon = createDashedCircle('#ff5252');
 
         chartProvinsi = new Chart(ctx, {
             type: 'bar',
@@ -357,29 +381,44 @@ const app = (() => {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
                     {
-                        label: 'Realisasi', data: mReal, type: 'line', 
-                        borderColor: colorMain, backgroundColor: gradient,
-                        fill: true, tension: 0.3, borderWidth: 2, pointRadius: 4, order: 1
+                        label: 'Realisasi', 
+                        data: mReal, 
+                        type: 'line', 
+                        borderColor: colorMain, 
+                        backgroundColor: gradient,
+                        fill: true, 
+                        tension: 0.3, 
+                        borderWidth: 2, 
+                        pointRadius: 4, 
+                        pointStyle: 'circle',
+                        order: 1
                     },
                     {
-                        label: 'Target', data: mTarget, type: 'line', 
-                        // GARIS TARGET MERAH
-                        borderColor: '#ff5252', borderDash: [4, 4], 
-                        borderWidth: 1, pointRadius: 0, tension: 0.3, pointStyle: targetIcon, order: 0
+                        label: 'Target', 
+                        data: mTarget, 
+                        type: 'line', 
+                        borderColor: '#ff5252', // Merah 
+                        borderDash: [4, 4], 
+                        borderWidth: 1, 
+                        pointRadius: 0, 
+                        tension: 0.3, 
+                        pointStyle: 'circle',
+                        order: 0
                     },
                     {
-                        label: 'Stok', data: mStock, type: 'bar', 
-                        backgroundColor: 'rgba(75, 85, 99, 0.8)', borderColor: '#374151', 
-                        borderWidth: 1, barPercentage: 0.5, order: 2
+                        label: 'Stok', 
+                        data: mStock, 
+                        type: 'bar', 
+                        backgroundColor: 'rgba(75, 85, 99, 0.8)', // Abu Gelap Kalem
+                        borderColor: '#374151', 
+                        borderWidth: 1, 
+                        barPercentage: 0.5, 
+                        pointStyle: 'circle',
+                        order: 2
                     }
                 ]
             },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 6 } } },
-                scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' }, beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => v >= 1000 ? (v/1000)+' rb' : v } } }
-            }
+            options: getChartOptions()
         });
     };
 
