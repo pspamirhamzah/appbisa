@@ -1,8 +1,8 @@
 /* ========================================= */
-/* 1. CONFIG: WARNA & LAYOUT PRESISI         */
+/* 1. CONFIG: WARNA & LAYOUT                 */
 /* ========================================= */
 :root {
-    /* --- WARNA DASAR (DARK MODE) --- */
+    /* DARK MODE (DEFAULT) */
     --bg-body: #121212;        
     --bg-sidebar: #1e1e1e;     
     --bg-card: #1e1e1e;        
@@ -22,7 +22,7 @@
     
     --shadow-card: 0 4px 12px rgba(0,0,0,0.5);
 
-    /* --- LAYOUT GRID --- */
+    /* LAYOUT VARS */
     --gap-std: 24px;         
     --card-radius: 12px;     
     --header-height: 64px;
@@ -30,7 +30,7 @@
 }
 
 [data-theme="light"] {
-    /* --- WARNA DASAR (LIGHT MODE) --- */
+    /* LIGHT MODE */
     --bg-body: #f1f5f9;      
     --bg-sidebar: #ffffff;     
     --bg-card: #ffffff;
@@ -49,7 +49,7 @@
 }
 
 /* ========================================= */
-/* 2. RESET & BASE                           */
+/* 2. BASE STYLES                            */
 /* ========================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -69,7 +69,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
 /* ========================================= */
-/* 3. SIDEBAR (CLEAN & COMPACT)              */
+/* 3. SIDEBAR (FIX HEADER TERTUTUP)          */
 /* ========================================= */
 .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
@@ -77,8 +77,14 @@ body {
     background-color: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     display: flex; flex-direction: column;
-    padding: 24px 16px; /* Padding atas sedikit ditambah */
-    z-index: 50; transform: translateX(-100%); transition: transform 0.3s;
+    padding: 24px 16px; 
+    
+    /* PERBAIKAN UTAMA: Z-INDEX TINGGI */
+    /* Angka 2000 lebih tinggi dari Header (100) */
+    z-index: 2000; 
+    
+    transform: translateX(-100%); 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar.show { transform: translateX(0); }
 
@@ -86,17 +92,18 @@ body {
 .brand-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
 .brand-subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 
-/* IKON TEMA: Tanpa Border & Posisi Tengah */
+/* ICON TEMA: RAPIKAN (No Border) */
 .theme-btn-header {
     background: transparent; 
-    border: none; /* HAPUS BORDER */
-    color: var(--text-secondary); cursor: pointer;
-    width: 36px; height: 36px; /* Sedikit diperbesar agar area sentuh nyaman */
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; /* Otomatis tengah */
+    border: none; /* HILANGKAN KOTAK */
+    color: var(--text-secondary); 
+    cursor: pointer;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
 }
-.theme-btn-header:hover { background-color: var(--bg-hover); color: var(--color-urea); }
-.theme-btn-header i { font-size: 18px; }
+.theme-btn-header:hover { color: var(--color-urea); }
+.theme-btn-header i { font-size: 16px; }
 
 .menu-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin: 16px 10px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -111,23 +118,17 @@ body {
 [data-theme="light"] .nav-item.active i { color: #0969da; }
 [data-theme="light"] .nav-item.active { color: #0969da; }
 
-/* ADMIN SECTION CLEANUP */
-/* Sembunyikan Judul "Admin" dan Garisnya */
-#admin-label-hidden {
-    display: none !important;
-}
-
-/* Dorong Tombol Login ke Paling Bawah */
+/* Tombol Login Admin di Bawah */
 #btn-login-trigger {
-    margin-top: auto; /* Kunci agar di bawah */
-    margin-bottom: 20px; /* Beri jarak dari tepi bawah layar */
-    background-color: var(--bg-hover); /* Opsional: beri background tipis agar lebih menonjol sebagai tombol keluar */
+    margin-top: auto; /* Dorong ke bawah */
+    margin-bottom: 20px;
+    background-color: var(--bg-hover);
     color: var(--text-primary);
     font-weight: 600;
 }
 
 /* ========================================= */
-/* 4. LAYOUT UTAMA                           */
+/* 4. MAIN CONTENT & HEADER                  */
 /* ========================================= */
 .main-content { 
     flex-grow: 1; 
@@ -139,7 +140,8 @@ body {
 }
 
 .header {
-    position: sticky; top: 0; z-index: 100;
+    position: sticky; top: 0; 
+    z-index: 100; /* Header Layer Menengah */
     background: var(--bg-sidebar); 
     border-bottom: 1px solid var(--border-color);
     padding: 0 32px; height: var(--header-height);
@@ -154,36 +156,14 @@ body {
 .page-info h2 { font-size: 18px; font-weight: 700; margin: 0; }
 .page-info p { font-size: 12px; color: var(--text-secondary); margin: 0; }
 
-.container { 
-    padding: var(--gap-std); 
-    max-width: 1600px; 
-    margin: 0 auto;
-    padding-bottom: 40px; 
-}
+.container { padding: var(--gap-std); max-width: 1600px; margin: 0 auto; padding-bottom: 40px; }
 
 /* ========================================= */
 /* 5. GRID SYSTEM                            */
 /* ========================================= */
-.kpi-grid { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: var(--gap-std); 
-    margin-bottom: var(--gap-std); 
-    align-items: stretch;
-}
-
-.charts-row { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: var(--gap-std); 
-    margin-bottom: var(--gap-std); 
-}
-
-.ranking-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: var(--gap-std); 
-}
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-std); margin-bottom: var(--gap-std); align-items: stretch; }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-std); margin-bottom: var(--gap-std); }
+.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-std); }
 
 /* ========================================= */
 /* 6. CARDS                                  */
@@ -197,19 +177,15 @@ body {
     display: flex; flex-direction: column; 
     height: 100%; min-width: 0;
 }
-
 .kpi-card { justify-content: space-between; min-height: 160px; }
-
 .kpi-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; }
 .kpi-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 .kpi-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bg-body); color: var(--text-primary); }
 .kpi-main-val { font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
 .kpi-sub-val { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 12px; }
-
 .progress-track { height: 6px; background: var(--bg-body); border-radius: 10px; overflow: hidden; margin-bottom: 12px; border: 1px solid var(--border-color); }
 .progress-bar { height: 100%; border-radius: 10px; }
 .kpi-footer { padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary); display: flex; gap: 6px; align-items: center; margin-top: auto; }
-
 .sparkline-container { width: 100%; height: 60px; margin-top: auto; position: relative; }
 .sparkline-val { position: absolute; bottom: 0; right: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); }
 
@@ -239,22 +215,9 @@ body {
 /* ========================================= */
 .select-wrapper { position: relative; width: 200px; max-width: 100%; }
 .year-wrapper { width: 100px !important; }
-
-.select-trigger { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: var(--bg-body); border: 1px solid var(--border-color); 
-    padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
-    color: var(--text-primary); cursor: pointer; height: 38px;
-}
+.select-trigger { display: flex; justify-content: space-between; align-items: center; background: var(--bg-body); border: 1px solid var(--border-color); padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-primary); cursor: pointer; height: 38px; }
 .select-trigger span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px; flex: 1; }
-
-.select-options { 
-    position: absolute; top: 110%; right: 0; left: 0; 
-    background: var(--bg-card); border: 1px solid var(--border-color); 
-    border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-    max-height: 250px; overflow-y: auto; z-index: 100; 
-    opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; 
-}
+.select-options { position: absolute; top: 110%; right: 0; left: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 250px; overflow-y: auto; z-index: 100; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; }
 .select-options.open { opacity: 1; visibility: visible; transform: translateY(0); }
 .option { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border-subtle); font-size: 13px; color: var(--text-secondary); }
 .option:hover { background: var(--bg-hover); color: var(--text-primary); }
@@ -264,72 +227,42 @@ body {
 /* ========================================= */
 /* 8. LOGIN MODAL                            */
 /* ========================================= */
-.modal {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 1000; border-radius: 16px;
-    opacity: 0; visibility: hidden; transition: 0.2s; display: flex; flex-direction: column;
-}
+.modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 3000; border-radius: 16px; opacity: 0; visibility: hidden; transition: 0.2s; display: flex; flex-direction: column; }
 .modal.open { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
 #loginModal { width: 90%; max-width: 320px; }
-.modal.large { width: 95%; max-width: 900px; max-height: 90vh; }
-
 .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
 #loginModal .modal-header { justify-content: center; border-bottom: none; }
 .modal-title { font-size: 14px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 1px; }
-
 .modal-body { padding: 20px; overflow-y: auto; }
 #loginModal .modal-body { padding: 10px 30px; }
-
-.form-group { margin-bottom: 16px; }
-.form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px; }
-.form-control { 
-    width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); 
-    color: var(--text-primary); padding: 10px; border-radius: 6px; font-size: 14px; 
-}
+.form-control { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px; border-radius: 6px; font-size: 14px; }
 .form-control:focus { outline: none; border-color: var(--color-urea); }
 #adminPass { text-align: center; letter-spacing: 3px; font-size: 16px; height: 44px; }
-
 .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
 #loginModal .modal-footer { justify-content: center; border-top: none; padding-top: 5px; padding-bottom: 25px; }
-
 .btn { padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; border: none; transition: 0.2s; }
 .btn-primary { background: var(--color-urea); color: #000; min-width: 100px; }
 .btn-primary:hover { background: #ffe03d; transform: translateY(-2px); }
-.btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
-.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); border: 1px solid var(--color-danger); }
 .btn-close { background: none; border: none; font-size: 18px; color: var(--text-secondary); cursor: pointer; }
-
-/* UTILS */
-.overlay, .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 45; opacity: 0; visibility: hidden; transition: 0.2s; backdrop-filter: blur(4px); }
-.backdrop { z-index: 900; background: rgba(0,0,0,0.8); }
+/* Overlay (Z-index harus < Modal tapi > Sidebar) */
+.overlay, .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; opacity: 0; visibility: hidden; transition: 0.2s; backdrop-filter: blur(4px); }
 .overlay.active, .backdrop.open { opacity: 1; visibility: visible; }
-#loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+#loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--border-color); border-top-color: var(--color-urea); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .footer-copyright { text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 40px; }
 
 /* ========================================= */
-/* 9. RESPONSIVE (MOBILE & TABLET)           */
+/* 9. RESPONSIVE                             */
 /* ========================================= */
-@media (max-width: 1200px) {
-    .container { max-width: 100%; }
-}
-
-@media (max-width: 1024px) {
-    .kpi-grid { grid-template-columns: 1fr 1fr; } 
-    .charts-row, .ranking-grid { grid-template-columns: 1fr; }
-    .chart-wrapper { height: 260px; }
-}
-
+@media (max-width: 1200px) { .container { max-width: 100%; } }
+@media (max-width: 1024px) { .kpi-grid { grid-template-columns: 1fr 1fr; } .charts-row, .ranking-grid { grid-template-columns: 1fr; } .chart-wrapper { height: 260px; } }
 @media (max-width: 768px) {
     .header { padding: 0 20px; }
     .container { padding: 16px; padding-bottom: 80px; }
-    
     .kpi-grid, .charts-row { gap: 16px; margin-bottom: 16px; }
     .kpi-card { padding: 16px; }
     .kpi-main-val { font-size: 24px; }
-    
     .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     .chart-actions { width: 100%; }
     #prov-select-wrapper { width: 100% !important; max-width: none; }
