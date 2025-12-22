@@ -354,24 +354,136 @@ header {
     .page-title h1 { font-size: 14px; }
     .page-title p { font-size: 10px; }
     
-    /* --- 3. KARTU KPI (Sembunyikan Target & Growth) --- */
-    .kpi-grid { 
-        grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
-        gap: 10px; 
+    /* --- 3. KARTU KPI (Tampilkan Target & Growth) --- */
+.kpi-grid { 
+    grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
+    gap: 10px; 
+}
+
+.card { 
+    padding: 12px 14px; 
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.kpi-title { 
+    font-size: 9px; 
+    margin-bottom: 6px;
+    color: #555;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.kpi-value { 
+    font-size: 17px; /* Diturunkan dari 18px untuk memberi ruang */
+    margin-bottom: 6px; /* Dikurangi dari 10px */
+    font-weight: 700;
+    color: #000;
+    line-height: 1.1;
+}
+
+/* Tampilkan kembali kpi-sub dengan layout yang baik */
+.kpi-sub { 
+    display: block !important; /* Ubah dari none ke block */
+    font-size: 9px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+/* Style untuk baris target dan persentase */
+.kpi-sub-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.target-text {
+    color: #666;
+}
+
+.percentage {
+    font-weight: 600;
+    font-size: 10px;
+}
+
+.percentage.green {
+    color: #2E7D32;
+}
+
+.percentage.red {
+    color: #C62828;
+}
+
+/* Style untuk baris perbandingan */
+.comparison-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.comparison-label {
+    color: #666;
+    font-size: 8px;
+}
+
+.growth-value {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 600;
+    font-size: 10px;
+    color: #2E7D32;
+}
+
+.growth-value.negative {
+    color: #C62828;
+}
+
+.arrow {
+    font-size: 10px;
+}
+
+/* Progress bar */
+.progress-track { 
+    margin-top: 4px;
+    height: 4px;
+    background-color: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 2px;
+}
+
+/* Responsif untuk layar sangat kecil */
+@media (max-width: 360px) {
+    .card {
+        padding: 10px 8px;
+        min-height: 120px;
     }
     
-    .card { padding: 12px 14px; } /* Padding kartu diperkecil */
-    
-    .kpi-title { font-size: 9px; margin-bottom: 4px; }
-    .kpi-value { font-size: 18px; margin-bottom: 10px; } /* Angka utama */
-    
-    /* INI KUNCINYA: Sembunyikan Baris Target & Growth */
-    .kpi-sub { 
-        display: none !important; 
+    .kpi-value {
+        font-size: 16px;
     }
     
-    /* Progress bar tetap tampil tapi kasih jarak sedikit */
-    .progress-track { margin-top: 0; }
+    .kpi-title {
+        font-size: 8px;
+    }
+    
+    .kpi-sub {
+        font-size: 8px;
+    }
+}
 
     /* --- 4. GRAFIK & RANKING --- */
     .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 16px; }
