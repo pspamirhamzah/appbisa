@@ -354,139 +354,25 @@ header {
     .page-title h1 { font-size: 14px; }
     .page-title p { font-size: 10px; }
     
-    /* --- 3. KARTU KPI (Tampilkan Target & Growth) --- */
-.kpi-grid { 
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.card { 
-    padding: 14px 12px;
-    min-height: 130px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-sizing: border-box;
-}
-
-.kpi-title { 
-    font-size: 9px; 
-    margin-bottom: 6px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.kpi-value { 
-    font-size: 17px; /* Dikurangi dari 18px untuk memberi ruang */
-    margin-bottom: 8px; /* Dikurangi dari 10px */
-    font-weight: 700;
-    line-height: 1.1;
-}
-
-/* Tampilkan kembali kpi-sub dengan layout yang baik */
-.kpi-sub { 
-    display: block !important; /* Ubah dari none ke block */
-    font-size: 9px;
-    line-height: 1.3;
-    margin-bottom: 8px;
-}
-
-/* Container untuk target dan persentase - PERSENTASE DI SEBELAH KANAN */
-.kpi-sub-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end; /* Ratakan di bagian bawah */
-    margin-bottom: 4px;
-}
-
-/* Style untuk target */
-.target-text {
-    font-size: 9px;
-}
-
-/* Style untuk persentase - DI SEBELAH KANAN */
-.percentage {
-    font-weight: 700;
-    font-size: 11px; /* Sedikit lebih besar untuk penekanan */
-    margin-left: 8px; /* Jarak dari target */
-    min-width: 45px; /* Lebar minimum untuk konsistensi */
-    text-align: right; /* Rata kanan */
-}
-
-/* Container untuk vs tahun lalu dan growth */
-.comparison-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-/* Style untuk vs tahun lalu */
-.comparison-label {
-    font-size: 8px;
-}
-
-/* Style untuk panah dan persentase growth - DI SEBELAH KANAN */
-.growth-value {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Rata kanan */
-    gap: 3px;
-    font-weight: 700;
-    font-size: 11px; /* Sedikit lebih besar */
-    min-width: 45px; /* Lebar minimum untuk konsistensi */
-}
-
-/* Style untuk panah */
-.arrow {
-    font-size: 11px;
-}
-
-/* Progress bar */
-.progress-track { 
-    margin-top: 4px;
-    height: 4px;
-    background-color: #e0e0e0;
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: #4CAF50;
-    border-radius: 2px;
-}
-
-/* Responsif untuk layar sangat kecil */
-@media (max-width: 360px) {
-    .kpi-grid {
-        gap: 8px;
+    /* --- 3. KARTU KPI (Sembunyikan Target & Growth) --- */
+    .kpi-grid { 
+        grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
+        gap: 10px; 
     }
     
-    .card {
-        padding: 10px 8px;
-        min-height: 120px;
+    .card { padding: 12px 14px; } /* Padding kartu diperkecil */
+    
+    .kpi-title { font-size: 8px; margin-bottom: 4px; }
+    .kpi-value { font-size: 18px; margin-bottom: 8px; } /* Angka utama */
+    
+    /* INI KUNCINYA: Sembunyikan Baris Target & Growth */
+    .kpi-sub { 
+        display: none !important; 
     }
     
-    .kpi-value {
-        font-size: 16px;
-    }
-    
-    .kpi-title {
-        font-size: 8px;
-    }
-    
-    .kpi-sub {
-        font-size: 8px;
-    }
-    
-    .percentage,
-    .growth-value {
-        font-size: 10px;
-        min-width: 40px;
-    }
-}
+    /* Progress bar tetap tampil tapi kasih jarak sedikit */
+    .progress-track { margin-top: 0; }
+
     /* --- 4. GRAFIK & RANKING --- */
     .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 16px; }
     .chart-header { margin-bottom: 16px; }
@@ -511,5 +397,7 @@ header {
     
     .header-actions { margin-left: auto; }
 }
+
+
 
 
