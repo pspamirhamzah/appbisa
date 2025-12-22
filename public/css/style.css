@@ -362,8 +362,8 @@ header {
     
     .card { padding: 12px 14px; } /* Padding kartu diperkecil */
     
-    .kpi-title { font-size: 8px; margin-bottom: 4px; }
-    .kpi-value { font-size: 18px; margin-bottom: 8px; } /* Angka utama */
+    .kpi-title { font-size: 9px; margin-bottom: 4px; }
+    .kpi-value { font-size: 18px; margin-bottom: 10px; } /* Angka utama */
     
     /* INI KUNCINYA: Sembunyikan Baris Target & Growth */
     .kpi-sub { 
