@@ -341,60 +341,76 @@ header {
 }
 
 @media (max-width: 768px) {
-    /* --- 1. LAYOUT DASAR & SIDEBAR --- */
+    /* --- LAYOUT DASAR --- */
     .sidebar { transform: translateX(-100%); width: 240px; }
     .sidebar.show { transform: translateX(0); }
     .main-content { margin-left: 0 !important; }
     
-    /* --- 2. PERBAIKAN FONT & UKURAN TEKS (Agar tidak kebesaran) --- */
-    body { font-size: 12px; } /* Kecilkan font dasar */
-    
-    header { padding: 0 16px; height: 56px; } /* Header lebih pendek */
+    /* Font Adjustment */
+    body { font-size: 12px; }
+    header { padding: 0 16px; height: 56px; }
     .brand h2 { font-size: 16px; }
-    .page-title h1 { font-size: 14px; }
-    .page-title p { font-size: 10px; }
     
-    /* --- 3. KARTU KPI (Sembunyikan Target & Growth) --- */
-    .kpi-grid { 
-        grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
-        gap: 10px; 
+    /* --- 1. KARTU KPI (Ukuran & Layout) --- */
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    .card { 
+        /* Kembalikan padding agar kartu terlihat proporsional (tidak gepeng) */
+        padding: 20px; 
+        position: relative; /* Penting untuk posisi persentase */
     }
     
-    .card { padding: 12px 14px; } /* Padding kartu diperkecil */
+    .kpi-title { font-size: 10px; margin-bottom: 6px; }
+    .kpi-value { font-size: 20px; margin-bottom: 12px; } 
     
-    .kpi-title { font-size: 10px; margin-bottom: 4px; }
-    .kpi-value { font-size: 18px; margin-bottom: 8px; } /* Angka utama */
-    
-    /* INI KUNCINYA: Sembunyikan Baris Target & Growth */
-    .kpi-sub { 
-        display: none !important; 
+    /* --- 2. LOGIKA TEKS GROWTH (Sembunyikan YoY) --- */
+    /* Target label 'Growth (YoY)' di item kedua */
+    .sub-item:last-child span {
+        font-size: 0 !important; /* Hilangkan teks asli */
+    }
+    .sub-item:last-child span::after {
+        content: "Growth"; /* Teks pengganti */
+        font-size: 10px;   /* Kembalikan ukuran font */
+        display: block;
     }
     
-    /* Progress bar tetap tampil tapi kasih jarak sedikit */
-    .progress-track { margin-top: 0; }
+    /* Sembunyikan Target Text agar lebih bersih (Opsional, sesuai request sebelumnya) */
+    .sub-item:first-child { opacity: 0.5; }
 
-    /* --- 4. GRAFIK & RANKING --- */
+    /* --- 3. TAMPILKAN PERSENTASE DI UJUNG PROGRESS BAR --- */
+    /* Kita memanggil ID persentase yang sudah ada di HTML dan memindahkannya */
+    #val-urea-pct, #val-npk-pct {
+        display: block !important;
+        position: absolute;
+        right: 20px; /* Sesuai padding card */
+        bottom: 24px; /* Posisi sejajar dengan progress bar */
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--text-primary);
+        background: var(--bg-card); /* Background agar tidak bertumpuk */
+        padding-left: 6px;
+        z-index: 5;
+    }
+
+    /* Beri ruang pada progress bar agar tidak menabrak angka persen */
+    .progress-track {
+        margin-right: 40px; /* Ruang untuk angka % */
+    }
+
+    /* --- 4. GRAFIK & FILTER --- */
     .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 16px; }
-    .chart-header { margin-bottom: 16px; }
-    .chart-title { font-size: 13px; }
-    .chart-canvas-container { height: 220px; } /* Grafik jangan terlalu tinggi di HP */
-    
-    /* Tombol Filter di HP lebih kecil */
+    .chart-canvas-container { height: 220px; }
     .btn-filter { padding: 4px 10px; font-size: 10px; }
 
-    /* --- 5. FOOTER FIX (Agar kelihatan) --- */
+    /* --- 5. FOOTER FIX (Kurangi Ruang Kosong) --- */
     .content-scroll { 
         padding: 16px; 
-        padding-bottom: 120px; /* Padding ekstra bawah agar footer naik ke atas */
+        padding-bottom: 30px; /* Dikurangi dari 120px ke 30px */
     }
     
     .footer {
+        margin-top: 0;
         padding-bottom: 0;
-        margin-top: 10px;
     }
-    .footer h4 { font-size: 10px; }
-    .footer p { font-size: 9px; }
-    
     .header-actions { margin-left: auto; }
 }
-
