@@ -385,7 +385,7 @@ header {
     /* --- 5. FOOTER FIX (Agar kelihatan) --- */
     .content-scroll { 
         padding: 16px; 
-        padding-bottom: 120px; /* Padding ekstra bawah agar footer naik ke atas */
+        padding-bottom: 100px; /* Padding ekstra bawah agar footer naik ke atas */
     }
     
     .footer {
