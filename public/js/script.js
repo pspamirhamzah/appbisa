@@ -206,9 +206,7 @@ const app = (() => {
     };
 
     const renderKPI = (stats) => {
-        // Helper format angka
         const fmt = (n) => formatNumber(n);
-
         const updateCard = (key, data) => {
             const real = data.curr[key].real;
             const target = data.curr[key].target;
@@ -216,74 +214,54 @@ const app = (() => {
             const yearNow = state.selectedYear;
             const yearPrev = state.selectedYear - 1;
             
-            // Perhitungan Persen & Sisa
             const pct = target > 0 ? (real / target * 100) : 0;
             let sisa = target - real;
             if (sisa < 0) sisa = 0;
 
-            const keyL = key.toLowerCase(); // 'urea' atau 'npk'
+            const keyL = key.toLowerCase();
 
-            // --- DATA KARTU REALISASI ---
-            
-            // 1. Angka Besar
+            // --- Realisasi ---
             const elRealBig = document.getElementById(`val-${keyL}-real`);
             if(elRealBig) elRealBig.innerText = fmt(real);
 
-            // 2. Persentase Kecil (di sebelah angka besar)
             const elPct = document.getElementById(`val-${keyL}-pct`);
             if(elPct) elPct.innerText = pct.toFixed(0) + '%'; 
 
-            // 3. Progress Bar
             const elProg = document.getElementById(`prog-${keyL}`);
             if(elProg) elProg.style.width = Math.min(pct, 100) + '%';
 
-            // 4. Detail Text (Realisasi & Target)
-            const elTextReal = document.getElementById(`text-${keyL}-real`);
-            if(elTextReal) elTextReal.innerText = fmt(real);
+            // BAGIAN INI DIHAPUS (Text Realisasi Kecil)
+            // const elTextReal = document.getElementById(`text-${keyL}-real`);
+            // if(elTextReal) elTextReal.innerText = fmt(real);
             
             const elTarget = document.getElementById(`val-${keyL}-target`);
             if(elTarget) elTarget.innerText = fmt(target);
 
-            // 5. Sisa Target
             const elSisa = document.getElementById(`val-${keyL}-sisa`);
             if(elSisa) elSisa.innerText = fmt(sisa);
 
+            // --- Growth ---
+            let growth = 0; let sign = '+';
+            if(prev > 0) { growth = ((real - prev) / prev) * 100; } 
+            else if (real > 0) { growth = 100; }
+            if (growth < 0) sign = '';
 
-            // --- DATA KARTU GROWTH ---
-            let growth = 0; 
-            let sign = '+';
-            
-            if(prev > 0) { 
-                growth = ((real - prev) / prev) * 100; 
-            } else if (real > 0) {
-                growth = 100; 
-            }
-            
-            if (growth < 0) sign = ''; // Minus otomatis
-
-            // 1. Angka Growth Besar
             const elGrowthVal = document.getElementById(`growth-${keyL}-val`);
             if(elGrowthVal) {
                 elGrowthVal.innerText = sign + growth.toFixed(1) + '%';
-                // Warna merah jika minus
                 elGrowthVal.style.color = growth >= 0 ? 'var(--text-primary)' : 'var(--color-danger)';
             }
 
-            // 2. Legend Tahun Ini
             const elYearCurr = document.getElementById(`year-curr-${keyL}`);
             if(elYearCurr) elYearCurr.innerText = yearNow;
-            
             const elValCurr = document.getElementById(`val-${keyL}-curr`);
             if(elValCurr) elValCurr.innerText = fmt(real);
 
-            // 3. Legend Tahun Lalu
             const elYearPrev = document.getElementById(`year-prev-${keyL}`);
             if(elYearPrev) elYearPrev.innerText = yearPrev;
-
             const elValPrev = document.getElementById(`val-${keyL}-prev`);
             if(elValPrev) elValPrev.innerText = fmt(prev);
         };
-
         updateCard('UREA', stats);
         updateCard('NPK', stats);
     };
