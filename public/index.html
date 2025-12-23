@@ -7,24 +7,9 @@
 
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 
-    <meta name="description" content="Monitoring Performa Penjualan Subsidi & Retail">
-    <meta name="author" content="Adm Pemasaran & Penjualan">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://appbisa.pages.dev/">
     <meta property="og:title" content="Dashboard APP Bisa">
-    <meta property="og:description" content="Monitoring Performa Penjualan Subsidi & Retail">
+    <meta property="og:description" content="Dashboard Monitoring Performa Penjualan">
     
-    <meta property="og:image" content="https://appbisa.pages.dev/assets/thumbnail.jpg">
-    <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Dashboard APP Bisa">
-    <meta name="twitter:description" content="Monitoring Performa Penjualan Subsidi & Retail">
-    <meta name="twitter:image" content="https://appbisa.pages.dev/assets/thumbnail.jpg">
-
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -36,7 +21,7 @@
 
     <div id="loader">
         <div class="spinner"></div>
-        <div style="font-size: 12px; color: var(--text-secondary); letter-spacing: 2px;">SABAR YE...</div>
+        <div style="font-size: 12px; color: var(--text-secondary); letter-spacing: 2px;">MEMUAT APP...</div>
     </div>
 
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="app.toggleSidebar()"></div>
@@ -56,21 +41,7 @@
             <i class="fas fa-store"></i> <span>Retail</span>
         </div>
         
-        <div id="admin-menu" style="display: none;">
-            <div class="nav-header">ADMINISTRATOR</div>
-            <div class="nav-item" onclick="alert('Fitur Input Data')">
-                <i class="fas fa-plus-square"></i> <span>Input Data</span>
-            </div>
-            <div class="nav-item" onclick="alert('Fitur Edit Data')">
-                <i class="fas fa-edit"></i> <span>Edit Data</span>
-            </div>
-             <div class="nav-item" onclick="app.logout()">
-                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-            </div>
-        </div>
-
         <div class="nav-spacer"></div>
-        
         <div class="nav-login" id="login-btn-container">
             <div class="nav-item" onclick="app.showLoginModal()">
                 <i class="fas fa-lock"></i> <span>Admin</span>
@@ -95,7 +66,6 @@
         <div class="content-scroll">
 
             <div class="kpi-grid">
-                
                 <div class="card kpi-modern">
                     <div class="kpi-head-modern">
                         <div class="kpi-title-modern">Realisasi Urea</div>
@@ -108,7 +78,6 @@
                     <div class="progress-track-modern">
                         <div class="progress-bar bg-urea" id="prog-urea" style="width: 0%"></div>
                     </div>
-                    
                     <div class="kpi-detail-row">
                         <span>Target: <span id="val-urea-target">0</span></span>
                     </div>
@@ -127,7 +96,6 @@
                     <div class="progress-track-modern">
                         <div class="progress-bar bg-npk" id="prog-npk" style="width: 0%"></div>
                     </div>
-
                     <div class="kpi-detail-row">
                         <span>Target: <span id="val-npk-target">0</span></span>
                     </div>
@@ -142,14 +110,8 @@
                     <div class="kpi-big" id="growth-urea-val">0%</div>
                     <div class="kpi-subtext">vs Tahun Lalu</div>
                     <div class="growth-legend">
-                        <div class="legend-item">
-                            <span class="dot bg-urea"></span> 
-                            <span id="year-curr-urea">2025</span>: <span id="val-urea-curr">0</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="dot bg-grey"></span> 
-                            <span id="year-prev-urea">2024</span>: <span id="val-urea-prev">0</span>
-                        </div>
+                        <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-urea">2025</span>: <span id="val-urea-curr">0</span></div>
+                        <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-urea">2024</span>: <span id="val-urea-prev">0</span></div>
                     </div>
                 </div>
 
@@ -161,14 +123,8 @@
                     <div class="kpi-big" id="growth-npk-val">0%</div>
                     <div class="kpi-subtext">vs Tahun Lalu</div>
                     <div class="growth-legend">
-                        <div class="legend-item">
-                            <span class="dot bg-npk"></span> 
-                            <span id="year-curr-npk">2025</span>: <span id="val-npk-curr">0</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="dot bg-grey"></span> 
-                            <span id="year-prev-npk">2024</span>: <span id="val-npk-prev">0</span>
-                        </div>
+                        <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-npk">2025</span>: <span id="val-npk-curr">0</span></div>
+                        <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-npk">2024</span>: <span id="val-npk-prev">0</span></div>
                     </div>
                 </div>
             </div>
@@ -190,6 +146,7 @@
                             </div>
                             <div class="chart-canvas-container"><canvas id="chartNasional"></canvas></div>
                         </div>
+                        
                         <div class="card-back">
                             <button class="btn-back" onclick="app.flipCard('nasional')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
                             <div id="ai-nasional-content" class="ai-content"></div>
@@ -209,13 +166,14 @@
                             </div>
                             <div class="chart-canvas-container">
                                 <canvas id="chartProvinsi"></canvas>
-                                <div id="prov-placeholder" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); color:var(--text-primary); border-radius:8px; backdrop-filter: blur(2px); display:none;">
+                                <div id="prov-placeholder" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); color:var(--text-primary); border-radius:8px; backdrop-filter: blur(2px);">
                                     <span style="background:var(--bg-body); padding:8px 16px; border-radius:20px; border:1px solid var(--border-color); font-size:12px;">
                                         <i class="fas fa-arrow-up"></i> Pilih Provinsi
                                     </span>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="card-back">
                             <button class="btn-back" onclick="app.flipCard('provinsi')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
                             <div id="ai-provinsi-content" class="ai-content"></div>
@@ -246,8 +204,7 @@
                 <h4>Copyright &copy;2025 Adm Pemasaran & Penjualan</h4>
                 <p>Design by 00.0034</p>
             </div>
-
-        </div> 
+        </div>
     </main>
 
     <div id="loginModal" class="modal-overlay">
