@@ -427,6 +427,73 @@ header {
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
+/* --- FITUR TAMBAHAN: AI & FLIP CARD --- */
+.card-flip-container {
+    perspective: 1000px;
+    height: 380px; 
+    position: relative;
+}
+
+.card-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.card-flip-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--card-radius);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(145deg, #2a2a2a, #222);
+}
+
+/* Tombol AI */
+.ai-icon-btn {
+    background: var(--bg-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 12px; transition: all 0.2s;
+}
+.ai-icon-btn:hover { background: var(--border-color); color: var(--text-primary); }
+
+.btn-back {
+    align-self: flex-start;
+    background: transparent; border: none; color: var(--text-muted);
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    margin-bottom: 15px; display: flex; align-items: center; gap: 6px;
+}
+.btn-back:hover { color: var(--text-primary); }
+
+.ai-content {
+    font-size: 12px; line-height: 1.6; color: var(--text-secondary);
+    flex: 1; overflow-y: auto;
+}
+.ai-content h4 { 
+    color: var(--text-primary); font-size: 12px; text-transform: uppercase; 
+    letter-spacing: 1px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); 
+    padding-bottom: 8px; display: flex; align-items: center; gap: 8px; 
+}
+
 /* ========================================= */
 /* 5. RESPONSIVE (MOBILE OPTIMIZATION)       */
 /* ========================================= */
@@ -482,6 +549,10 @@ header {
     .chart-canvas-container { height: 200px; }
     .btn-filter { padding: 4px 8px; font-size: 10px; }
 
+    /* Fix Flip Height di Mobile */
+    .card-flip-container { height: 380px; margin-bottom: 20px; }
+    .card-front, .card-back { padding: 16px; }
+
     /* --- 4. FOOTER --- */
     .content-scroll { 
         padding: 12px 16px; 
@@ -490,5 +561,3 @@ header {
     .footer { margin-top: 0; padding-bottom: 0; }
     .header-actions { margin-left: auto; }
 }
-
-
