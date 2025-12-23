@@ -5,18 +5,24 @@ Chart.defaults.font.size = 11;
 
 const app = (() => {
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
-    
+    // Masukkan API Key Gemini Anda di sini jika sudah ada
+    const apiKey = ""; 
+
     let state = {
         rawData: [],
         sector: 'SUBSIDI',      
         activeProduct: 'UREA',  
         selectedYear: new Date().getFullYear(),
         sidebarOpen: true,
-        isAdmin: false
+        isAdmin: false,
+        // Untuk Fitur Update Tanggal
+        lastDataHash: localStorage.getItem('last_data_hash') || '',
+        lastUpdateDate: localStorage.getItem('last_update_date') || 'Overview Performa Penjualan'
     };
 
     let chartNasional = null;
     let chartProvinsi = null;
+    let statsGlobal = null; // Menyimpan data global untuk dibaca AI
 
     // --- UTILS (Handling ; and ,) ---
     const parseIndoNumber = (str) => {
@@ -55,7 +61,15 @@ const app = (() => {
         return c;
     };
 
-    const init = () => { fetchData(); checkScreenSize(); };
+    const init = () => { 
+        // Set tanggal awal dari localStorage jika ada
+        if(state.lastUpdateDate) {
+            const headerText = document.getElementById('header-update-text');
+            if(headerText) headerText.innerText = state.lastUpdateDate;
+        }
+        fetchData(); 
+        checkScreenSize(); 
+    };
 
     const checkScreenSize = () => {
         if(window.innerWidth <= 768) { state.sidebarOpen = false; } 
@@ -72,6 +86,26 @@ const app = (() => {
             const res = await fetch(API_URL);
             const data = await res.json();
             if (!Array.isArray(data)) throw new Error("Format data salah");
+            
+            // --- LOGIKA UPDATE TANGGAL ---
+            const currentHash = JSON.stringify(data).length + "_" + data.length;
+            if (currentHash !== state.lastDataHash) {
+                const now = new Date();
+                const formattedDate = `Update: ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+                
+                state.lastUpdateDate = formattedDate;
+                state.lastDataHash = currentHash;
+                
+                localStorage.setItem('last_update_date', formattedDate);
+                localStorage.setItem('last_data_hash', currentHash);
+                
+                const headerText = document.getElementById('header-update-text');
+                if(headerText) headerText.innerText = formattedDate;
+            } else {
+                 const headerText = document.getElementById('header-update-text');
+                 if(headerText) headerText.innerText = state.lastUpdateDate;
+            }
+
             processData(data);
         } catch (err) {
             console.error("Fetch Error:", err);
@@ -158,11 +192,7 @@ const app = (() => {
             }
 
             let isReal = r.JENIS.includes('REALISASI') || r.JENIS.includes('PENJUALAN');
-            
-            // Logika Target (RKO)
             let isTarget = r.JENIS.includes('RKAP') || r.JENIS.includes('TARGET') || r.JENIS.includes('RKO');
-            
-            // Logika Stok (AKTUAL)
             let isStock = r.JENIS.includes('STOK') || r.JENIS.includes('STOCK') || r.JENIS.includes('AKTUAL');
 
             if (r.TAHUN === selectedYear) {
@@ -199,6 +229,9 @@ const app = (() => {
             titleEl.style.color = ''; 
         }
 
+        // Simpan stats ke global agar bisa diakses AI
+        statsGlobal = stats;
+
         renderKPI(stats);
         renderRankings(stats.provinsi);
         renderNasionalChart(stats.nasional);
@@ -211,80 +244,103 @@ const app = (() => {
             const real = data.curr[key].real;
             const target = data.curr[key].target;
             const prev = data.prev[key].real;
-            const yearNow = state.selectedYear;
-            const yearPrev = state.selectedYear - 1;
+            const keyL = key.toLowerCase();
             
             const pct = target > 0 ? (real / target * 100) : 0;
-            let sisa = target - real;
-            if (sisa < 0) sisa = 0; // Kalkulasi sisa angka
-
-            const keyL = key.toLowerCase();
-
-            // --- Realisasi ---
+            
+            // 1. Value & Pct
             const elRealBig = document.getElementById(`val-${keyL}-real`);
             if(elRealBig) elRealBig.innerText = fmt(real);
-
+            
             const elPct = document.getElementById(`val-${keyL}-pct`);
             if(elPct) elPct.innerText = pct.toFixed(0) + '%'; 
 
+            // 2. Progress Bar
             const elProg = document.getElementById(`prog-${keyL}`);
             if(elProg) elProg.style.width = Math.min(pct, 100) + '%';
-
-            // BAGIAN INI DIHAPUS (Text Realisasi Kecil)
-            // const elTextReal = document.getElementById(`text-${keyL}-real`);
-            // if(elTextReal) elTextReal.innerText = fmt(real);
             
+            // 3. Target
             const elTarget = document.getElementById(`val-${keyL}-target`);
             if(elTarget) elTarget.innerText = fmt(target);
 
-            // ===========================================
-            // UPDATE: LOGIKA TERCAPAI / SISA TARGET
-            // ===========================================
-            const elRowSisa = document.getElementById(`row-${keyL}-sisa`);
-            if(elRowSisa) {
-                // Syarat: Target > 0 dan Sisa <= 0
-                if (target > 0 && sisa <= 0) {
-                    // Tampilkan Icon Checklist Hijau & Text Tercapai
-                    elRowSisa.innerHTML = '<i class="fas fa-check-circle"></i> Tercapai';
-                    elRowSisa.style.color = 'var(--color-success)'; 
-                    
-                    // Styling tambahan agar rapi
-                    elRowSisa.style.display = 'flex';
-                    elRowSisa.style.alignItems = 'center';
-                    elRowSisa.style.gap = '6px';
+            // 4. Status Sisa / Tercapai
+            const elRowStatus = document.getElementById(`row-${keyL}-sisa`);
+            if(elRowStatus) {
+                const sisa = target - real;
+                
+                if (sisa <= 0) {
+                    elRowStatus.innerHTML = '<i class="fas fa-check-circle"></i> Tercapai';
+                    elRowStatus.style.color = 'var(--color-success)'; 
                 } else {
-                    // Tampilkan Angka Sisa (Default)
-                    elRowSisa.innerHTML = `Sisa Target: <span id="val-${keyL}-sisa">${fmt(sisa)}</span>`;
-                    elRowSisa.style.color = 'var(--color-danger)';
-                    elRowSisa.style.display = 'block'; // Reset display
+                    elRowStatus.innerHTML = `Sisa: <span id="val-${keyL}-sisa">${fmt(sisa)}</span>`;
+                    elRowStatus.style.color = 'var(--color-danger)'; 
                 }
             }
 
             // --- Growth ---
-            let growth = 0; let sign = '+';
-            if(prev > 0) { growth = ((real - prev) / prev) * 100; } 
+            let growth = 0; let isUp = true;
+            if(prev > 0) { growth = ((real - prev) / prev) * 100; isUp = growth >= 0; } 
             else if (real > 0) { growth = 100; }
-            if (growth < 0) sign = '';
 
             const elGrowthVal = document.getElementById(`growth-${keyL}-val`);
             if(elGrowthVal) {
+                const sign = growth > 0 ? '+' : '';
                 elGrowthVal.innerText = sign + growth.toFixed(1) + '%';
-                elGrowthVal.style.color = growth >= 0 ? 'var(--text-primary)' : 'var(--color-danger)';
+                elGrowthVal.style.color = isUp ? 'var(--color-success)' : 'var(--color-danger)';
             }
-
-            const elYearCurr = document.getElementById(`year-curr-${keyL}`);
-            if(elYearCurr) elYearCurr.innerText = yearNow;
-            const elValCurr = document.getElementById(`val-${keyL}-curr`);
-            if(elValCurr) elValCurr.innerText = fmt(real);
-
-            const elYearPrev = document.getElementById(`year-prev-${keyL}`);
-            if(elYearPrev) elYearPrev.innerText = yearPrev;
-            const elValPrev = document.getElementById(`val-${keyL}-prev`);
-            if(elValPrev) elValPrev.innerText = fmt(prev);
         };
         updateCard('UREA', stats);
         updateCard('NPK', stats);
     };
+
+    // --- FITUR AI ---
+    const analyzeData = async (type) => {
+        const flipInner = document.getElementById(`flip-${type}`);
+        const content = document.getElementById(`ai-${type}-content`);
+        flipInner.classList.add('flipped');
+        
+        content.innerHTML = '<div style="margin-top:80px; text-align:center;"><i class="fas fa-circle-notch fa-spin"></i><br><span style="font-size:10px;">Analisa AI...</span></div>';
+
+        let ctxData = "";
+        
+        if (type === 'nasional') {
+            const d = state.activeProduct === 'UREA' ? statsGlobal.nasional.UREA : statsGlobal.nasional.NPK;
+            const totalReal = d.real.reduce((a,b)=>a+b,0);
+            const totalTarget = d.target.reduce((a,b)=>a+b,0);
+            ctxData = `Nasional ${state.activeProduct} ${state.sector}: Realisasi ${formatNumber(totalReal)}, Target ${formatNumber(totalTarget)}.`;
+        } else {
+            const provName = document.getElementById('dropdown-provinsi').value;
+            if(!statsGlobal.provinsi[provName]) {
+                 content.innerHTML = "<h4>Data Tidak Ditemukan</h4>"; return;
+            }
+            const pData = statsGlobal.provinsi[provName];
+            ctxData = `Provinsi ${provName}, Produk ${state.activeProduct}, Sektor ${state.sector}: Realisasi ${formatNumber(pData.real)}, Target ${formatNumber(pData.target)}.`;
+        }
+
+        try {
+            // GANTI API KEY DI ATAS
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `Berikan analisa data berikut: ${ctxData}` }] }],
+                    systemInstruction: { parts: [{ text: "Anda analis PT Pupuk Indonesia. Berikan 3 poin inti (Tren, Sentimen, Strategi). Singkat, padat, tanpa markdown." }] }
+                })
+            });
+            
+            const result = await response.json();
+            let rawText = result.candidates[0].content.parts[0].text;
+            content.innerHTML = `<h4><i class="fas fa-wand-magic-sparkles"></i> AI Insight</h4><div style="line-height:1.6;">${rawText.replace(/\n/g, '<br>')}</div>`;
+            
+        } catch (e) {
+            content.innerHTML = "<h4>Error</h4><p>Gagal memuat analisis.</p>";
+        }
+    };
+
+    const flipCard = (type) => {
+        document.getElementById(`flip-${type}`).classList.remove('flipped');
+    };
+
     const renderNasionalChart = (nasStats) => {
         const canvas = document.getElementById('chartNasional');
         if(!canvas) return;
@@ -293,42 +349,42 @@ const app = (() => {
 
         const isUrea = state.activeProduct === 'UREA';
         const data = isUrea ? nasStats.UREA : nasStats.NPK;
-        const color = isUrea ? '#FFDE00' : '#38bdf8'; 
-        
+        const color = isUrea ? '#FFDE00' : '#38bdf8'; 
+          
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
         gradient.addColorStop(0, hexToRgbA(color, 0.4));
         gradient.addColorStop(1, hexToRgbA(color, 0.0));
-        
-        const targetIcon = createDashedCircle('#999'); 
+          
+        const targetIcon = createDashedCircle('#999'); 
 
         chartNasional = new Chart(ctx, {
-            type: 'line', 
+            type: 'line', 
             data: {
                 labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                 datasets: [
                     {
                         label: 'Realisasi', data: data.real, borderColor: color, backgroundColor: gradient,
-                        fill: true, tension: 0.4, borderWidth: 3, 
-                        pointRadius: 4, pointHoverRadius: 6, 
+                        fill: true, tension: 0.4, borderWidth: 3, 
+                        pointRadius: 4, pointHoverRadius: 6, 
                         pointStyle: 'circle',
                         order: 1
                     },
                     {
                         label: 'Target', data: data.target, borderColor: '#666', borderDash: [6, 6],
-                        borderWidth: 2, fill: false, tension: 0.4, 
-                        pointRadius: 0, 
+                        borderWidth: 2, fill: false, tension: 0.4, 
+                        pointRadius: 0, 
                         pointStyle: targetIcon,
-                        order: 2 
+                        order: 2 
                     },
                     {
-                        label: 'Stok', 
-                        data: data.stock, 
-                        type: 'bar', 
-                        backgroundColor: '#616161', 
+                        label: 'Stok', 
+                        data: data.stock, 
+                        type: 'bar', 
+                        backgroundColor: '#616161', 
                         borderColor: '#616161',
                         borderWidth: 0,
                         barPercentage: 0.8,
-                        pointStyle: 'rect', 
+                        pointStyle: 'rect', 
                         order: 3
                     }
                 ]
@@ -336,18 +392,14 @@ const app = (() => {
             options: {
                 responsive: true, maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
-                plugins: { 
-                    legend: { display: true, labels: { usePointStyle: true, boxWidth: 6, boxHeight: 6, 
-                        generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l => { 
-                            l.pointStyle = 'rect'; 
-                            return l; 
-                        })
+                plugins: { 
+                    legend: { display: true, labels: { usePointStyle: true, boxWidth: 6, boxHeight: 6, 
+                        generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l => { 
+                            l.pointStyle = 'rect'; 
+                            return l; 
+                        }) 
                     }},
-                    tooltip: { 
-                        backgroundColor: 'rgba(33, 33, 33, 0.95)', titleColor: '#ececec', bodyColor: '#b3b3b3',
-                        borderColor: '#424242', borderWidth: 1, displayColors: false, 
-                        callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) }
-                    }
+                    tooltip: { backgroundColor: 'rgba(33, 33, 33, 0.95)', titleColor: '#ececec', bodyColor: '#b3b3b3', borderColor: '#424242', borderWidth: 1, displayColors: false, callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } }
                 },
                 scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' }, beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => v===0?null:(v>=1000?(v/1000)+' rb':v) } } }
             }
@@ -360,7 +412,7 @@ const app = (() => {
         const canvas = document.getElementById('chartProvinsi');
         if(!canvas) return;
         const ctx = canvas.getContext('2d');
-        
+          
         if (!provName) {
             if(placeholder) placeholder.style.display = 'flex';
             if(chartProvinsi) chartProvinsi.clear();
@@ -380,7 +432,7 @@ const app = (() => {
             let prodKey = '';
             if (r.PRODUK.includes('UREA') || r.PRODUK.includes('NITREA')) prodKey = 'UREA';
             else if (r.PRODUK.includes('NPK') || r.PRODUK.includes('PHONSKA')) prodKey = 'NPK';
-            
+              
             if (prodKey !== state.activeProduct) return;
 
             if (r.BULAN >= 0) {
@@ -392,7 +444,7 @@ const app = (() => {
 
         if(chartProvinsi) chartProvinsi.destroy();
         const colorMain = state.activeProduct === 'UREA' ? '#FFDE00' : '#38bdf8';
-        
+          
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
         gradient.addColorStop(0, hexToRgbA(colorMain, 0.4));
         gradient.addColorStop(1, hexToRgbA(colorMain, 0.0));
@@ -406,32 +458,18 @@ const app = (() => {
                 datasets: [
                     {
                         label: 'Realisasi', data: mReal, borderColor: colorMain, backgroundColor: gradient,
-                        fill: true, tension: 0.4, borderWidth: 3, 
+                        fill: true, tension: 0.4, borderWidth: 3, 
                         pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle',
                         order: 1
                     },
                     {
-                        label: 'Target', 
-                        data: mTarget, 
-                        borderColor: '#666', 
-                        borderDash: [6, 6], 
-                        borderWidth: 2, 
-                        fill: false, 
-                        tension: 0.4, 
-                        pointRadius: 0, 
-                        pointStyle: targetIcon,
-                        order: 2
+                        label: 'Target', data: mTarget, borderColor: '#666', borderDash: [6, 6], 
+                        borderWidth: 2, fill: false, tension: 0.4, 
+                        pointRadius: 0, pointStyle: targetIcon, order: 2
                     },
                     {
-                        label: 'Stok', 
-                        data: mStock, 
-                        type: 'bar', 
-                        backgroundColor: '#616161', 
-                        borderColor: '#616161', 
-                        borderWidth: 0, 
-                        barPercentage: 0.8,
-                        pointStyle: 'rect', 
-                        order: 3
+                        label: 'Stok', data: mStock, type: 'bar', backgroundColor: '#616161', borderColor: '#616161', 
+                        borderWidth: 0, barPercentage: 0.8, pointStyle: 'rect', order: 3
                     }
                 ]
             },
@@ -441,8 +479,7 @@ const app = (() => {
                 plugins: { 
                     legend: { display: true, labels: { usePointStyle: true, boxWidth: 6, boxHeight: 6, 
                         generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l => { 
-                            l.pointStyle = 'rect'; 
-                            return l; 
+                            l.pointStyle = 'rect'; return l; 
                         }) 
                     }},
                     tooltip: { backgroundColor: 'rgba(33, 33, 33, 0.95)', titleColor: '#ececec', bodyColor: '#b3b3b3', borderColor: '#424242', borderWidth: 1, displayColors: false, callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } }
@@ -479,8 +516,8 @@ const app = (() => {
                 else if(i===1) { colorClass='silver'; medalIcon='<i class="fas fa-medal" style="color:var(--color-silver); font-size:14px;"></i>'; }
                 else if(i===2) { colorClass='bronze'; medalIcon='<i class="fas fa-medal" style="color:var(--color-bronze); font-size:14px;"></i>'; }
                 
-                let numberHtml = medalIcon ? 
-                    `<div class="rank-num medal-box">${medalIcon}</div>` : 
+                let numberHtml = medalIcon ? 
+                    `<div class="rank-num medal-box">${medalIcon}</div>` : 
                     `<div class="rank-num best">${i+1}</div>`;
 
                 return `
@@ -544,6 +581,14 @@ const app = (() => {
             state.activeProduct = prod;
             document.getElementById('btn-nas-urea').classList.toggle('active', prod === 'UREA');
             document.getElementById('btn-nas-npk').classList.toggle('active', prod === 'NPK');
+            
+            // Update Tombol Provinsi
+            const btnProvUrea = document.getElementById('btn-prov-urea');
+            const btnProvNpk = document.getElementById('btn-prov-npk');
+            
+            if(btnProvUrea) btnProvUrea.classList.toggle('active', prod === 'UREA');
+            if(btnProvNpk) btnProvNpk.classList.toggle('active', prod === 'NPK');
+
             updateDashboard();
         },
         renderProvChart,
@@ -554,6 +599,7 @@ const app = (() => {
             if(p === 'pso123') {
                 state.isAdmin = true;
                 document.getElementById('admin-menu').style.display = 'block';
+                document.getElementById('admin-banner').style.display = 'block';
                 document.getElementById('login-btn-container').style.display = 'none';
                 document.getElementById('loginModal').style.display = 'none';
             } else { alert('Password salah!'); }
@@ -561,8 +607,11 @@ const app = (() => {
         logout: () => {
             state.isAdmin = false;
             document.getElementById('admin-menu').style.display = 'none';
+            document.getElementById('admin-banner').style.display = 'none';
             document.getElementById('login-btn-container').style.display = 'block';
-        }
+        },
+        analyzeData, // Ekspor fungsi ini
+        flipCard // Ekspor fungsi ini
     };
 })();
 window.onload = app.init;
