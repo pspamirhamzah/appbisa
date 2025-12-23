@@ -551,7 +551,7 @@ header {
     /* 1. Atur Tinggi Kartu Flip */
     .card-flip-container { 
         height: 380px; /* Tinggi pasti agar grafik punya ruang */
-        margin-bottom: 20px; 
+        margin-bottom: 12px; 
         width: 100%;
     }
 
