@@ -5,8 +5,9 @@ Chart.defaults.font.size = 11;
 
 const app = (() => {
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
-    // Masukkan API Key Gemini Anda di sini jika sudah ada
-    const apiKey = ""; 
+    
+    // API Key Anda
+    const apiKey = "AIzaSyDBofQZJdWnW67pYBLQvWomfcNJJlL42aQ"; 
 
     let state = {
         rawData: [],
@@ -15,14 +16,14 @@ const app = (() => {
         selectedYear: new Date().getFullYear(),
         sidebarOpen: true,
         isAdmin: false,
-        // Untuk Fitur Update Tanggal
+        // Fitur Update Tanggal
         lastDataHash: localStorage.getItem('last_data_hash') || '',
         lastUpdateDate: localStorage.getItem('last_update_date') || 'Overview Performa Penjualan'
     };
 
     let chartNasional = null;
     let chartProvinsi = null;
-    let statsGlobal = null; // Menyimpan data global untuk dibaca AI
+    let statsGlobal = null; // Disimpan untuk AI Context
 
     // --- UTILS (Handling ; and ,) ---
     const parseIndoNumber = (str) => {
@@ -229,7 +230,7 @@ const app = (() => {
             titleEl.style.color = ''; 
         }
 
-        // Simpan stats ke global agar bisa diakses AI
+        // SIMPAN STATS GLOBAL UNTUK AI
         statsGlobal = stats;
 
         renderKPI(stats);
@@ -264,16 +265,16 @@ const app = (() => {
             if(elTarget) elTarget.innerText = fmt(target);
 
             // 4. Status Sisa / Tercapai
-            const elRowStatus = document.getElementById(`row-${keyL}-sisa`);
-            if(elRowStatus) {
+            const elRowSisa = document.getElementById(`row-${keyL}-sisa`);
+            if(elRowSisa) {
                 const sisa = target - real;
                 
                 if (sisa <= 0) {
-                    elRowStatus.innerHTML = '<i class="fas fa-check-circle"></i> Tercapai';
-                    elRowStatus.style.color = 'var(--color-success)'; 
+                    elRowSisa.innerHTML = '<i class="fas fa-check-circle"></i> Tercapai';
+                    elRowSisa.style.color = 'var(--color-success)'; 
                 } else {
-                    elRowStatus.innerHTML = `Sisa: <span id="val-${keyL}-sisa">${fmt(sisa)}</span>`;
-                    elRowStatus.style.color = 'var(--color-danger)'; 
+                    elRowSisa.innerHTML = `Sisa Target: <span id="val-${keyL}-sisa">${fmt(sisa)}</span>`;
+                    elRowSisa.style.color = 'var(--color-danger)'; 
                 }
             }
 
@@ -293,47 +294,90 @@ const app = (() => {
         updateCard('NPK', stats);
     };
 
-    // --- FITUR AI ---
+    // --- FITUR AI (UPDATED) ---
     const analyzeData = async (type) => {
         const flipInner = document.getElementById(`flip-${type}`);
         const content = document.getElementById(`ai-${type}-content`);
+        
+        // Mulai Animasi Flip
         flipInner.classList.add('flipped');
         
-        content.innerHTML = '<div style="margin-top:80px; text-align:center;"><i class="fas fa-circle-notch fa-spin"></i><br><span style="font-size:10px;">Analisa AI...</span></div>';
+        // Tampilkan Loading
+        content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menganalisa Data & Tren Pasar...</span></div>';
 
+        // 1. Siapkan Konteks Data (Angka)
         let ctxData = "";
+        const prod = state.activeProduct; 
+        const sec = state.sector;         
+        const year = state.selectedYear;
         
         if (type === 'nasional') {
-            const d = state.activeProduct === 'UREA' ? statsGlobal.nasional.UREA : statsGlobal.nasional.NPK;
+            const d = prod === 'UREA' ? statsGlobal.nasional.UREA : statsGlobal.nasional.NPK;
             const totalReal = d.real.reduce((a,b)=>a+b,0);
             const totalTarget = d.target.reduce((a,b)=>a+b,0);
-            ctxData = `Nasional ${state.activeProduct} ${state.sector}: Realisasi ${formatNumber(totalReal)}, Target ${formatNumber(totalTarget)}.`;
+            const pct = totalTarget > 0 ? (totalReal/totalTarget*100).toFixed(1) : 0;
+            
+            ctxData = `DATA: Nasional, Produk ${prod}, Sektor ${sec}, Tahun ${year}. Realisasi: ${formatNumber(totalReal)} Ton. Target: ${formatNumber(totalTarget)} Ton. Capaian: ${pct}%.`;
         } else {
             const provName = document.getElementById('dropdown-provinsi').value;
             if(!statsGlobal.provinsi[provName]) {
-                 content.innerHTML = "<h4>Data Tidak Ditemukan</h4>"; return;
+                 content.innerHTML = "<h4>Data Tidak Ditemukan</h4><p>Silakan pilih provinsi yang memiliki data terlebih dahulu.</p>";
+                 return;
             }
             const pData = statsGlobal.provinsi[provName];
-            ctxData = `Provinsi ${provName}, Produk ${state.activeProduct}, Sektor ${state.sector}: Realisasi ${formatNumber(pData.real)}, Target ${formatNumber(pData.target)}.`;
+            const pct = pData.target > 0 ? (pData.real/pData.target*100).toFixed(1) : 0;
+            
+            ctxData = `DATA: Provinsi ${provName}, Produk ${prod}, Sektor ${sec}, Tahun ${year}. Realisasi: ${formatNumber(pData.real)} Ton. Target: ${formatNumber(pData.target)} Ton. Capaian: ${pct}%.`;
         }
 
+        // 2. Siapkan Prompt (Instruksi Cerdas)
+        const promptText = `
+            Bertindaklah sebagai Senior Data Analyst di PT Pupuk Indonesia.
+            
+            ${ctxData}
+            
+            Tugas: Berikan analisis singkat (maksimal 3 poin) yang mengaitkan data di atas dengan kondisi/berita pertanian terkini di Indonesia.
+            Pertimbangkan faktor berikut jika relevan:
+            - Tren Musim Tanam (Okmar/Asep) saat ini.
+            - Kondisi Cuaca (El Nino/La Nina/Hujan).
+            - Isu Stok Pangan atau Kebijakan Pemerintah terkait Subsidi/Retail.
+            
+            Format Output (HTML murni tanpa backtick):
+            <h4><i class="fas fa-chart-pie"></i> Analisa Data</h4>
+            <ul>
+                <li>[Poin 1: Evaluasi Angka Realisasi vs Target]</li>
+            </ul>
+            <h4><i class="fas fa-newspaper"></i> Sentimen & Konteks</h4>
+            <ul>
+                <li>[Poin 2: Hubungkan dengan Musim Tanam/Berita Pertanian terkini]</li>
+                <li>[Poin 3: Rekomendasi Singkat Strategi Penjualan/Distribusi]</li>
+            </ul>
+        `;
+
         try {
-            // GANTI API KEY DI ATAS
+            // Panggil API Gemini
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `Berikan analisa data berikut: ${ctxData}` }] }],
-                    systemInstruction: { parts: [{ text: "Anda analis PT Pupuk Indonesia. Berikan 3 poin inti (Tren, Sentimen, Strategi). Singkat, padat, tanpa markdown." }] }
+                    contents: [{ parts: [{ text: promptText }] }]
                 })
             });
             
             const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(result.error.message);
+            }
+
             let rawText = result.candidates[0].content.parts[0].text;
-            content.innerHTML = `<h4><i class="fas fa-wand-magic-sparkles"></i> AI Insight</h4><div style="line-height:1.6;">${rawText.replace(/\n/g, '<br>')}</div>`;
+            let cleanText = rawText.replace(/```html/g, '').replace(/```/g, '').trim();
+            
+            content.innerHTML = `<div style="animation: fadeIn 0.5s;">${cleanText}</div>`;
             
         } catch (e) {
-            content.innerHTML = "<h4>Error</h4><p>Gagal memuat analisis.</p>";
+            console.error(e);
+            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}</p>`;
         }
     };
 
