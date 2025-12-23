@@ -519,78 +519,98 @@ header {
     .page-title h1 { font-size: 14px; }
     .page-title p { font-size: 10px; }
 
-    /* --- 2. GRID KARTU (KPI) --- */
+    /* --- 2. PERBAIKAN KPI CARD (PROPOSIONAL) --- */
     .kpi-grid { 
         grid-template-columns: 1fr 1fr; 
-        gap: 10px; 
-        margin-bottom: 16px; 
+        gap: 12px; 
+        margin-bottom: 24px; /* GAP SEIMBANG ANTAR SECTION */
     }
     
     .card.kpi-modern { 
-        padding: 14px; 
-        min-height: 130px; 
-        justify-content: flex-start; 
-    }
-    
-    /* Ukuran Font KPI Mobile */
-    .kpi-head-modern { margin-bottom: 6px; }
-    .kpi-title-modern { font-size: 9px; }
-    .kpi-icon { font-size: 14px; }
-    .kpi-big { font-size: 20px; } 
-    .kpi-pct-small { font-size: 12px; }
-    
-    .progress-track-modern { height: 4px; margin-bottom: 8px; }
-    
-    /* Sembunyikan Target Text agar rapi, Tampilkan Sisa saja */
-    .kpi-detail-row { display: none; } 
-    .kpi-sisa-row { font-size: 10px; margin-top: auto; }
-
-    /* --- 3. GRAFIK & FLIP CARD FIX (PENTING) --- */
-    .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 16px; }
-    
-    /* Atur tinggi kartu flip agar pas di layar HP */
-    .card-flip-container { 
-        height: 340px; /* Tinggi Fix agar grafik punya ruang */
-        width: 100%;
-        margin-bottom: 16px;
-    }
-
-    /* Pastikan sisi depan kartu menggunakan Flexbox */
-    .card-front, .card-back { 
         padding: 16px; 
+        min-height: 150px; /* Tinggi fix agar seragam */
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        /* Ini kuncinya: Space-between membagi ruang Atas, Tengah, Bawah */
+        justify-content: space-between; 
     }
-
-    /* Header Grafik lebih ringkas */
-    .chart-header { 
-        margin-bottom: 10px; 
-        flex-wrap: wrap; /* Agar tombol tidak menumpuk */
-        gap: 8px;
-    }
-    .chart-title { font-size: 13px; }
     
-    /* Tombol filter lebih kecil */
-    .btn-filter { padding: 4px 8px; font-size: 10px; }
-    .custom-select { padding: 6px 24px 6px 10px; font-size: 11px; }
+    /* BAGIAN ATAS: Judul */
+    .kpi-head-modern { 
+        margin-bottom: 0; 
+        flex-shrink: 0;
+    }
+    .kpi-title-modern { font-size: 9px; }
+    .kpi-icon { font-size: 16px; }
+    
+    /* BAGIAN TENGAH: Angka & Progress Bar */
+    /* Kita manipulasi margin agar mereka berkumpul di tengah */
+    .kpi-main-row { 
+        margin-top: auto;    /* Dorong dari atas */
+        margin-bottom: 4px;  /* Jarak dikit ke bar */
+        justify-content: flex-start;
+    }
+    .progress-track-modern { 
+        height: 4px; 
+        margin-bottom: auto; /* Dorong sisa target ke bawah */
+        width: 100%;
+    }
 
-    /* FIX GRAFIK MENGECIL: */
-    /* Kita paksa container grafik mengambil sisa tinggi kartu */
+    .kpi-big { font-size: 22px; } /* Sedikit diperbesar biar jelas */
+    .kpi-pct-small { font-size: 12px; align-self: center; }
+    
+    /* BAGIAN BAWAH: Sisa Target */
+    .kpi-detail-row { display: none; } /* Target Hidden (Sesuai Request) */
+    
+    .kpi-sisa-row { 
+        font-size: 10px; 
+        text-align: right; 
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border-color); /* Garis bantu visual */
+        width: 100%;
+    }
+
+    /* --- 3. GRAFIK & FLIP CARD --- */
+    .chart-grid {
+        grid-template-columns: 1fr; 
+        gap: 24px; /* Jarak antar grafik */
+        margin-bottom: 24px; /* GAP SEIMBANG ANTAR SECTION */
+    }
+
+    .chart-header { margin-bottom: 12px; }
+    .chart-title { font-size: 13px; }
+    .btn-filter { padding: 4px 8px; font-size: 10px; }
+
+    /* Tinggi Flip Card */
+    .card-flip-container { 
+        height: 340px; 
+        width: 100%;
+        margin-bottom: 0; /* Margin dihandle oleh grid gap */
+    }
+    
+    .card-front, .card-back { padding: 16px; }
+    
+    /* Grafik Container */
     .chart-canvas-container { 
         position: relative;
-        flex-grow: 1; /* Mengisi sisa ruang vertikal */
+        flex-grow: 1;
         width: 100%;
-        height: auto !important; /* Reset tinggi statis */
-        min-height: 0; /* Penting untuk flex item scroll issue */
+        height: auto !important; 
+        min-height: 0;
     }
 
-    /* --- 4. FOOTER --- */
+    /* --- 4. RANKING & FOOTER --- */
+    .ranking-grid { 
+        grid-template-columns: 1fr; 
+        gap: 16px; 
+        margin-bottom: 24px; /* GAP SEIMBANG */
+    }
+
     .content-scroll { 
-        padding: 12px 16px; 
+        padding: 16px; 
         padding-bottom: 80px; 
     }
     .footer { margin-top: 0; padding-bottom: 0; }
     .header-actions { margin-left: auto; }
 }
-
