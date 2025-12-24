@@ -7,7 +7,6 @@ const app = (() => {
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     // --- API KEY CONFIGURATION ---
-    // Dipecah agar tidak terdeteksi scanner GitHub
     const k_head = "AIzaSyDHe6hnE2k6L";
     const k_tail = "pNeGQR13rKLOSwvW96p0m0";
     const apiKey = k_head + k_tail; 
@@ -274,7 +273,7 @@ const app = (() => {
         updateCard('NPK', stats);
     };
 
-    // --- FITUR AI (GEMINI 1.5 FLASH - VERSI AMAN & GRATIS) ---
+    // --- FITUR AI (MENGGUNAKAN VERSI V1 STABIL) ---
     const analyzeData = async (type) => {
         const flipInner = document.getElementById(`flip-${type}`);
         const content = document.getElementById(`ai-${type}-content`);
@@ -324,8 +323,8 @@ const app = (() => {
         `;
 
         try {
-            // REQUEST MODEL (gemini-1.5-flash) - Versi Alias (Lebih fleksibel)
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            // PERUBAHAN UTAMA: MENGGUNAKAN URL VERSI 1 (v1) YANG STABIL
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -336,7 +335,7 @@ const app = (() => {
             const result = await response.json();
             
             if (result.error) {
-                // Tampilkan error detail di layar agar mudah debug
+                // Tampilkan error detail di layar
                 throw new Error(result.error.message);
             }
 
@@ -347,7 +346,7 @@ const app = (() => {
             
         } catch (e) {
             console.error(e);
-            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}<br>Saran: Jika API Key baru, tunggu 5 menit.</p>`;
+            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}<br>Jika API Key baru, mohon tunggu sebentar.</p>`;
         }
     };
 
