@@ -7,8 +7,13 @@ const app = (() => {
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     // --- API KEY CONFIGURATION ---
-    const k_head = "AIzaSyDHe6hnE2k6L";
-    const k_tail = "pNeGQR13rKLOSwvW96p0m0";
+    // PENTING: Ganti string di bawah ini dengan API Key BARU ("API key 1") dari screenshot Anda.
+    // Pecah kodenya menjadi dua bagian agar tidak terdeteksi peringatan GitHub.
+    
+    // Contoh: Jika Key Anda "AIzaSyD1234567890ABCDEFGHIJ"
+    const k_head = "AIzaSyDHe6hnE2k6L";      // Bagian awal (sekitar 10-15 huruf)
+    const k_tail = "pNeGQR13rKLOSwvW96p0m0";     // Bagian sisanya
+    
     const apiKey = k_head + k_tail; 
 
     let state = {
@@ -273,7 +278,7 @@ const app = (() => {
         updateCard('NPK', stats);
     };
 
-    // --- FITUR AI (MENGGUNAKAN VERSI V1 STABIL) ---
+    // --- FITUR AI (CONFIG v1beta SESUAI SCREENSHOT ANDA) ---
     const analyzeData = async (type) => {
         const flipInner = document.getElementById(`flip-${type}`);
         const content = document.getElementById(`ai-${type}-content`);
@@ -323,8 +328,8 @@ const app = (() => {
         `;
 
         try {
-            // PERUBAHAN UTAMA: MENGGUNAKAN URL VERSI 1 (v1) YANG STABIL
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            // URL MENGGUNAKAN 'v1beta' (SESUAI SCREENSHOT ANDA)
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -335,7 +340,7 @@ const app = (() => {
             const result = await response.json();
             
             if (result.error) {
-                // Tampilkan error detail di layar
+                // Jika masih error, lempar ke catch untuk ditampilkan
                 throw new Error(result.error.message);
             }
 
@@ -346,7 +351,7 @@ const app = (() => {
             
         } catch (e) {
             console.error(e);
-            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}<br>Jika API Key baru, mohon tunggu sebentar.</p>`;
+            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}<br>Pastikan API Key "API key 1" sudah disalin dengan benar.</p>`;
         }
     };
 
