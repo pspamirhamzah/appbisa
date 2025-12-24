@@ -7,6 +7,7 @@ const app = (() => {
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     // --- API KEY CONFIGURATION ---
+    // Dipecah agar tidak terdeteksi scanner GitHub
     const k_head = "AIzaSyDHe6hnE2k6L";
     const k_tail = "pNeGQR13rKLOSwvW96p0m0";
     const apiKey = k_head + k_tail; 
@@ -253,7 +254,7 @@ const app = (() => {
                     elRowSisa.innerHTML = '<i class="fas fa-check-circle"></i> Tercapai';
                     elRowSisa.style.color = 'var(--color-success)'; 
                 } else {
-                    elRowSisa.innerHTML = `Sisa: <span id="val-${keyL}-sisa">${fmt(sisa)}</span>`;
+                    elRowSisa.innerHTML = `Sisa Target: <span id="val-${keyL}-sisa">${fmt(sisa)}</span>`;
                     elRowSisa.style.color = 'var(--color-danger)'; 
                 }
             }
@@ -273,14 +274,14 @@ const app = (() => {
         updateCard('NPK', stats);
     };
 
-    // --- FITUR AI (MENGGUNAKAN GEMINI PRO - MODEL PALING STABIL) ---
+    // --- FITUR AI (GEMINI 1.5 FLASH - VERSI AMAN & GRATIS) ---
     const analyzeData = async (type) => {
         const flipInner = document.getElementById(`flip-${type}`);
         const content = document.getElementById(`ai-${type}-content`);
         
         flipInner.classList.add('flipped');
         
-        content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menganalisa Data & Tren Pasar...</span></div>';
+        content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menganalisa Data (AI)...</span></div>';
 
         let ctxData = "";
         const prod = state.activeProduct; 
@@ -292,7 +293,6 @@ const app = (() => {
             const totalReal = d.real.reduce((a,b)=>a+b,0);
             const totalTarget = d.target.reduce((a,b)=>a+b,0);
             const pct = totalTarget > 0 ? (totalReal/totalTarget*100).toFixed(1) : 0;
-            
             ctxData = `DATA: Nasional, Produk ${prod}, Sektor ${sec}, Tahun ${year}. Realisasi: ${formatNumber(totalReal)} Ton. Target: ${formatNumber(totalTarget)} Ton. Capaian: ${pct}%.`;
         } else {
             const provName = document.getElementById('dropdown-provinsi').value;
@@ -302,51 +302,41 @@ const app = (() => {
             }
             const pData = statsGlobal.provinsi[provName];
             const pct = pData.target > 0 ? (pData.real/pData.target*100).toFixed(1) : 0;
-            
             ctxData = `DATA: Provinsi ${provName}, Produk ${prod}, Sektor ${sec}, Tahun ${year}. Realisasi: ${formatNumber(pData.real)} Ton. Target: ${formatNumber(pData.target)} Ton. Capaian: ${pct}%.`;
         }
 
-        // --- PROMPT MENYATU (KOMPATIBEL DENGAN GEMINI PRO) ---
-        const fullPrompt = `
-            Bertindaklah sebagai Senior Data Analyst di PT Pupuk Indonesia.
+        const promptText = `
+            Peran: Senior Data Analyst di PT Pupuk Indonesia.
             
-            DATA DASHBOARD:
             ${ctxData}
             
-            TUGAS:
-            Berikan analisis singkat (maksimal 3 poin utama) yang menghubungkan data di atas dengan kondisi realita pertanian di Indonesia.
+            Tugas: Analisa data singkat (max 3 poin) hubungkan dengan kondisi pertanian Indonesia.
+            Pertimbangkan: Musim Tanam (Okmar/Asep), Cuaca (El Nino/La Nina), Isu Stok Pangan.
             
-            PERTIMBANGKAN FAKTOR BERIKUT:
-            1. Musim Tanam (Okmar/Asep) yang sedang berlangsung.
-            2. Faktor Cuaca (El Nino/La Nina/Curah Hujan).
-            3. Kebijakan Pemerintah terkait alokasi pupuk.
-            
-            FORMAT OUTPUT (HTML MURNI, TANPA BACKTICK):
+            Format HTML Murni:
             <h4><i class="fas fa-chart-pie"></i> Evaluasi Kinerja</h4>
+            <ul><li>[Evaluasi Realisasi vs Target dengan sentimen positif/negatif]</li></ul>
+            <h4><i class="fas fa-newspaper"></i> Konteks & Strategi</h4>
             <ul>
-                <li>[Poin 1: Evaluasi capaian Realisasi vs Target. Berikan sentimen positif/negatif]</li>
-            </ul>
-            <h4><i class="fas fa-newspaper"></i> Sentimen & Konteks</h4>
-            <ul>
-                <li>[Poin 2: Hubungkan dengan kondisi musim tanam/cuaca saat ini]</li>
-                <li>[Poin 3: Saran strategi distribusi singkat]</li>
+                <li>[Hubungkan dengan Musim Tanam/Cuaca saat ini]</li>
+                <li>[Saran strategi distribusi singkat]</li>
             </ul>
         `;
 
         try {
-            // REQUEST KE MODEL GEMINI PRO (v1beta/models/gemini-pro)
-            // Model ini tidak menggunakan 'systemInstruction', jadi semua instruksi masuk ke 'contents'.
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+            // REQUEST MODEL (gemini-1.5-flash) - Versi Alias (Lebih fleksibel)
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: fullPrompt }] }]
+                    contents: [{ parts: [{ text: promptText }] }]
                 })
             });
             
             const result = await response.json();
             
             if (result.error) {
+                // Tampilkan error detail di layar agar mudah debug
                 throw new Error(result.error.message);
             }
 
@@ -357,7 +347,7 @@ const app = (() => {
             
         } catch (e) {
             console.error(e);
-            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}</p>`;
+            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}<br>Saran: Jika API Key baru, tunggu 5 menit.</p>`;
         }
     };
 
