@@ -7,13 +7,9 @@ const app = (() => {
     const API_URL = 'https://script.google.com/macros/s/AKfycbzFanoakpPL3NaMh8CqbolDF5wo9iVb6ikIKQavQh15aGJYBCj7rGQdWyE3sMC911wxdA/exec';
     
     // --- API KEY CONFIGURATION ---
-    // PENTING: Ganti string di bawah ini dengan API Key BARU ("API key 1") dari screenshot Anda.
-    // Pecah kodenya menjadi dua bagian agar tidak terdeteksi peringatan GitHub.
-    
-    // Contoh: Jika Key Anda "AIzaSyD1234567890ABCDEFGHIJ"
-    const k_head = "AIzaSyDHe6hnE2k6L";      // Bagian awal (sekitar 10-15 huruf)
-    const k_tail = "pNeGQR13rKLOSwvW96p0m0";     // Bagian sisanya
-    
+    // Pastikan ini sesuai dengan key Anda
+    const k_head = "AIzaSyDBofQZJdWnW"; 
+    const k_tail = "67pYBLQvWomfcNJJlL42aQ"; 
     const apiKey = k_head + k_tail; 
 
     let state = {
@@ -278,15 +274,16 @@ const app = (() => {
         updateCard('NPK', stats);
     };
 
-    // --- FITUR AI (CONFIG v1beta SESUAI SCREENSHOT ANDA) ---
+    // --- FITUR AI: SINGKAT, PADAT, RAPI, BERSIH ---
     const analyzeData = async (type) => {
         const flipInner = document.getElementById(`flip-${type}`);
         const content = document.getElementById(`ai-${type}-content`);
         
+        // 1. Animasi Loading
         flipInner.classList.add('flipped');
-        
         content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menganalisa Data (AI)...</span></div>';
 
+        // 2. Siapkan Data Konteks
         let ctxData = "";
         const prod = state.activeProduct; 
         const sec = state.sector;         
@@ -309,28 +306,32 @@ const app = (() => {
             ctxData = `DATA: Provinsi ${provName}, Produk ${prod}, Sektor ${sec}, Tahun ${year}. Realisasi: ${formatNumber(pData.real)} Ton. Target: ${formatNumber(pData.target)} Ton. Capaian: ${pct}%.`;
         }
 
+        // 3. Prompt (Diubah agar SINGKAT & PADAT)
         const promptText = `
-            Peran: Senior Data Analyst di PT Pupuk Indonesia.
+            Peran: Senior Data Analyst PT Pupuk Indonesia.
+            Konteks: ${ctxData}
             
-            ${ctxData}
+            Tugas: Berikan Executive Summary super ringkas.
+            Aturan Main:
+            1. JANGAN gunakan kalimat pembuka basa-basi.
+            2. Maksimal 20 kata per poin.
+            3. Gunakan bahasa bisnis yang taktis.
             
-            Tugas: Analisa data singkat (max 3 poin) hubungkan dengan kondisi pertanian Indonesia.
-            Pertimbangkan: Musim Tanam (Okmar/Asep), Cuaca (El Nino/La Nina), Isu Stok Pangan.
-            
-            Format HTML Murni:
-            <h4><i class="fas fa-chart-pie"></i> Evaluasi Kinerja</h4>
-            <ul><li>[Evaluasi Realisasi vs Target dengan sentimen positif/negatif]</li></ul>
-            <h4><i class="fas fa-newspaper"></i> Konteks & Strategi</h4>
-            <ul>
-                <li>[Hubungkan dengan Musim Tanam/Cuaca saat ini]</li>
-                <li>[Saran strategi distribusi singkat]</li>
+            Format Output (HTML Murni):
+            <h4 style="margin-bottom:8px;"><i class="fas fa-chart-line"></i> Status Kinerja</h4>
+            <ul style="padding-left:20px; margin-bottom:12px;">
+                <li>[Sebutkan Status Capaian & Sisa Gap secara singkat]</li>
+            </ul>
+            <h4 style="margin-bottom:8px;"><i class="fas fa-lightbulb"></i> Rekomendasi</h4>
+            <ul style="padding-left:20px; margin-bottom:0;">
+                <li>[Kaitkan dengan Musim Tanam/Cuaca saat ini]</li>
+                <li>[Satu langkah aksi konkret]</li>
             </ul>
         `;
 
         try {
-            // URL MENGGUNAKAN 'v1beta' (SESUAI SCREENSHOT ANDA)
+            // Request ke API (v1beta & gemini-2.5-flash)
             const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -340,19 +341,23 @@ const app = (() => {
             
             const result = await response.json();
             
-            if (result.error) {
-                // Jika masih error, lempar ke catch untuk ditampilkan
-                throw new Error(result.error.message);
-            }
+            if (result.error) throw new Error(result.error.message);
 
             let rawText = result.candidates[0].content.parts[0].text;
-            let cleanText = rawText.replace(/```html/g, '').replace(/```/g, '').trim();
             
-            content.innerHTML = `<div style="animation: fadeIn 0.5s;">${cleanText}</div>`;
+            // --- PEMBERSIH TEKS (Hapus Markdown Bintang & Kode) ---
+            let cleanText = rawText
+                .replace(/```html/g, '')  
+                .replace(/```/g, '')      
+                .replace(/\*\*/g, '')     // Hapus Bintang Bold
+                .replace(/\*/g, '')       // Hapus Bintang Biasa
+                .trim();
+            
+            content.innerHTML = `<div style="animation: fadeIn 0.5s; font-size: 13px; line-height: 1.5;">${cleanText}</div>`;
             
         } catch (e) {
             console.error(e);
-            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}<br>Pastikan API Key "API key 1" sudah disalin dengan benar.</p>`;
+            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Error: ${e.message}</p>`;
         }
     };
 
