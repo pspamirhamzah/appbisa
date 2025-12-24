@@ -281,7 +281,7 @@ const app = (() => {
         
         // 1. Animasi Loading
         flipInner.classList.add('flipped');
-        content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menganalisa Data (AI)...</span></div>';
+        content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menyiapkan insight data...</span></div>';
 
         // 2. Siapkan Data Konteks
         let ctxData = "";
