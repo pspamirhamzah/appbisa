@@ -278,7 +278,7 @@ const app = (() => {
         updateCard('NPK', stats);
     };
 
-    // --- FITUR AI (MODEL GEMINI 1.5 FLASH - GRATIS & STABIL) ---
+    // --- FITUR AI (PERBAIKAN MODEL NAME) ---
     const analyzeData = async (type) => {
         const flipInner = document.getElementById(`flip-${type}`);
         const content = document.getElementById(`ai-${type}-content`);
@@ -288,8 +288,8 @@ const app = (() => {
         content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menganalisa Data & Tren Pasar...</span></div>';
 
         let ctxData = "";
-        const prod = state.activeProduct; // UREA / NPK
-        const sec = state.sector;         // SUBSIDI / RETAIL
+        const prod = state.activeProduct; 
+        const sec = state.sector;         
         const year = state.selectedYear;
         
         if (type === 'nasional') {
@@ -311,7 +311,6 @@ const app = (() => {
             ctxData = `DATA: Provinsi ${provName}, Produk ${prod}, Sektor ${sec}, Tahun ${year}. Realisasi: ${formatNumber(pData.real)} Ton. Target: ${formatNumber(pData.target)} Ton. Capaian: ${pct}%.`;
         }
 
-        // --- PROMPT BARU: HUBUNGKAN DENGAN BERITA PERTANIAN ---
         const promptText = `
             Bertindaklah sebagai Senior Data Analyst di PT Pupuk Indonesia.
             
@@ -321,26 +320,26 @@ const app = (() => {
             TUGAS:
             Berikan analisis singkat (maksimal 3 poin utama) yang menghubungkan data di atas dengan kondisi realita pertanian di Indonesia.
             
-            PERTIMBANGKAN FAKTOR BERIKUT (Gunakan pengetahuan umum Anda):
-            1. Musim Tanam (Okmar/Asep) yang sedang berlangsung sesuai bulan ini.
+            PERTIMBANGKAN FAKTOR BERIKUT:
+            1. Musim Tanam (Okmar/Asep) saat ini.
             2. Faktor Cuaca (El Nino/La Nina/Curah Hujan).
-            3. Isu Stok Pangan atau Kebijakan Pemerintah terkait Subsidi/Retail.
+            3. Kebijakan Pemerintah/Stok Pangan.
             
-            FORMAT OUTPUT (HTML MURNI, JANGAN PAKAI MARKDOWN):
+            FORMAT OUTPUT (HTML MURNI, TANPA MARKDOWN):
             <h4><i class="fas fa-chart-pie"></i> Evaluasi Kinerja</h4>
             <ul>
-                <li>[Poin 1: Evaluasi capaian Realisasi vs Target (Tercapai/Belum). Berikan sentimen positif/negatif]</li>
+                <li>[Poin 1: Evaluasi capaian Realisasi vs Target. Berikan sentimen positif/negatif]</li>
             </ul>
             <h4><i class="fas fa-newspaper"></i> Sentimen & Konteks</h4>
             <ul>
-                <li>[Poin 2: Hubungkan angka dengan kondisi musim tanam/cuaca saat ini]</li>
-                <li>[Poin 3: Saran strategi distribusi singkat]</li>
+                <li>[Poin 2: Hubungkan dengan kondisi musim tanam/cuaca]</li>
+                <li>[Poin 3: Saran strategi distribusi]</li>
             </ul>
         `;
 
         try {
-            // PERUBAHAN UTAMA: MODEL DIGANTI KE gemini-1.5-flash (GRATIS & STABIL)
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            // PERUBAHAN DI SINI: MENGGUNAKAN 'gemini-1.5-flash-001' (LEBIH SPESIFIK)
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -351,7 +350,8 @@ const app = (() => {
             const result = await response.json();
             
             if (result.error) {
-                throw new Error(result.error.message);
+                // Tampilkan error detail jika masih gagal
+                throw new Error(result.error.message || "Unknown Error");
             }
 
             let rawText = result.candidates[0].content.parts[0].text;
@@ -361,10 +361,10 @@ const app = (() => {
             
         } catch (e) {
             console.error(e);
-            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px">Pastikan API Key benar.<br>Error: ${e.message}</p>`;
+            content.innerHTML = `<h4 style="color:var(--color-danger)">Gagal Memuat</h4><p style="font-size:11px; color:#f87171;">${e.message}</p>`;
         }
     };
-
+    
     const flipCard = (type) => {
         document.getElementById(`flip-${type}`).classList.remove('flipped');
     };
