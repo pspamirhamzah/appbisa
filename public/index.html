@@ -3,44 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard APP Bisa</title>
+    <title>APP Bisa</title>
 
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 
-    <meta name="description" content="Monitoring Performa Penjualan Subsidi & Retail">
+    <meta name="description" content="Monitoring Penjualan Subsidi & Retail">
     <meta name="author" content="Adm Pemasaran & Penjualan">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://appbisa.pages.dev/">
-    <meta property="og:title" content="Dashboard APP Bisa">
-    <meta property="og:description" content="Monitoring Performa Penjualan Subsidi & Retail">
+    <meta property="og:title" content="APP Bisa">
+    <meta property="og:description" content="Monitoring Penjualan Subsidi & Retail">
     
     <meta property="og:image" content="https://appbisa.pages.dev/assets/thumbnail.jpg">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Dashboard APP Bisa">
-    <meta name="twitter:description" content="Monitoring Performa Penjualan Subsidi & Retail">
-    <meta name="twitter:image" content="https://appbisa.pages.dev/assets/thumbnail.jpg">
-
+    
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ========================================= */
+        /* 1. VARIABLES & THEME                      */
+        /* ========================================= */
+        :root {
+            /* Dark Theme Variables (Default) */
+            --bg-body: #212121;
+            --bg-sidebar: #171717;
+            --bg-card: #2f2f2f;
+            --bg-hover: #424242;
+            
+            --text-primary: #ececec;
+            --text-secondary: #b3b3b3;
+            --text-muted: #666666;
+            
+            --border-color: #424242;
+            --border-subtle: #3a3a3a;
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            
+            /* Brand Colors (Dark Mode) */
+            --color-urea: #FFDE00;        
+            --color-npk: #38bdf8;        
+            --color-success: #4ade80;    
+            --color-danger: #f87171;      
+            --color-stock: #a8a29e;       
+            --color-accent-1: #ffffff; 
+            
+            /* Medal Colors */
+            --color-gold: #fbbf24;
+            --color-silver: #94a3b8;
+            --color-bronze: #d97706;
+
+            /* Layout */
+            --sidebar-width: 260px;
+            --header-height: 64px;
+            --card-radius: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* LIGHT THEME OVERRIDES */
+        [data-theme="light"] {
+            --bg-body: #f3f4f6;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-hover: #f9fafb;
+            
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            
+            --border-color: #e5e7eb;
+            --border-subtle: #f3f4f6;
+            --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+            --color-accent-1: #111827; 
+            
+            /* Adjusted Colors for Light Mode (Better Contrast) */
+            --color-urea: #d97706; /* Darker Yellow/Amber for better visibility on white */
+            --color-npk: #0284c7;  /* Slightly darker blue */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 14px;
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        /* ========================================= */
+        /* 2. SIDEBAR                                */
+        /* ========================================= */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 16px;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 100;
+            transition: transform var(--transition), background-color var(--transition), border-color var(--transition);
+            transform: translateX(0); 
+        }
+
+        .sidebar.closed { transform: translateX(-100%); }
+
+        .brand {
+            padding-bottom: 20px;
+            border-bottom: none;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            min-height: 50px; 
+        }
+
+        .brand-content { display: flex; flex-direction: column; margin-left: 10px; }
+        .brand h2 { font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0; line-height: 1.2; letter-spacing: 0.5px; }
+        .brand h2 span { font-weight: 400; color: var(--color-urea); }
+        .brand p { font-size: 11px; color: var(--text-secondary); margin: 2px 0 0 0; font-weight: 400; letter-spacing: 0.5px; }
+
+        /* NAV STYLES UPDATED FOR DROPDOWN */
+        .nav-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px; border-radius: 12px; cursor: pointer; color: var(--text-secondary);
+            font-size: 14px; font-weight: 500; transition: all 0.2s;
+            margin-bottom: 4px; white-space: nowrap; overflow: hidden; user-select: none;
+        }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: var(--bg-hover); color: var(--text-primary); font-weight: 600; }
+        .nav-item.active i { color: var(--color-urea); }
+
+        /* Parent Menu specific styles */
+        .nav-parent {
+            justify-content: space-between;
+            font-weight: 600;
+        }
+        .nav-parent .parent-left { display: flex; align-items: center; gap: 14px; }
+        .arrow-icon { font-size: 10px !important; width: 10px !important; transition: transform 0.3s; }
+        .nav-parent.open .arrow-icon { transform: rotate(180deg); }
+
+        /* Submenu container */
+        .nav-submenu {
+            display: none;
+            flex-direction: column;
+            padding-left: 0;
+            overflow: hidden;
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.15); /* Slightly darker background for submenu */
+            border-radius: 12px;
+        }
+        .nav-submenu.show { display: flex; }
+        
+        .nav-sub-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 10px 12px 10px 48px; /* Indent sub items */
+            cursor: pointer; color: var(--text-secondary);
+            font-size: 13px; font-weight: 500; transition: all 0.2s;
+            white-space: nowrap; overflow: hidden;
+        }
+        .nav-sub-item:hover { color: var(--text-primary); }
+        .nav-sub-item.active { color: var(--color-urea); font-weight: 600; background: transparent; }
+        .nav-sub-item.active::before {
+            content: ''; position: absolute; left: 30px; 
+            width: 6px; height: 6px; background: var(--color-urea); border-radius: 50%;
+        }
+
+        .nav-header { 
+            font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); 
+            margin: 16px 12px 8px; letter-spacing: 1px; white-space: nowrap; transition: opacity 0.2s; 
+        }
+
+        .nav-spacer { flex-grow: 1; }
+
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 90;
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .sidebar-overlay.show { display: block; opacity: 1; }
+
+        /* ========================================= */
+        /* 3. MAIN CONTENT                           */
+        /* ========================================= */
+        .main-content {
+            flex: 1; margin-left: var(--sidebar-width); display: flex;
+            flex-direction: column; height: 100vh; overflow: hidden;
+            transition: margin-left var(--transition);
+        }
+        .main-content.closed { margin-left: 0; }
+
+        /* HEADER */
+        header {
+            height: var(--header-height);
+            background: var(--bg-body); 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px; flex-shrink: 0;
+            box-shadow: var(--shadow-card);
+            z-index: 40; position: relative;
+            transition: background-color var(--transition);
+        }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+
+        .btn-toggle-sidebar, .btn-theme-toggle, .btn-logout {
+            background: transparent; border: none; color: var(--text-secondary);
+            font-size: 18px; cursor: pointer; padding: 8px; border-radius: 8px;
+            transition: color 0.2s;
+        }
+        .btn-toggle-sidebar:hover, .btn-theme-toggle:hover, .btn-logout:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .btn-logout:hover { color: var(--color-danger); }
+
+        .page-title h1 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 0px; }
+        .page-title p { font-size: 11px; color: var(--text-secondary); }
+
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+
+        /* CUSTOM DROPDOWN */
+        .custom-select {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            background-color: var(--bg-body); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-primary); 
+            width: auto; min-width: 90px; 
+            padding: 8px 32px 8px 14px; border-radius: 8px; 
+            font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600; cursor: pointer; outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 8px center; background-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .custom-select:hover { border-color: var(--text-secondary); background-color: var(--bg-hover); }
+        .custom-select option { background-color: var(--bg-card); color: var(--text-primary); padding: 10px; }
+
+        .content-scroll { flex: 1; overflow-y: auto; padding: 20px 32px 40px; }
+
+        /* GRIDS & CARDS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+        /* Lini 1 Grid specific */
+        .kpi-grid-lini1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .chart-grid-full { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+        
+        .ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--card-radius); padding: 24px;
+            display: flex; flex-direction: column; transition: transform 0.2s;
+            position: relative; min-width: 0;
+            box-shadow: var(--shadow-card);
+        }
+        .card:hover { border-color: var(--border-subtle); }
+
+        /* KPI MODERN STYLE */
+        .kpi-modern { padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+        .kpi-head-modern { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .kpi-title-modern { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 4px; }
+        .kpi-icon { width: auto; height: auto; font-size: 18px; background: transparent; color: var(--text-primary); }
+        .icon-urea { color: var(--color-urea); }
+        .icon-npk { color: var(--color-npk); }
+        .kpi-main-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+        .kpi-big { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+        .kpi-pct-small { font-size: 14px; font-weight: 700; }
+        .pct-urea { color: var(--color-urea); }
+        .pct-npk { color: var(--color-npk); }
+        .progress-track-modern { height: 6px; width: 100%; background: var(--bg-hover); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 10px; }
+        .bg-urea { background: var(--color-urea); }
+        .bg-npk { background: var(--color-npk); }
+        .kpi-detail-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+        .kpi-detail-row span span { color: var(--text-secondary); font-weight: 600; }
+        .kpi-sisa-row { font-size: 11px; color: var(--color-danger); font-weight: 600; }
+        .kpi-subtext { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+        .growth-legend { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border-subtle); padding-top: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .bg-grey { background: #666; }
+
+        /* KPI DIST SPLIT STYLE */
+        .kpi-dist-details { display: flex; justify-content: space-between; margin-top: 8px; border-top: 1px solid var(--border-subtle); padding-top: 12px; }
+        .dist-col { width: 48%; }
+        .dist-item { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+        .dist-item span:last-child { font-weight: 600; color: var(--text-primary); }
+        
+        /* CHART & FILTER */
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .chart-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .big-icon { font-size: 15px; }
+        .btn-group { background: var(--bg-body); padding: 4px; border-radius: 10px; display: flex; gap: 2px; width: auto; border: 1px solid var(--border-color); }
+        .btn-filter {
+            background: transparent; border: 1px solid transparent; color: var(--text-secondary);
+            padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-filter:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .btn-filter.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.2); border-color: var(--border-color); }
+        #btn-nas-urea.active, #btn-dist-urea.active, #btn-nas-dist-urea.active, #btn-lini1-urea.active { color: var(--color-urea) !important; border-color: var(--color-urea) !important; background: rgba(255, 222, 0, 0.1); }
+        #btn-nas-npk.active, #btn-dist-npk.active, #btn-nas-dist-npk.active, #btn-lini1-npk.active { color: var(--color-npk) !important; border-color: var(--color-npk) !important; background: rgba(56, 189, 248, 0.1); }
+        .chart-canvas-container { position: relative; height: 280px; width: 100%; }
+
+        /* RANKINGS */
+        .rank-list { display: flex; flex-direction: column; gap: 0; }
+        .rank-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .rank-item:last-child { border-bottom: none; }
+        .rank-left { display: flex; align-items: center; gap: 15px; }
+        .rank-num { width: 28px; min-width: 28px; height: 28px; border-radius: 6px; background: var(--bg-body); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--text-secondary); }
+        .rank-num.medal-box { background: transparent; font-size: 18px; }
+        .rank-num.warn { background: rgba(239, 68, 68, 0.15); color: var(--color-danger); }
+        .rank-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rank-val { font-size: 13px; font-weight: 700; text-align: right; }
+        .val-best { color: var(--text-primary); } 
+        .val-warn { color: var(--color-danger); }
+        .rank-name.gold { color: var(--color-gold); }
+        .rank-name.silver { color: var(--color-silver); }
+        .rank-name.bronze { color: var(--color-bronze); }
+
+        /* FOOTER */
+        .footer { text-align: center; padding: 30px 0 10px; color: var(--text-muted); border-top: none; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .footer h4 { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin: 0; }
+        .footer p { font-size: 10px; opacity: 0.6; margin: 0; letter-spacing: 1px; }
+
+        /* AUTH MODAL - FULL SCREEN BLOCKER */
+        .auth-overlay { 
+            position: fixed; inset: 0; background: var(--bg-body); 
+            z-index: 10000; display: flex; justify-content: center; align-items: center; 
+            flex-direction: column; transition: opacity 0.5s ease;
+        }
+        .auth-box { 
+            background: var(--bg-card); padding: 40px 30px; border-radius: 24px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 100%; max-width: 360px; text-align: center; 
+            border: 1px solid var(--border-color);
+        }
+        .auth-logo { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
+        .auth-logo span { font-weight: 400; color: var(--color-urea); }
+        .auth-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 30px; letter-spacing: 0.5px; }
+
+        .input-square { width: 100%; padding: 14px; margin-bottom: 20px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-primary); font-family: inherit; font-size: 14px; border-radius: 12px; outline: none; transition: border-color 0.2s; text-align: center; }
+        .input-square:focus { border-color: var(--color-urea); }
+        .btn-square { width: 100%; padding: 14px; background: var(--color-urea); color: #000; font-weight: 800; border: none; cursor: pointer; border-radius: 12px; transition: 0.2s; font-size: 13px; letter-spacing: 1px; }
+        .btn-square:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 222, 0, 0.3); }
+
+        /* AUTH ANIMATIONS */
+        @keyframes scaleUp {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes checkmarkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .auth-success-icon {
+            font-size: 64px;
+            color: var(--color-success);
+            margin-bottom: 20px;
+            animation: checkmarkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .auth-box.success-state {
+            border-color: var(--color-success);
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
+        }
+
+        /* LOADER */
+        #loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--color-urea); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* AI & FLIP CARD */
+        .card-flip-container { perspective: 1000px; height: 380px; position: relative; }
+        .card-flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .card-flip-inner.flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: var(--card-radius); background: var(--bg-card); border: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; }
+        .card-back { transform: rotateY(180deg); background: linear-gradient(145deg, var(--bg-hover), var(--bg-card)); }
+        .ai-icon-btn { background: var(--bg-hover); border: 1px solid var(--border-subtle); color: var(--text-secondary); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .ai-icon-btn:hover { background: var(--border-color); color: var(--text-primary); }
+        .btn-back { align-self: flex-start; background: transparent; border: none; color: var(--text-muted); font-size: 11px; font-weight: 700; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; }
+        .ai-content { font-size: 12px; line-height: 1.6; color: var(--text-secondary); flex: 1; overflow-y: auto; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 240px; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+            body { font-size: 12px; }
+            header { padding: 0 16px; height: 56px; min-height: 56px; }
+            .kpi-grid, .kpi-grid-lini1 { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+            .kpi-modern { padding: 14px; min-height: 140px; justify-content: flex-start; }
+            .kpi-big { font-size: 20px; }
+            .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+            .chart-canvas-container { height: auto !important; flex-grow: 1; width: 100%; position: relative; min-height: 0; }
+            .card-flip-container { height: 380px; }
+            .content-scroll { padding: 12px 16px 80px; }
+        }
+    </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <div style="font-size: 12px; color: var(--text-secondary); letter-spacing: 2px;">SABAR YE...</div>
+    <!-- AUTH SCREEN -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-box">
+            <div class="auth-logo">APP <span>bisa</span></div>
+            <div class="auth-subtitle">Adm Pemasaran & Penjualan</div>
+            <div style="margin-bottom:20px;">
+                <i class="fas fa-shield-halved" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+            </div>
+            <input type="password" id="appPassword" class="input-square" placeholder="Masukkan Password" onkeyup="if(event.keyCode===13) app.loginApp()">
+            <button class="btn-square" onclick="app.loginApp()">BUKA DASHBOARD</button>
+            <p id="authError" style="color: var(--color-danger); font-size: 11px; margin-top: 10px; display: none;">Password salah!</p>
+        </div>
     </div>
 
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="font-size: 12px; color: var(--text-secondary); letter-spacing: 2px;">SABAR YEE...</div>
+    </div>
+
+    <!-- SIDEBAR OVERLAY FOR MOBILE -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="app.toggleSidebar()"></div>
 
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="brand">
             <div class="brand-content">
@@ -48,197 +447,407 @@
                 <p>Adm Pemasaran & Penjualan</p>
             </div>
         </div>
-        <div class="nav-header">PSO & RETAIL</div>
-        <div class="nav-item active" id="nav-subsidi" onclick="app.setSector('SUBSIDI')">
-            <i class="fas fa-industry"></i> <span>Subsidi</span>
+
+        <div class="nav-header">MAIN MENU</div>
+
+        <!-- DROPDOWN PENJUALAN -->
+        <div class="nav-item nav-parent" id="parent-sales" onclick="app.toggleMenu('submenu-sales', this)">
+            <div class="parent-left">
+                <i class="fas fa-chart-pie"></i> <span>PENJUALAN</span>
+            </div>
+            <i class="fas fa-chevron-down arrow-icon"></i>
         </div>
-        <div class="nav-item" id="nav-retail" onclick="app.setSector('RETAIL')">
-            <i class="fas fa-store"></i> <span>Retail</span>
+        <div class="nav-submenu" id="submenu-sales">
+            <div class="nav-sub-item" id="nav-sales-subsidi" onclick="app.navigate('SALES', 'SUBSIDI')">
+                <span>Subsidi</span>
+            </div>
+            <div class="nav-sub-item" id="nav-sales-retail" onclick="app.navigate('SALES', 'RETAIL')">
+                <span>Retail</span>
+            </div>
         </div>
         
-        <div id="admin-menu" style="display: none;">
-            <div class="nav-header">ADMINISTRATOR</div>
-            <div class="nav-item" onclick="alert('Fitur Input Data')">
-                <i class="fas fa-plus-square"></i> <span>Input Data</span>
+        <!-- DROPDOWN DISTRIBUSI -->
+        <div class="nav-item nav-parent" id="parent-dist" onclick="app.toggleMenu('submenu-dist', this)">
+             <div class="parent-left">
+                <i class="fas fa-truck-fast"></i> <span>DISTRIBUSI</span>
             </div>
-            <div class="nav-item" onclick="alert('Fitur Edit Data')">
-                <i class="fas fa-edit"></i> <span>Edit Data</span>
+            <i class="fas fa-chevron-down arrow-icon"></i>
+        </div>
+        <div class="nav-submenu" id="submenu-dist">
+            <div class="nav-sub-item" id="nav-dist-subsidi" onclick="app.navigate('DISTRIBUSI', 'SUBSIDI')">
+                <span>Subsidi</span>
             </div>
-             <div class="nav-item" onclick="app.logout()">
-                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            <div class="nav-sub-item" id="nav-dist-retail" onclick="app.navigate('DISTRIBUSI', 'RETAIL')">
+                <span>Retail</span>
             </div>
+        </div>
+
+        <!-- MENU LINI 1 (NEW) -->
+        <div class="nav-item" id="nav-lini1" onclick="app.navigate('LINI1', 'ALL')">
+            <i class="fas fa-warehouse"></i> <span>STOK LINI 1</span>
         </div>
 
         <div class="nav-spacer"></div>
-        
-        <div class="nav-login" id="login-btn-container">
-            <div class="nav-item" onclick="app.showLoginModal()">
-                <i class="fas fa-lock"></i> <span>Admin</span>
-            </div>
-        </div>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="main-content" id="main-content">
         <header>
             <div class="header-left">
                 <button class="btn-toggle-sidebar" onclick="app.toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <div class="page-title">
-                    <h1 id="page-title-text">Subsidi</h1>
-                    <p id="header-update-text">Overview Performa Penjualan</p>
+                    <h1 id="page-title-text">Penjualan Subsidi</h1>
+                    <p id="header-update-text">Overview Performa</p>
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn-theme-toggle" onclick="app.toggleTheme()" title="Ganti Tema">
+                    <i id="theme-icon" class="fas fa-sun"></i>
+                </button>
+                <button class="btn-logout" onclick="app.logoutApp()" title="Logout">
+                    <i class="fas fa-power-off"></i>
+                </button>
                 <select class="custom-select" id="year-select" onchange="app.changeYear(this.value)"></select>
             </div>
         </header>
 
         <div class="content-scroll">
 
-            <div class="kpi-grid">
-                
-                <div class="card kpi-modern">
-                    <div class="kpi-head-modern">
-                        <div class="kpi-title-modern">Realisasi Urea</div>
-                        <div class="kpi-icon icon-urea"><i class="fas fa-leaf"></i></div>
+            <!-- VIEW: SALES (Subsidi & Retail) -->
+            <div id="view-sales">
+                <div class="kpi-grid">
+                    <!-- KPI UREA -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Realisasi Urea</div>
+                            <div class="kpi-icon icon-urea"><i class="fas fa-leaf"></i></div>
+                        </div>
+                        <div class="kpi-main-row">
+                            <span class="kpi-big" id="val-urea-real">0</span>
+                            <span class="kpi-pct-small pct-urea" id="val-urea-pct">0%</span>
+                        </div>
+                        <div class="progress-track-modern">
+                            <div class="progress-bar bg-urea" id="prog-urea" style="width: 0%"></div>
+                        </div>
+                        <div class="kpi-detail-row">
+                            <span id="lbl-urea-target">Alokasi: <span id="val-urea-target">0</span></span>
+                        </div>
+                        <div class="kpi-sisa-row" id="row-urea-sisa">Sisa Alokasi: <span id="val-urea-sisa">0</span></div>
                     </div>
-                    <div class="kpi-main-row">
-                        <span class="kpi-big" id="val-urea-real">0</span>
-                        <span class="kpi-pct-small pct-urea" id="val-urea-pct">0%</span>
+
+                    <!-- KPI NPK -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Realisasi NPK</div>
+                            <div class="kpi-icon icon-npk"><i class="fas fa-cubes"></i></div>
+                        </div>
+                        <div class="kpi-main-row">
+                            <span class="kpi-big" id="val-npk-real">0</span>
+                            <span class="kpi-pct-small pct-npk" id="val-npk-pct">0%</span>
+                        </div>
+                        <div class="progress-track-modern">
+                            <div class="progress-bar bg-npk" id="prog-npk" style="width: 0%"></div>
+                        </div>
+                        <div class="kpi-detail-row">
+                            <span id="lbl-npk-target">Alokasi: <span id="val-npk-target">0</span></span>
+                        </div>
+                        <div class="kpi-sisa-row" id="row-npk-sisa">Sisa Alokasi: <span id="val-npk-sisa">0</span></div>
                     </div>
-                    <div class="progress-track-modern">
-                        <div class="progress-bar bg-urea" id="prog-urea" style="width: 0%"></div>
+
+                    <!-- Growth UREA -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Growth Urea (YoY)</div>
+                            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                        </div>
+                        <div class="kpi-big" id="growth-urea-val">0%</div>
+                        <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
+                        <div class="growth-legend">
+                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-urea">2025</span>: <span id="val-urea-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-urea">2024</span>: <span id="val-urea-prev">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Growth NPK -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Growth NPK (YoY)</div>
+                            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                        </div>
+                        <div class="kpi-big" id="growth-npk-val">0%</div>
+                        <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
+                        <div class="growth-legend">
+                            <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-npk">2025</span>: <span id="val-npk-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-npk">2024</span>: <span id="val-npk-prev">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-grid">
+                    <!-- Nasional Chart -->
+                    <div class="card-flip-container">
+                        <div class="card-flip-inner" id="flip-nasional">
+                            <div class="card-front">
+                                <div class="chart-header">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div class="chart-title">Realisasi Nasional</div>
+                                        <button class="ai-icon-btn" onclick="app.analyzeData('nasional')" title="AI Insight"><i class="fas fa-wand-magic-sparkles"></i></button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn-filter active f-urea" id="btn-nas-urea" onclick="app.setChartProduct('UREA')">UREA</button>
+                                        <button class="btn-filter" id="btn-nas-npk" onclick="app.setChartProduct('NPK')">NPK</button>
+                                    </div>
+                                </div>
+                                <div class="chart-canvas-container"><canvas id="chartNasional"></canvas></div>
+                            </div>
+                            <div class="card-back">
+                                <button class="btn-back" onclick="app.flipCard('nasional')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
+                                <div id="ai-nasional-content" class="ai-content"></div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="kpi-detail-row">
-                        <span>Alokasi: <span id="val-urea-target">0</span></span>
-                    </div>
-                    <div class="kpi-sisa-row" id="row-urea-sisa">Sisa Alokasi: <span id="val-urea-sisa">0</span></div>
-                </div>
-
-                <div class="card kpi-modern">
-                    <div class="kpi-head-modern">
-                        <div class="kpi-title-modern">Realisasi NPK</div>
-                        <div class="kpi-icon icon-npk"><i class="fas fa-cubes"></i></div>
-                    </div>
-                    <div class="kpi-main-row">
-                        <span class="kpi-big" id="val-npk-real">0</span>
-                        <span class="kpi-pct-small pct-npk" id="val-npk-pct">0%</span>
-                    </div>
-                    <div class="progress-track-modern">
-                        <div class="progress-bar bg-npk" id="prog-npk" style="width: 0%"></div>
-                    </div>
-
-                    <div class="kpi-detail-row">
-                        <span>Alokasi: <span id="val-npk-target">0</span></span>
-                    </div>
-                    <div class="kpi-sisa-row" id="row-npk-sisa">Sisa Alokasi: <span id="val-npk-sisa">0</span></div>
-                </div>
-
-                <div class="card kpi-modern">
-                    <div class="kpi-head-modern">
-                        <div class="kpi-title-modern">Growth Urea (YoY)</div>
-                        <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
-                    </div>
-                    <div class="kpi-big" id="growth-urea-val">0%</div>
-                    <div class="kpi-subtext">vs Tahun Lalu</div>
-                    <div class="growth-legend">
-                        <div class="legend-item">
-                            <span class="dot bg-urea"></span> 
-                            <span id="year-curr-urea">2025</span>: <span id="val-urea-curr">0</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="dot bg-grey"></span> 
-                            <span id="year-prev-urea">2024</span>: <span id="val-urea-prev">0</span>
+                    <!-- Provinsi Chart -->
+                    <div class="card-flip-container">
+                        <div class="card-flip-inner" id="flip-provinsi">
+                            <div class="card-front">
+                                <div class="chart-header">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div class="chart-title" id="prov-chart-title">Realisasi Provinsi</div>
+                                        <button class="ai-icon-btn" onclick="app.analyzeData('provinsi')" title="AI Insight"><i class="fas fa-wand-magic-sparkles"></i></button>
+                                    </div>
+                                    <select class="custom-select" id="dropdown-provinsi" onchange="app.renderProvChart()" style="min-width: 140px;"></select>
+                                </div>
+                                <div class="chart-canvas-container">
+                                    <canvas id="chartProvinsi"></canvas>
+                                    <div id="prov-placeholder" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); color:var(--text-primary); border-radius:8px; backdrop-filter: blur(2px); display:none;">
+                                        <span style="background:var(--bg-body); padding:8px 16px; border-radius:20px; border:1px solid var(--border-color); font-size:12px;">
+                                            <i class="fas fa-arrow-up"></i> Pilih Provinsi
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-back">
+                                <button class="btn-back" onclick="app.flipCard('provinsi')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
+                                <div id="ai-provinsi-content" class="ai-content"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card kpi-modern">
-                    <div class="kpi-head-modern">
-                        <div class="kpi-title-modern">Growth NPK (YoY)</div>
-                        <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="ranking-grid">
+                    <div class="card">
+                        <div class="chart-header">
+                            <div class="chart-title big-icon">Provinsi Tertinggi</div>
+                            <i class="fas fa-trophy" style="color: var(--color-gold); font-size: 18px;"></i>
+                        </div>
+                        <div id="list-top5" class="rank-list"></div>
                     </div>
-                    <div class="kpi-big" id="growth-npk-val">0%</div>
-                    <div class="kpi-subtext">vs Tahun Lalu</div>
-                    <div class="growth-legend">
-                        <div class="legend-item">
-                            <span class="dot bg-npk"></span> 
-                            <span id="year-curr-npk">2025</span>: <span id="val-npk-curr">0</span>
+                    <div class="card">
+                        <div class="chart-header">
+                            <div class="chart-title big-icon" style="color: var(--color-danger);">Provinsi Terendah</div>
+                            <i class="fas fa-exclamation-circle" style="color: var(--color-danger); font-size: 18px;"></i>
                         </div>
-                        <div class="legend-item">
-                            <span class="dot bg-grey"></span> 
-                            <span id="year-prev-npk">2024</span>: <span id="val-npk-prev">0</span>
-                        </div>
+                        <div id="list-others" class="rank-list"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="chart-grid">
-                
-                <div class="card-flip-container">
-                    <div class="card-flip-inner" id="flip-nasional">
-                        <div class="card-front">
-                            <div class="chart-header">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <div class="chart-title">Realisasi Nasional</div>
-                                    <button class="ai-icon-btn" onclick="app.analyzeData('nasional')" title="AI Insight"><i class="fas fa-wand-magic-sparkles"></i></button>
-                                </div>
-                                <div class="btn-group">
-                                    <button class="btn-filter active f-urea" id="btn-nas-urea" onclick="app.setChartProduct('UREA')">UREA</button>
-                                    <button class="btn-filter" id="btn-nas-npk" onclick="app.setChartProduct('NPK')">NPK</button>
-                                </div>
-                            </div>
-                            <div class="chart-canvas-container"><canvas id="chartNasional"></canvas></div>
+            <!-- VIEW: DISTRIBUTION -->
+            <div id="view-distribution" style="display: none;">
+                <div class="kpi-grid">
+                    <!-- KPI UREA DIST -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Distribusi Urea</div>
+                            <div class="kpi-icon icon-urea"><i class="fas fa-truck-loading"></i></div>
                         </div>
-                        <div class="card-back">
-                            <button class="btn-back" onclick="app.flipCard('nasional')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
-                            <div id="ai-nasional-content" class="ai-content"></div>
+                        <div class="kpi-main-row">
+                            <span class="kpi-big" id="val-dist-urea-real">0</span>
+                        </div>
+                        <div class="kpi-dist-details">
+                            <div class="dist-col">
+                                <div class="dist-item"><span>Inbag</span><span id="val-dist-urea-inbag">0</span></div>
+                                <div class="dist-item"><span>Curah</span><span id="val-dist-urea-curah">0</span></div>
+                            </div>
+                            <div class="dist-col" style="border-left:1px solid var(--border-subtle); padding-left:12px;">
+                                <div class="dist-item"><span>Truck</span><span id="val-dist-urea-truck">0</span></div>
+                                <div class="dist-item"><span>Kapal</span><span id="val-dist-urea-kapal">0</span></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="card-flip-container">
-                    <div class="card-flip-inner" id="flip-provinsi">
-                        <div class="card-front">
-                            <div class="chart-header">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <div class="chart-title" id="prov-chart-title">Realisasi Provinsi</div>
-                                    <button class="ai-icon-btn" onclick="app.analyzeData('provinsi')" title="AI Insight"><i class="fas fa-wand-magic-sparkles"></i></button>
-                                </div>
-                                <select class="custom-select" id="dropdown-provinsi" onchange="app.renderProvChart()" style="min-width: 140px;"></select>
+
+                    <!-- KPI NPK DIST -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Distribusi NPK</div>
+                            <div class="kpi-icon icon-npk"><i class="fas fa-truck-loading"></i></div>
+                        </div>
+                        <div class="kpi-main-row">
+                            <span class="kpi-big" id="val-dist-npk-real">0</span>
+                        </div>
+                        <div class="kpi-dist-details">
+                            <div class="dist-col">
+                                <div class="dist-item"><span>Inbag</span><span id="val-dist-npk-inbag">0</span></div>
+                                <div class="dist-item"><span>Curah</span><span id="val-dist-npk-curah">0</span></div>
                             </div>
-                            <div class="chart-canvas-container">
-                                <canvas id="chartProvinsi"></canvas>
-                                <div id="prov-placeholder" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); color:var(--text-primary); border-radius:8px; backdrop-filter: blur(2px); display:none;">
-                                    <span style="background:var(--bg-body); padding:8px 16px; border-radius:20px; border:1px solid var(--border-color); font-size:12px;">
-                                        <i class="fas fa-arrow-up"></i> Pilih Provinsi
-                                    </span>
-                                </div>
+                            <div class="dist-col" style="border-left:1px solid var(--border-subtle); padding-left:12px;">
+                                <div class="dist-item"><span>Truck</span><span id="val-dist-npk-truck">0</span></div>
+                                <div class="dist-item"><span>Kapal</span><span id="val-dist-npk-kapal">0</span></div>
                             </div>
                         </div>
-                        <div class="card-back">
-                            <button class="btn-back" onclick="app.flipCard('provinsi')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
-                            <div id="ai-provinsi-content" class="ai-content"></div>
+                    </div>
+
+                    <!-- Growth UREA DIST -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Growth Urea (YoY)</div>
+                            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                        </div>
+                        <div class="kpi-big" id="growth-dist-urea-val">0%</div>
+                        <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
+                        <div class="growth-legend">
+                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-dist-urea">2025</span>: <span id="val-dist-urea-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-dist-urea">2024</span>: <span id="val-dist-urea-prev">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Growth NPK DIST -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Growth NPK (YoY)</div>
+                            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                        </div>
+                        <div class="kpi-big" id="growth-dist-npk-val">0%</div>
+                        <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
+                        <div class="growth-legend">
+                            <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-dist-npk">2025</span>: <span id="val-dist-npk-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-dist-npk">2024</span>: <span id="val-dist-npk-prev">0</span></div>
                         </div>
                     </div>
                 </div>
 
+                <div class="chart-grid">
+                    <!-- Nasional Chart DIST -->
+                    <div class="card-flip-container">
+                        <div class="card-flip-inner" id="flip-nasionalDist">
+                            <div class="card-front">
+                                <div class="chart-header">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div class="chart-title">Distribusi Nasional</div>
+                                        <button class="ai-icon-btn" onclick="app.analyzeData('nasionalDist')" title="AI Insight"><i class="fas fa-wand-magic-sparkles"></i></button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn-filter active f-urea" id="btn-nas-dist-urea" onclick="app.setChartProduct('UREA')">UREA</button>
+                                        <button class="btn-filter" id="btn-nas-dist-npk" onclick="app.setChartProduct('NPK')">NPK</button>
+                                    </div>
+                                </div>
+                                <div class="chart-canvas-container"><canvas id="chartNasionalDist"></canvas></div>
+                            </div>
+                            <div class="card-back">
+                                <button class="btn-back" onclick="app.flipCard('nasionalDist')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
+                                <div id="ai-nasionalDist-content" class="ai-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Provinsi Chart DIST -->
+                    <div class="card-flip-container">
+                        <div class="card-flip-inner" id="flip-provinsiDist">
+                            <div class="card-front">
+                                <div class="chart-header">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div class="chart-title" id="prov-dist-chart-title">Distribusi Provinsi</div>
+                                        <button class="ai-icon-btn" onclick="app.analyzeData('provinsiDist')" title="AI Insight"><i class="fas fa-wand-magic-sparkles"></i></button>
+                                    </div>
+                                    <select class="custom-select" id="dropdown-provinsi-dist" onchange="app.renderDistProvChart()" style="min-width: 140px;"></select>
+                                </div>
+                                <div class="chart-canvas-container">
+                                    <canvas id="chartProvinsiDist"></canvas>
+                                    <div id="prov-dist-placeholder" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); color:var(--text-primary); border-radius:8px; backdrop-filter: blur(2px); display:none;">
+                                        <span style="background:var(--bg-body); padding:8px 16px; border-radius:20px; border:1px solid var(--border-color); font-size:12px;">
+                                            <i class="fas fa-arrow-up"></i> Pilih Provinsi
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-back">
+                                <button class="btn-back" onclick="app.flipCard('provinsiDist')"><i class="fas fa-arrow-left"></i> Kembali ke Grafik</button>
+                                <div id="ai-provinsiDist-content" class="ai-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ranking-grid">
+                    <div class="card">
+                        <div class="chart-header">
+                            <div class="chart-title big-icon">Distribusi Tertinggi</div>
+                            <i class="fas fa-truck-fast" style="color: var(--color-gold); font-size: 18px;"></i>
+                        </div>
+                        <div id="list-dist-top5" class="rank-list"></div>
+                    </div>
+                    <div class="card">
+                        <div class="chart-header">
+                            <div class="chart-title big-icon" style="color: var(--color-danger);">Distribusi Terendah</div>
+                            <i class="fas fa-exclamation-circle" style="color: var(--color-danger); font-size: 18px;"></i>
+                        </div>
+                        <div id="list-dist-others" class="rank-list"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="ranking-grid">
-                <div class="card">
-                    <div class="chart-header">
-                        <div class="chart-title big-icon">Provinsi Tertinggi</div>
-                        <i class="fas fa-trophy" style="color: var(--color-gold); font-size: 18px;"></i>
+            <!-- VIEW: LINI 1 (NEW) -->
+            <div id="view-lini1" style="display: none;">
+                <div class="kpi-grid-lini1">
+                    <!-- KPI Produksi -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Total Produksi</div>
+                            <div class="kpi-icon"><i class="fas fa-industry"></i></div>
+                        </div>
+                        <div class="kpi-big" id="val-lini1-prod">0</div>
+                        <div class="kpi-subtext">Ton (YTD)</div>
                     </div>
-                    <div id="list-top5" class="rank-list"></div>
+                    
+                    <!-- KPI Total Stok -->
+                    <div class="card kpi-modern">
+                        <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Posisi Stok Lini 1</div>
+                            <div class="kpi-icon"><i class="fas fa-warehouse"></i></div>
+                        </div>
+                        <div class="kpi-big" id="val-lini1-stock">0</div>
+                        <div class="kpi-subtext">Ton (Bulan Berjalan)</div>
+                    </div>
+
+                    <!-- KPI Breakdown Stok -->
+                    <div class="card kpi-modern">
+                         <div class="kpi-head-modern">
+                            <div class="kpi-title-modern">Detail Stok</div>
+                            <div class="kpi-icon"><i class="fas fa-boxes-stacked"></i></div>
+                        </div>
+                        <div class="kpi-dist-details" style="border:none; margin-top:0; padding-top:0;">
+                            <div class="dist-col" style="width:100%">
+                                <div class="dist-item"><span>Curah</span><span id="val-lini1-curah">0</span></div>
+                                <div class="dist-item"><span>Subsidi (Bag)</span><span id="val-lini1-sub">0</span></div>
+                                <div class="dist-item"><span>Non-Sub (Bag)</span><span id="val-lini1-non">0</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card">
-                    <div class="chart-header">
-                        <div class="chart-title big-icon" style="color: var(--color-danger);">Provinsi Terendah</div>
-                        <i class="fas fa-exclamation-circle" style="color: var(--color-danger); font-size: 18px;"></i>
+
+                <div class="chart-grid-full">
+                    <!-- Chart Lini 1 -->
+                    <div class="card">
+                        <div class="chart-header">
+                            <div class="chart-title">Produksi & Stok Lini 1</div>
+                            <div class="btn-group">
+                                <button class="btn-filter active f-urea" id="btn-lini1-urea" onclick="app.setChartProduct('UREA')">UREA</button>
+                                <button class="btn-filter" id="btn-lini1-npk" onclick="app.setChartProduct('NPK')">NPK</button>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-container"><canvas id="chartLini1"></canvas></div>
                     </div>
-                    <div id="list-others" class="rank-list"></div>
                 </div>
             </div>
             
@@ -246,24 +855,579 @@
                 <h4>Copyright &copy;2025 Adm Pemasaran & Penjualan</h4>
                 <p>Design by 00.0034</p>
             </div>
-
         </div> 
     </main>
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3>Login Admin</h3>
-                <button onclick="app.closeLoginModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <input type="password" id="adminPass" class="input-square" placeholder="Password...">
-                <button class="btn-square" onclick="app.login()">MASUK</button>
-            </div>
-        </div>
-    </div>
+    <!-- JAVASCRIPT -->
+    <script>
+        Chart.defaults.color = '#b3b3b3';
+        Chart.defaults.borderColor = '#424242';
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.font.size = 11;
+        Chart.defaults.animation = false;
 
-    <script src="js/script.js"></script>
+        const app = (() => {
+            // URL UPDATED AS REQUESTED
+            const BASE_API_URL = 'https://script.google.com/macros/s/AKfycbyxGclTQ8dCWG6_VZmyVfRDmsu_DWPhAw3NsGMuqHp9QEtmf4kn8c_peVcs1zoJ-pEGmA/exec';
+            
+            const CACHE_KEY_DATA = 'local_raw_data';
+            const CACHE_KEY_TIME = 'last_update_date';
+            const CACHE_KEY_HASH = 'last_data_hash';
+            const CACHE_KEY_AUTH_TOKEN = 'app_auth_token'; 
+
+            let state = {
+                rawData: [],
+                page: 'SALES',
+                sector: 'SUBSIDI',        
+                activeProduct: 'UREA',  
+                selectedYear: new Date().getFullYear(),
+                sidebarOpen: true,
+                theme: localStorage.getItem('theme') || 'dark',
+                lastDataHash: localStorage.getItem(CACHE_KEY_HASH) || '',
+                lastUpdateDate: localStorage.getItem(CACHE_KEY_TIME) || 'Overview Performa',
+                password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || ''
+            };
+
+            let charts = { nasional: null, provinsi: null, nasionalDist: null, provinsiDist: null, lini1: null };
+            let statsGlobal = null; 
+            let distStatsGlobal = null;
+            let infoAiData = [];
+
+            // --- UTILS ---
+            const parseIndoNumber = (str) => {
+                if (typeof str === 'number') return str;
+                if (!str) return 0;
+                let s = str.toString();
+                if (s.includes(';')) { s = s.replace(/\./g, '').replace(';', '.'); } 
+                else { s = s.replace(/\./g, '').replace(',', '.'); }
+                return parseFloat(s) || 0;
+            };
+
+            const formatNumber = (num) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(num);
+
+            const hexToRgbA = (hex, alpha) => {
+                let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
+            }
+
+            const createDashedCircle = (color) => {
+                const size = 12; const r = 4.5; const c = document.createElement('canvas');
+                c.width = size; c.height = size; const ctx = c.getContext('2d');
+                ctx.beginPath(); ctx.setLineDash([2, 2]); ctx.lineWidth = 1.5;
+                ctx.strokeStyle = color; ctx.arc(size/2, size/2, r, 0, 2 * Math.PI); ctx.stroke();
+                return c;
+            };
+
+            const normalizeMonth = (str) => { const map = {'JAN':0, 'JANUARI':0, 'FEB':1, 'FEBRUARI':1, 'MAR':2, 'MARET':2, 'APR':3, 'APRIL':3, 'MEI':4, 'MAY':4, 'JUN':5, 'JUNI':5, 'JUL':6, 'JULI':6, 'AGU':7, 'AGUSTUS':7, 'SEP':8, 'SEPTEMBER':8, 'OKT':9, 'OKTOBER':9, 'NOV':10, 'NOVEMBER':10, 'DES':11, 'DESEMBER':11}; return map[String(str).toUpperCase().trim()] ?? -1; };
+            const toTitleCase = (str) => str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
+            const toggleTheme = () => {
+                state.theme = state.theme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', state.theme);
+                applyTheme(state.theme);
+                if (typeof updateDashboard === 'function') updateDashboard(); 
+            };
+
+            const applyTheme = (theme) => {
+                document.documentElement.setAttribute('data-theme', theme);
+                const icon = document.getElementById('theme-icon');
+                if(icon) { icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'; }
+                if(theme === 'light') { Chart.defaults.color = '#1f2937'; Chart.defaults.borderColor = '#e5e7eb'; } 
+                else { Chart.defaults.color = '#b3b3b3'; Chart.defaults.borderColor = '#424242'; }
+            };
+
+            const populateProvDropdown = (id, provKeys) => {
+                const s = document.getElementById(id);
+                if(!s) return;
+                const prevVal = s.value; 
+                s.innerHTML = '';
+                const validKeys = provKeys.filter(p => p && p !== 'LAINNYA').sort();
+                if(validKeys.length > 0) {
+                    validKeys.forEach(prov => { let opt = document.createElement('option'); opt.value = prov; opt.innerText = prov; s.appendChild(opt); });
+                    s.value = (prevVal && validKeys.includes(prevVal)) ? prevVal : validKeys[0];
+                } else {
+                    let opt = document.createElement('option'); opt.value = ""; opt.innerText = "Tidak ada data"; s.appendChild(opt);
+                }
+            };
+
+            const renderSidebar = () => {
+                const sb = document.getElementById('sidebar');
+                const main = document.getElementById('main-content');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (state.sidebarOpen) {
+                    sb.classList.remove('closed'); main.classList.remove('closed');
+                    if(window.innerWidth <= 768) { overlay.classList.add('show'); sb.style.transform = 'translateX(0)'; }
+                } else {
+                    sb.classList.add('closed'); main.classList.add('closed');
+                    if(window.innerWidth <= 768) { overlay.classList.remove('show'); sb.style.transform = 'translateX(-100%)'; }
+                }
+            };
+
+            const checkScreenSize = () => {
+                if(window.innerWidth <= 768) { state.sidebarOpen = false; } 
+                else { state.sidebarOpen = true; }
+                renderSidebar();
+            };
+
+            const toggleMenu = (menuId, btnElement) => {
+                const menu = document.getElementById(menuId);
+                const isHidden = !menu.classList.contains('show');
+                document.querySelectorAll('.nav-submenu').forEach(el => el.classList.remove('show'));
+                document.querySelectorAll('.nav-parent').forEach(el => el.classList.remove('open'));
+                if(isHidden) { menu.classList.add('show'); btnElement.classList.add('open'); }
+            };
+
+            const renderLini1Chart = (dataLini1) => {
+                const canvas = document.getElementById('chartLini1');
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                if(charts.lini1) charts.lini1.destroy();
+                const isUrea = state.activeProduct === 'UREA';
+                const colorProd = isUrea ? '#FFDE00' : '#38bdf8'; 
+                const colorCurah = '#555555'; const colorSub = '#4ade80'; const colorNon = '#a855f7'; // Purple for contrast
+
+                charts.lini1 = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+                        datasets: [
+                            { type: 'line', label: 'Produksi', data: dataLini1.produksi, borderColor: colorProd, backgroundColor: colorProd, borderWidth: 3, tension: 0.4, pointRadius: 4, order: 1 },
+                            { label: 'Stok Curah', data: dataLini1.stokCurah, backgroundColor: colorCurah, stack: 'stock', order: 2 },
+                            { label: 'Stok Subsidi', data: dataLini1.stokSub, backgroundColor: colorSub, stack: 'stock', order: 3 },
+                            { label: 'Stok Non-Sub', data: dataLini1.stokNon, backgroundColor: colorNon, stack: 'stock', order: 4 }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        interaction: { mode: 'index', intersect: false }, 
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, 
+                            tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } } 
+                        }, 
+                        scales: { 
+                            x: { grid: { display: false }, stacked: true }, 
+                            y: { 
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb' }, 
+                                beginAtZero: true, 
+                                stacked: true, // FIXED: Force stacking on Y axis
+                                ticks: { maxTicksLimit: 5, callback: (v) => v===0?null:(v>=1000?(v/1000)+' rb':v) } 
+                            } 
+                        } 
+                    }
+                });
+            };
+
+            const processLini1Data = () => {
+                const { rawData, selectedYear, activeProduct } = state;
+                let metrics = { produksi: Array(12).fill(0), stokCurah: Array(12).fill(0), stokSub: Array(12).fill(0), stokNon: Array(12).fill(0), totalProd: 0, lastStock: 0, lastCurah: 0, lastSub: 0, lastNon: 0 };
+                let maxMonth = -1;
+
+                rawData.forEach(r => {
+                    if (r.JENIS_DATA !== 'LINI1') return;
+                    if (r.TAHUN !== selectedYear) return;
+                    let prodKey = '';
+                    if (r.PRODUK.includes('UREA')) prodKey = 'UREA'; else if (r.PRODUK.includes('NPK')) prodKey = 'NPK';
+                    if (prodKey !== activeProduct) return;
+
+                    if (r.BULAN >= 0) {
+                         metrics.produksi[r.BULAN] = r.PRODUKSI; metrics.stokCurah[r.BULAN] = r.STOK_CURAH;
+                         metrics.stokSub[r.BULAN] = r.STOK_SUBSIDI; metrics.stokNon[r.BULAN] = r.STOK_NON_SUBSIDI;
+                         metrics.totalProd += r.PRODUKSI;
+                         if (r.BULAN > maxMonth) {
+                             maxMonth = r.BULAN; metrics.lastCurah = r.STOK_CURAH; metrics.lastSub = r.STOK_SUBSIDI; metrics.lastNon = r.STOK_NON_SUBSIDI;
+                             metrics.lastStock = r.STOK_CURAH + r.STOK_SUBSIDI + r.STOK_NON_SUBSIDI;
+                         }
+                    }
+                });
+
+                document.getElementById('val-lini1-prod').innerText = formatNumber(metrics.totalProd);
+                document.getElementById('val-lini1-stock').innerText = formatNumber(metrics.lastStock);
+                document.getElementById('val-lini1-curah').innerText = formatNumber(metrics.lastCurah);
+                document.getElementById('val-lini1-sub').innerText = formatNumber(metrics.lastSub);
+                document.getElementById('val-lini1-non').innerText = formatNumber(metrics.lastNon);
+                renderLini1Chart(metrics);
+            };
+
+            const renderNasionalChart = (nasStats) => {
+                const canvas = document.getElementById('chartNasional'); if(!canvas) return; const ctx = canvas.getContext('2d');
+                if(charts.nasional) charts.nasional.destroy();
+                const isUrea = state.activeProduct === 'UREA'; const data = isUrea ? nasStats.UREA : nasStats.NPK;
+                const color = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300); gradient.addColorStop(0, hexToRgbA(color, 0.4)); gradient.addColorStop(1, hexToRgbA(color, 0.0));
+                
+                charts.nasional = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+                        datasets: [
+                            { label: 'Realisasi', data: data.real, borderColor: color, backgroundColor: gradient, fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4 },
+                            { label: 'Target', data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointStyle: createDashedCircle(colorTarget) },
+                            { label: 'Stok', data: data.stock, type: 'bar', backgroundColor: '#616161', borderWidth: 0 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } }
+                });
+            };
+
+            const renderProvChart = () => {
+                const provName = document.getElementById('dropdown-provinsi').value; const canvas = document.getElementById('chartProvinsi'); if(!canvas) return; const ctx = canvas.getContext('2d');
+                if (!provName) { if(charts.provinsi) charts.provinsi.clear(); return; }
+                let mReal = Array(12).fill(0), mTarget = Array(12).fill(0), mStock = Array(12).fill(0);
+                state.rawData.forEach(r => {
+                    if (r.JENIS_DATA !== 'PSP') return; if (r.TAHUN !== state.selectedYear || r.PROVINSI !== provName) return;
+                    if ((state.sector === 'SUBSIDI' && !r.SEKTOR.includes('SUBSIDI')) || (state.sector !== 'SUBSIDI' && !r.SEKTOR.includes('RETAIL'))) return;
+                    let prodKey = (r.PRODUK.includes('UREA')) ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (prodKey !== state.activeProduct) return;
+                    if (r.BULAN >= 0) { if (r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI') mReal[r.BULAN] += r.TONASE; else if (r.JENIS === 'ALOKASI' || r.JENIS === 'RKO') mTarget[r.BULAN] += r.TONASE; else if (r.JENIS.includes('STOK') || r.KATEGORI === 'STOK') mStock[r.BULAN] += r.TONASE; }
+                });
+                if(charts.provinsi) charts.provinsi.destroy();
+                const colorMain = state.activeProduct === 'UREA' ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
+                charts.provinsi = new Chart(ctx, { type: 'line', data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets: [ { label: 'Realisasi', data: mReal, borderColor: colorMain, backgroundColor: hexToRgbA(colorMain, 0.1), fill: true, tension: 0.4, borderWidth: 3 }, { label: 'Target', data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2 }, { label: 'Stok', data: mStock, type: 'bar', backgroundColor: '#616161' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } } });
+            };
+
+             const renderNasionalDistChart = (nasStats) => {
+                const canvas = document.getElementById('chartNasionalDist'); if(!canvas) return; const ctx = canvas.getContext('2d');
+                if(charts.nasionalDist) charts.nasionalDist.destroy();
+                const isUrea = state.activeProduct === 'UREA'; const data = isUrea ? nasStats.UREA : nasStats.NPK;
+                const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
+                charts.nasionalDist = new Chart(ctx, { type: 'bar', data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets: [ { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, borderWidth: 3, fill: false, tension: 0.4 }, { type: 'line', label: 'Target', data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, fill: false }, { label: 'Truk', data: data.land, backgroundColor: '#555555', stack: 'stack1' }, { label: 'Kapal', data: data.sea, backgroundColor: '#B3B3B3', stack: 'stack1' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } } });
+            };
+
+            const renderDistProvChart = () => {
+                const provName = document.getElementById('dropdown-provinsi-dist').value; const canvas = document.getElementById('chartProvinsiDist'); if(!canvas) return; const ctx = canvas.getContext('2d');
+                if (!provName) { if(charts.provinsiDist) charts.provinsiDist.clear(); return; }
+                let mLand = Array(12).fill(0), mSea = Array(12).fill(0), mTarget = Array(12).fill(0), mStock = Array(12).fill(0);
+                state.rawData.forEach(r => {
+                    if (r.TAHUN !== state.selectedYear || r.PROVINSI !== provName) return; if (r.JENIS_DATA === 'LINI1') return; 
+                    let isSectorMatch = (state.sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
+                    let prodKey = (r.PRODUK.includes('UREA')) ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (prodKey !== state.activeProduct) return;
+                    if (r.BULAN >= 0) { if (r.JENIS === 'REALISASI DISTRIBUSI') { if (r.KATEGORI && (r.KATEGORI.includes('TRUCK') || r.KATEGORI.includes('DARAT'))) mLand[r.BULAN] += r.TONASE; else if (r.KATEGORI && (r.KATEGORI.includes('KAPAL') || r.KATEGORI.includes('LAUT'))) mSea[r.BULAN] += r.TONASE; } else if (r.JENIS === 'ALOKASI' || r.JENIS === 'RKO') mTarget[r.BULAN] += r.TONASE; else if (r.JENIS.includes('STOK') || r.KATEGORI === 'STOK') mStock[r.BULAN] += r.TONASE; }
+                });
+                if(charts.provinsiDist) charts.provinsiDist.destroy();
+                const isUrea = state.activeProduct === 'UREA'; const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
+                charts.provinsiDist = new Chart(ctx, { type: 'bar', data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets: [ { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, borderWidth: 3, tension: 0.4 }, { type: 'line', label: 'Target', data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2 }, { label: 'Truk', data: mLand, backgroundColor: '#555555', stack: 'stack1' }, { label: 'Kapal', data: mSea, backgroundColor: '#B3B3B3', stack: 'stack1' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } } });
+            };
+
+            const processSalesData = () => {
+                const { rawData, selectedYear, sector, activeProduct } = state;
+                let stats = { curr: { UREA: {real:0, target:0}, NPK: {real:0, target:0} }, prev: { UREA: {real:0}, NPK: {real:0} }, nasional: { UREA: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)}, NPK: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)} }, provinsi: {} };
+                const dropdownProvs = new Set(); let maxMonths = { UREA: -1, NPK: -1 };
+                rawData.forEach(r => {
+                    if (r.JENIS_DATA !== 'PSP') return;
+                    let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
+                    let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
+                     if (r.TAHUN === selectedYear && r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI' && r.BULAN > maxMonths[prodKey]) { maxMonths[prodKey] = r.BULAN; }
+                    let isReal = (r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI'); let isTarget = r.JENIS === 'ALOKASI' || r.JENIS === 'RKO'; let isStock = r.JENIS.includes('STOK') || r.KATEGORI === 'STOK';
+                    if (r.TAHUN === selectedYear) {
+                        if (isReal) { stats.curr[prodKey].real += r.TONASE; if(r.BULAN >= 0) stats.nasional[prodKey].real[r.BULAN] += r.TONASE; if (prodKey === activeProduct) { if(r.PROVINSI && r.PROVINSI !== 'LAINNYA') dropdownProvs.add(r.PROVINSI); if (!stats.provinsi[r.PROVINSI]) stats.provinsi[r.PROVINSI] = { real: 0, target: 0 }; stats.provinsi[r.PROVINSI].real += r.TONASE; } } 
+                        else if (isTarget) { stats.curr[prodKey].target += r.TONASE; if(r.BULAN >= 0) stats.nasional[prodKey].target[r.BULAN] += r.TONASE; if (prodKey === activeProduct) { if (!stats.provinsi[r.PROVINSI]) stats.provinsi[r.PROVINSI] = { real: 0, target: 0 }; stats.provinsi[r.PROVINSI].target += r.TONASE; } } 
+                        else if (isStock) { if(r.BULAN >= 0) stats.nasional[prodKey].stock[r.BULAN] += r.TONASE; }
+                    }
+                    if (r.TAHUN === (selectedYear - 1) && isReal) stats.prev[prodKey].real += r.TONASE;
+                });
+                if(state.page === 'SALES') { populateProvDropdown('dropdown-provinsi', [...dropdownProvs]); renderSalesKPI(stats, maxMonths); renderSalesRankings(stats.provinsi); renderNasionalChart(stats.nasional); renderProvChart(); }
+                statsGlobal = stats;
+            };
+
+             const renderSalesKPI = (stats) => {
+                const fmt = (n) => formatNumber(n);
+                ['UREA', 'NPK'].forEach(key => {
+                    const real = stats.curr[key].real, target = stats.curr[key].target; const pct = target > 0 ? (real / target * 100) : 0; const keyL = key.toLowerCase();
+                    document.getElementById(`val-${keyL}-real`).innerText = fmt(real); document.getElementById(`val-${keyL}-pct`).innerText = pct.toFixed(0) + '%'; document.getElementById(`prog-${keyL}`).style.width = Math.min(pct, 100) + '%'; document.getElementById(`val-${keyL}-target`).innerText = fmt(target);
+                    const sisa = target - real; const elSisa = document.getElementById(`val-${keyL}-sisa`); if(elSisa) elSisa.innerText = sisa > 0 ? fmt(sisa) : '0';
+                    let growth=0, isUp=true, prev=stats.prev[key].real; if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } else if(real>0) growth=100;
+                    const elG = document.getElementById(`growth-${keyL}-val`); if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
+                });
+            };
+
+            const renderSalesRankings = (provData) => {
+                const listBest = document.getElementById('list-top5'), listWarn = document.getElementById('list-others'); if (!listBest) return;
+                let arr = Object.keys(provData).map(k => ({ name: k, val: provData[k].target>0?(provData[k].real/provData[k].target)*100:0, disp: (provData[k].target>0?((provData[k].real/provData[k].target)*100).toFixed(1)+'%':'0%') }));
+                if(state.sector==='RETAIL') arr = Object.keys(provData).map(k => ({ name: k, val: provData[k].real, disp: formatNumber(provData[k].real) }));
+                arr.sort((a,b) => b.val - a.val);
+                listBest.innerHTML = arr.slice(0,5).map((i,idx)=>`<div class="rank-item"><div class="rank-left"><div class="rank-num best">${idx+1}</div><div class="rank-name">${i.name}</div></div><div class="rank-val val-best">${i.disp}</div></div>`).join('');
+                listWarn.innerHTML = arr.slice(Math.max(0, arr.length-5)).sort((a,b)=>a.val-b.val).map((i,idx)=>`<div class="rank-item"><div class="rank-left"><div class="rank-num warn">${idx+1}</div><div class="rank-name">${i.name}</div></div><div class="rank-val val-warn">${i.disp}</div></div>`).join('');
+            };
+
+            const processDistributionData = () => {
+                const { rawData, selectedYear, sector, activeProduct } = state;
+                let distStats = { curr: { UREA: {real:0}, NPK: {real:0} }, prev: { UREA: {real:0}, NPK: {real:0} }, details: { UREA: { bag: 0, bulk: 0, land: 0, sea: 0 }, NPK: { bag: 0, bulk: 0, land: 0, sea: 0 } }, nasional: { UREA: {real:[], target:[], land:Array(12).fill(0), sea:Array(12).fill(0), stock:[]}, NPK: {real:[], target:[], land:Array(12).fill(0), sea:Array(12).fill(0), stock:[]} }, provinsi: {} };
+                if(statsGlobal) { ['UREA','NPK'].forEach(p => { distStats.nasional[p].target=statsGlobal.nasional[p].target; distStats.nasional[p].stock=statsGlobal.nasional[p].stock; }); }
+                const dropdownProvs = new Set();
+                rawData.forEach(r => {
+                    if (r.JENIS_DATA !== 'DISTRIBUSI') return;
+                    let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
+                    let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
+                    if (r.TAHUN === selectedYear) {
+                         distStats.curr[prodKey].real += r.TONASE;
+                         if (r.KATEGORI && (r.KATEGORI.includes('TRUCK') || r.KATEGORI.includes('DARAT'))) { distStats.details[prodKey].land += r.TONASE; if(r.BULAN>=0) distStats.nasional[prodKey].land[r.BULAN]+=r.TONASE; } else { distStats.details[prodKey].sea += r.TONASE; if(r.BULAN>=0) distStats.nasional[prodKey].sea[r.BULAN]+=r.TONASE; }
+                         if(r.MATERIAL && r.MATERIAL.includes('CURAH')) distStats.details[prodKey].bulk += r.TONASE; else distStats.details[prodKey].bag += r.TONASE;
+                         if (prodKey === activeProduct) { if(r.PROVINSI) dropdownProvs.add(r.PROVINSI); if (!distStats.provinsi[r.PROVINSI]) distStats.provinsi[r.PROVINSI] = { real: 0 }; distStats.provinsi[r.PROVINSI].real += r.TONASE; }
+                    }
+                    if (r.TAHUN === (selectedYear-1)) distStats.prev[prodKey].real += r.TONASE;
+                });
+                distStatsGlobal = distStats;
+                if(state.page === 'DISTRIBUSI') { populateProvDropdown('dropdown-provinsi-dist', [...dropdownProvs]); renderDistKPI(distStats); renderDistRankings(distStats.provinsi); renderNasionalDistChart(distStats.nasional); renderDistProvChart(); }
+            };
+
+            const renderDistKPI = (stats) => {
+                const fmt = (n) => formatNumber(n);
+                ['UREA', 'NPK'].forEach(key => {
+                     const real = stats.curr[key].real, det = stats.details[key], keyL = key.toLowerCase();
+                     document.getElementById(`val-dist-${keyL}-real`).innerText = fmt(real);
+                     const getPct = (v) => real>0?((v/real)*100).toFixed(0)+'%':'0%';
+                     document.getElementById(`val-dist-${keyL}-inbag`).innerText = getPct(det.bag); document.getElementById(`val-dist-${keyL}-curah`).innerText = getPct(det.bulk); document.getElementById(`val-dist-${keyL}-truck`).innerText = getPct(det.land); document.getElementById(`val-dist-${keyL}-kapal`).innerText = getPct(det.sea);
+                     let growth=0, isUp=true, prev=stats.prev[key].real; if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } else if(real>0) growth=100;
+                     const elG = document.getElementById(`growth-dist-${keyL}-val`); if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
+                });
+            };
+
+            const renderDistRankings = (provData) => {
+                 const listBest = document.getElementById('list-dist-top5'), listWarn = document.getElementById('list-dist-others'); if (!listBest) return;
+                 let arr = Object.keys(provData).map(k => ({ name: k, val: provData[k].real, disp: formatNumber(provData[k].real) }));
+                 arr.sort((a,b) => b.val - a.val);
+                 listBest.innerHTML = arr.slice(0,5).map((i,idx)=>`<div class="rank-item"><div class="rank-left"><div class="rank-num best">${idx+1}</div><div class="rank-name">${i.name}</div></div><div class="rank-val val-best">${i.disp}</div></div>`).join('');
+                 listWarn.innerHTML = arr.slice(Math.max(0, arr.length-5)).sort((a,b)=>a.val-b.val).map((i,idx)=>`<div class="rank-item"><div class="rank-left"><div class="rank-num warn">${idx+1}</div><div class="rank-name">${i.name}</div></div><div class="rank-val val-warn">${i.disp}</div></div>`).join('');
+            };
+
+            const updateDashboard = () => {
+                const { page } = state;
+                document.getElementById('view-sales').style.display = page === 'SALES' ? 'block' : 'none';
+                document.getElementById('view-distribution').style.display = page === 'DISTRIBUSI' ? 'block' : 'none';
+                document.getElementById('view-lini1').style.display = page === 'LINI1' ? 'block' : 'none';
+                processSalesData(); processDistributionData(); if(page === 'LINI1') processLini1Data();
+            };
+
+            const processData = (data) => {
+                state.rawData = data.map(row => ({
+                    TAHUN: parseInt(row.TAHUN) || 0,
+                    BULAN: normalizeMonth(row.BULAN),
+                    SEKTOR: String(row.SEKTOR || '').toUpperCase(),
+                    PRODUK: String(row.PRODUK || '').toUpperCase(),
+                    JENIS: String(row.JENIS || '').toUpperCase(),
+                    KATEGORI: String(row.KATEGORI || '').toUpperCase(),
+                    MATERIAL: String(row.MATERIAL || '').toUpperCase(),
+                    PROVINSI: toTitleCase(String(row.PROVINSI || '')),
+                    TONASE: parseIndoNumber(row.TONASE),
+                    // LINI 1 Specifics
+                    JENIS_DATA: row.JENIS_DATA || 'PSP',
+                    PRODUKSI: parseIndoNumber(row.PRODUKSI),
+                    // FIXED: Handle fallback keys for Lini 1 Data (Spaces vs Underscores)
+                    STOK_CURAH: parseIndoNumber(row.STOK_CURAH || row['STOK CURAH']),
+                    STOK_SUBSIDI: parseIndoNumber(row.STOK_SUBSIDI || row['STOK SUBSIDI']),
+                    STOK_NON_SUBSIDI: parseIndoNumber(row.STOK_NON_SUBSIDI || row['STOK NON SUBSIDI'])
+                }));
+                infoAiData = data.filter(r => r.JENIS_DATA === 'INFO_AI');
+
+                const years = [...new Set(state.rawData.map(r => r.TAHUN))].sort((a,b) => b-a);
+                const yearSel = document.getElementById('year-select');
+                if (yearSel && years.length > 0) {
+                    yearSel.innerHTML = '';
+                    years.forEach(y => { let opt = document.createElement('option'); opt.value = y; opt.text = y; if(y === state.selectedYear) opt.selected = true; yearSel.appendChild(opt); });
+                }
+                updateDashboard(); 
+            };
+
+            const fetchData = async (passwordInput) => {
+                // UI Elements for Auth
+                const authBtn = document.querySelector('.btn-square');
+                const authInput = document.getElementById('appPassword');
+                const authBox = document.querySelector('.auth-box');
+                const err = document.getElementById('authError');
+                
+                // 1. Loading State UI
+                if(authBtn) {
+                    authBtn.disabled = true;
+                    authBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Memproses...';
+                }
+                if(authInput) authInput.disabled = true;
+                if(err) err.style.display = 'none';
+
+                // Loader global (optional, but hidden by z-index anyway usually)
+                const loader = document.getElementById('loader');
+                // loader.style.display = 'flex'; // Skip global loader for auth flow to focus on box
+
+                try {
+                    // SECURE POST REQUEST: Updated Content-Type to text/plain to avoid CORS
+                    const res = await fetch(BASE_API_URL, {
+                        redirect: "follow",
+                        method: 'POST',
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ password: passwordInput, action: 'GET_ALL_DATA' })
+                    });
+                    
+                    const json = await res.json();
+
+                    if (json.status === 'error') {
+                        throw new Error(json.message || 'Akses Ditolak');
+                    }
+
+                    // 2. Success Animation UI
+                    if(authBox) {
+                        authBox.classList.add('success-state');
+                        authBox.innerHTML = `
+                            <div class="auth-success-icon"><i class="fas fa-check-circle"></i></div>
+                            <div style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:8px;">Akses Diterima</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">Menyiapkan Dashboard...</div>
+                        `;
+                    }
+
+                    // Success Login Logic
+                    state.password = passwordInput;
+                    sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
+                    
+                    // Process Data in background while animation plays
+                    processData(json.data);
+
+                    // Delay for animation (1.5s)
+                    await new Promise(r => setTimeout(r, 1500));
+                    
+                    document.getElementById('authOverlay').style.opacity = '0';
+                    setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; }, 500);
+
+                    // Set Date header
+                    const now = new Date();
+                    const formattedDate = `Update: ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    document.getElementById('header-update-text').innerText = formattedDate;
+
+                } catch (e) {
+                    console.error(e);
+                    // Reset UI on Error
+                    if(authBtn) {
+                        authBtn.disabled = false;
+                        authBtn.innerText = 'BUKA DASHBOARD';
+                    }
+                    if(authInput) {
+                        authInput.disabled = false;
+                        authInput.focus();
+                    }
+                    
+                    if(err) {
+                        err.style.display = 'block';
+                        err.innerText = "Gagal: " + e.message;
+                    }
+                    
+                    sessionStorage.removeItem(CACHE_KEY_AUTH_TOKEN);
+                } finally {
+                    if(loader) loader.style.display = 'none';
+                }
+            };
+
+            const init = () => { 
+                if (state.password) { fetchData(state.password); } 
+                else { document.getElementById('authOverlay').style.display = 'flex'; document.getElementById('loader').style.display = 'none'; }
+                checkScreenSize(); 
+                const btn = document.getElementById('parent-sales'); if(btn) toggleMenu('submenu-sales', btn);
+            };
+            
+            // AI Analyze Helper
+            const analyzeData = async (type) => {
+                const flipInner = document.getElementById(`flip-${type}`);
+                const content = document.getElementById(`ai-${type}-content`);
+                
+                flipInner.classList.add('flipped');
+                content.innerHTML = '<div style="margin-top:60px; text-align:center; color:var(--text-secondary);"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><span style="font-size:12px; margin-top:10px; display:block;">Menyiapkan insight...</span></div>';
+
+                const prod = state.activeProduct; 
+                const sec = state.sector; 
+                const year = state.selectedYear;
+
+                const refData = (prod === 'UREA' ? statsGlobal.nasional.UREA.real : statsGlobal.nasional.NPK.real);
+                let lastMonthIdx = 0;
+                for(let i=11; i>=0; i--) {
+                    if(refData[i] > 0) { lastMonthIdx = i; break; }
+                }
+                const monthsName = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                const currMonthName = monthsName[lastMonthIdx];
+                const monthsElapsed = lastMonthIdx + 1;
+
+                let ytdReal = 0, ytdTarget = 0, annualTarget = 0, currentStock = 0, ctxLabel = "";
+
+                if (type.includes('nasional')) {
+                    const source = type === 'nasional' ? statsGlobal : distStatsGlobal;
+                    const d = prod === 'UREA' ? source.nasional.UREA : source.nasional.NPK;
+                    ytdReal = d.real.slice(0, monthsElapsed).reduce((a,b)=>a+b,0);
+                    ytdTarget = d.target.slice(0, monthsElapsed).reduce((a,b)=>a+b,0);
+                    annualTarget = d.target.reduce((a,b)=>a+b,0);
+                    currentStock = d.stock[lastMonthIdx];
+                    ctxLabel = type === 'nasional' ? 'Nasional' : 'Distribusi Nasional';
+                } else if (type.includes('provinsi')) {
+                    const isDist = type.includes('Dist');
+                    const dropdownId = isDist ? 'dropdown-provinsi-dist' : 'dropdown-provinsi';
+                    const provName = document.getElementById(dropdownId).value;
+                    if(!provName) { content.innerHTML = "<p>Pilih provinsi dulu.</p>"; return; }
+                    ctxLabel = (isDist ? 'Distribusi ' : 'Penjualan ') + provName;
+
+                    state.rawData.forEach(r => {
+                        if (r.TAHUN !== year || r.PROVINSI !== provName) return;
+                        let isSectorMatch = (sec === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
+                        let prodKey = ''; if (r.PRODUK.includes('UREA')) prodKey = 'UREA'; else if (r.PRODUK.includes('NPK')) prodKey = 'NPK'; if (prodKey !== prod) return;
+
+                        let isReal = false, isTarget = false, isStock = false;
+                        if (isDist) { if (r.JENIS === 'REALISASI DISTRIBUSI') isReal = true; else if (r.JENIS === 'ALOKASI' || r.JENIS === 'RKO') isTarget = true; } 
+                        else { if (r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI') isReal = true; else if (r.JENIS === 'ALOKASI' || r.JENIS === 'RKO') isTarget = true; }
+                        if (r.JENIS.includes('STOK') || r.KATEGORI === 'STOK') isStock = true;
+
+                        if (isReal && r.BULAN <= lastMonthIdx) ytdReal += r.TONASE;
+                        if (isTarget) { annualTarget += r.TONASE; if (r.BULAN <= lastMonthIdx) ytdTarget += r.TONASE; }
+                        if (isStock && r.BULAN === lastMonthIdx) currentStock += r.TONASE;
+                    });
+                }
+                const pctYtd = ytdTarget > 0 ? (ytdReal / ytdTarget * 100).toFixed(1) : 0;
+                const pctAnnual = annualTarget > 0 ? (ytdReal / annualTarget * 100).toFixed(1) : 0;
+                const termTarget = sec === 'RETAIL' ? 'RKAP' : 'Alokasi';
+                
+                const ctxData = `DATA: ${ctxLabel}, Produk ${prod}, Sektor ${sec}, Tahun ${year}.\n- Realisasi Kumulatif (s.d ${currMonthName}): ${formatNumber(ytdReal)} Ton.\n- ${termTarget} Kumulatif (s.d ${currMonthName}): ${formatNumber(ytdTarget)} Ton.\n- ${termTarget} Tahunan: ${formatNumber(annualTarget)} Ton.\n- Stok Saat Ini (Akhir ${currMonthName}): ${formatNumber(currentStock)} Ton.\n- % Capaian vs ${termTarget} Kumulatif: ${pctYtd}%.\n- % Capaian vs ${termTarget} Tahunan: ${pctAnnual}%.`;
+
+                let relevantInfo = infoAiData.filter(item => {
+                    const iStatus = item.STATUS ? item.STATUS.toUpperCase().trim() : ''; if (iStatus !== 'AKTIF') return false;
+                    const iYear = parseInt(item.TAHUN); const iSektor = item.SEKTOR ? item.SEKTOR.toUpperCase() : 'SEMUA'; const iProduk = item.PRODUK ? item.PRODUK.toUpperCase() : 'SEMUA'; const iProv = item.PROVINSI ? toTitleCase(item.PROVINSI) : 'SEMUA';
+                    if (iYear !== year && iYear !== (year - 1)) return false;
+                    const matchSektor = (iSektor === 'SEMUA' || iSektor === sec); const matchProduk = (iProduk === 'SEMUA' || iProduk === prod);
+                    let matchProv = true; if (type.includes('provinsi')) { const currentProv = document.getElementById(type.includes('Dist') ? 'dropdown-provinsi-dist' : 'dropdown-provinsi').value; matchProv = (iProv === 'SEMUA' || iProv === currentProv || iProv.toUpperCase() === 'NASIONAL'); } else { matchProv = (iProv === 'SEMUA' || iProv.toUpperCase() === 'NASIONAL'); }
+                    return matchSektor && matchProduk && matchProv;
+                });
+
+                let contextString = "";
+                if (relevantInfo.length > 0) {
+                    contextString = "\n\nFAKTOR EKSTERNAL / BERITA:"; relevantInfo.sort((a,b) => a.TAHUN - b.TAHUN);
+                    relevantInfo.forEach(info => { const cat = info.KATEGORI || 'Info'; const labelWaktu = `(${info.TAHUN} ${info.BULAN || ''})`; contextString += `\n- [${cat}] ${labelWaktu} ${info.INFORMASI}`; });
+                }
+
+                const promptText = `Peran: Senior Data Analyst.\nData Kinerja:\n${ctxData}\nInfo Pendukung:\n${contextString || "Tidak ada isu khusus."}\nInstruksi:\n1. Analisa performa berdasarkan capaian terhadap ${termTarget} Kumulatif (s.d bulan ini) dan Ketersediaan Stok.\n2. Berikan 3 poin insight: Status, Faktor Penyebab, dan Rekomendasi Aksi.\n3. ATURAN PENTING: Gunakan tepat 2 kalimat per poin.\n4. FORMAT OUTPUT: Gunakan format "Label: Isi". Gunakan istilah "${termTarget}" sesuai data.\nFormat HTML (Body Only):\n<ul style="margin:0; padding-left:1.2em; font-size:12px;"><li style="margin-bottom:6px;"><strong>Status:</strong> (Analisa capaian vs ${termTarget} & posisi stok aman/tidak).</li><li style="margin-bottom:6px;"><strong>Faktor:</strong> (Penyebab utama dari data/info).</li><li style="margin-bottom:6px;"><strong>Aksi:</strong> (Rekomendasi strategis).</li></ul>`;
+                
+                const apiKey = ""; 
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }) });
+                    const result = await response.json();
+                    if (!result.candidates || result.candidates.length === 0) { console.error("Gemini API Error (No Candidates):", result); content.innerHTML = `<p style="color:var(--color-danger); padding:10px;">Maaf, AI sedang sibuk atau tidak dapat memberikan respon saat ini.</p>`; return; }
+                    let cleanText = result.candidates[0].content.parts[0].text.replace(/```html/g, '').replace(/```/g, '').trim();
+                    content.innerHTML = `<div style="padding-top:10px;">${cleanText}</div>`;
+                } catch (e) { console.error("Analysis Error:", e); content.innerHTML = `<p style="padding:10px;">Gagal memuat AI. Cek koneksi internet.</p>`; }
+            };
+
+            const flipCard = (type) => { document.getElementById(`flip-${type}`).classList.remove('flipped'); };
+
+            return {
+                init, toggleSidebar: () => { state.sidebarOpen = !state.sidebarOpen; renderSidebar(); }, toggleTheme, toggleMenu,
+                navigate: (pageType, sectorType) => {
+                    state.page = pageType; state.sector = sectorType;
+                    document.querySelectorAll('.nav-sub-item, .nav-item').forEach(el => el.classList.remove('active'));
+                    let activeId = ''; if(pageType === 'LINI1') { activeId = 'nav-lini1'; } else if (pageType === 'SALES') { activeId = sectorType==='SUBSIDI'?'nav-sales-subsidi':'nav-sales-retail'; } else { activeId = sectorType==='SUBSIDI'?'nav-dist-subsidi':'nav-dist-retail'; }
+                    const el = document.getElementById(activeId); if(el) el.classList.add('active');
+                    const pageTitle = document.getElementById('page-title-text'); if(pageType === 'LINI1') pageTitle.innerText = 'Stok Lini 1'; else pageTitle.innerText = (pageType==='SALES'?'Penjualan ':'Distribusi ') + (sectorType==='SUBSIDI'?'Subsidi':'Retail');
+                    updateDashboard(); if(window.innerWidth <= 768) { state.sidebarOpen = false; renderSidebar(); }
+                },
+                changeYear: (val) => { state.selectedYear = parseInt(val); updateDashboard(); },
+                setChartProduct: (prod) => { state.activeProduct = prod; const buttons = document.querySelectorAll('.btn-filter'); buttons.forEach(b => { b.classList.toggle('active', b.id.includes(prod.toLowerCase())); }); updateDashboard(); },
+                renderProvChart, renderDistProvChart,
+                loginApp: () => { const p = document.getElementById('appPassword').value; if(!p) return; fetchData(p); },
+                logoutApp: () => { sessionStorage.removeItem(CACHE_KEY_AUTH_TOKEN); location.reload(); },
+                analyzeData, flipCard
+            };
+        })();
+        window.onload = app.init;
+    </script>
 </body>
 </html>
 
