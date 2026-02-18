@@ -190,6 +190,16 @@
 
         .nav-spacer { flex-grow: 1; }
 
+        .btn-logout-sidebar {
+            margin-top: auto; 
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .btn-logout-sidebar:hover {
+            color: var(--color-danger);
+            background: rgba(248, 113, 113, 0.1);
+        }
+
         .sidebar-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5); z-index: 90;
@@ -221,13 +231,12 @@
         }
         .header-left { display: flex; align-items: center; gap: 20px; }
 
-        .btn-toggle-sidebar, .btn-theme-toggle, .btn-logout {
+        .btn-toggle-sidebar, .btn-theme-toggle {
             background: transparent; border: none; color: var(--text-secondary);
             font-size: 18px; cursor: pointer; padding: 8px; border-radius: 8px;
             transition: color 0.2s;
         }
-        .btn-toggle-sidebar:hover, .btn-theme-toggle:hover, .btn-logout:hover { background: var(--bg-hover); color: var(--text-primary); }
-        .btn-logout:hover { color: var(--color-danger); }
+        .btn-toggle-sidebar:hover, .btn-theme-toggle:hover { background: var(--bg-hover); color: var(--text-primary); }
 
         .page-title h1 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 0px; }
         .page-title p { font-size: 11px; color: var(--text-secondary); }
@@ -404,7 +413,8 @@
             .main-content { margin-left: 0 !important; }
             body { font-size: 12px; }
             header { padding: 0 16px; height: 56px; min-height: 56px; }
-            .kpi-grid, .kpi-grid-lini1 { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+            /* KPI GRID MOBILE - 1 COLUMN = 3 ROWS for Lini 1 page */
+            .kpi-grid, .kpi-grid-lini1 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
             .kpi-modern { padding: 14px; min-height: 140px; justify-content: flex-start; }
             .kpi-big { font-size: 20px; }
             .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
@@ -482,10 +492,15 @@
 
         <!-- MENU LINI 1 (NEW) -->
         <div class="nav-item" id="nav-lini1" onclick="app.navigate('LINI1', 'ALL')">
-            <i class="fas fa-warehouse"></i> <span>STOK LINI 1</span>
+            <i class="fas fa-warehouse"></i> <span>LINI 1</span>
         </div>
 
         <div class="nav-spacer"></div>
+
+        <!-- LOGOUT BUTTON (MOVED HERE) -->
+        <div class="nav-item btn-logout-sidebar" onclick="app.logoutApp()" title="Logout">
+             <i class="fas fa-power-off"></i> <span>LOGOUT</span>
+        </div>
     </aside>
 
     <!-- MAIN CONTENT -->
@@ -501,9 +516,6 @@
             <div class="header-actions">
                 <button class="btn-theme-toggle" onclick="app.toggleTheme()" title="Ganti Tema">
                     <i id="theme-icon" class="fas fa-sun"></i>
-                </button>
-                <button class="btn-logout" onclick="app.logoutApp()" title="Logout">
-                    <i class="fas fa-power-off"></i>
                 </button>
                 <select class="custom-select" id="year-select" onchange="app.changeYear(this.value)"></select>
             </div>
@@ -858,14 +870,15 @@
 
     <!-- JAVASCRIPT -->
     <script>
+        // GLOBAL CHART DEFAULTS - SMOOTH LINES
         Chart.defaults.color = '#b3b3b3';
         Chart.defaults.borderColor = '#424242';
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
         Chart.defaults.font.size = 11;
         Chart.defaults.animation = false;
+        Chart.defaults.elements.line.tension = 0.4; // Make all lines smooth
 
         const app = (() => {
-            // URL UPDATED AS REQUESTED
             const BASE_API_URL = 'https://script.google.com/macros/s/AKfycbyxGclTQ8dCWG6_VZmyVfRDmsu_DWPhAw3NsGMuqHp9QEtmf4kn8c_peVcs1zoJ-pEGmA/exec';
             
             const CACHE_KEY_DATA = 'local_raw_data';
@@ -882,7 +895,7 @@
                 sidebarOpen: true,
                 theme: localStorage.getItem('theme') || 'dark',
                 lastDataHash: localStorage.getItem(CACHE_KEY_HASH) || '',
-                lastUpdateDate: localStorage.getItem(CACHE_KEY_TIME) || 'Overview Performa',
+                lastUpdateDate: localStorage.getItem(CACHE_KEY_TIME) || '-',
                 password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || ''
             };
 
@@ -907,16 +920,22 @@
                 let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
             }
 
-            const createDashedCircle = (color) => {
-                const size = 12; const r = 4.5; const c = document.createElement('canvas');
-                c.width = size; c.height = size; const ctx = c.getContext('2d');
-                ctx.beginPath(); ctx.setLineDash([2, 2]); ctx.lineWidth = 1.5;
-                ctx.strokeStyle = color; ctx.arc(size/2, size/2, r, 0, 2 * Math.PI); ctx.stroke();
-                return c;
-            };
-
             const normalizeMonth = (str) => { const map = {'JAN':0, 'JANUARI':0, 'FEB':1, 'FEBRUARI':1, 'MAR':2, 'MARET':2, 'APR':3, 'APRIL':3, 'MEI':4, 'MAY':4, 'JUN':5, 'JUNI':5, 'JUL':6, 'JULI':6, 'AGU':7, 'AGUSTUS':7, 'SEP':8, 'SEPTEMBER':8, 'OKT':9, 'OKTOBER':9, 'NOV':10, 'NOVEMBER':10, 'DES':11, 'DESEMBER':11}; return map[String(str).toUpperCase().trim()] ?? -1; };
             const toTitleCase = (str) => str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+            
+            const getTargetLabel = () => state.sector === 'SUBSIDI' ? 'Alokasi' : 'RKAP';
+
+            // Simple Hash function to check for data changes
+            const generateHash = (str) => {
+                let hash = 0;
+                if (str.length === 0) return hash;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return hash.toString();
+            };
 
             const toggleTheme = () => {
                 state.theme = state.theme === 'dark' ? 'light' : 'dark';
@@ -981,36 +1000,24 @@
                 if(charts.lini1) charts.lini1.destroy();
                 const isUrea = state.activeProduct === 'UREA';
                 const colorProd = isUrea ? '#FFDE00' : '#38bdf8'; 
-                const colorCurah = '#555555'; const colorSub = '#4ade80'; const colorNon = '#a855f7'; // Purple for contrast
+                const colorCurah = '#555555'; const colorSub = '#4ade80'; const colorNon = '#a855f7'; 
 
                 charts.lini1 = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                         datasets: [
-                            { type: 'line', label: 'Produksi', data: dataLini1.produksi, borderColor: colorProd, backgroundColor: colorProd, borderWidth: 3, tension: 0.4, pointRadius: 4, order: 1 },
+                            { type: 'line', label: 'Produksi', data: dataLini1.produksi, borderColor: colorProd, backgroundColor: colorProd, borderWidth: 3, pointRadius: 4, order: 1 },
                             { label: 'Stok Curah', data: dataLini1.stokCurah, backgroundColor: colorCurah, stack: 'stock', order: 2 },
                             { label: 'Stok Subsidi', data: dataLini1.stokSub, backgroundColor: colorSub, stack: 'stock', order: 3 },
                             { label: 'Stok Non-Sub', data: dataLini1.stokNon, backgroundColor: colorNon, stack: 'stock', order: 4 }
                         ]
                     },
                     options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
+                        responsive: true, maintainAspectRatio: false, 
                         interaction: { mode: 'index', intersect: false }, 
-                        plugins: { 
-                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, 
-                            tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } } 
-                        }, 
-                        scales: { 
-                            x: { grid: { display: false }, stacked: true }, 
-                            y: { 
-                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb' }, 
-                                beginAtZero: true, 
-                                stacked: true, // FIXED: Force stacking on Y axis
-                                ticks: { maxTicksLimit: 5, callback: (v) => v===0?null:(v>=1000?(v/1000)+' rb':v) } 
-                            } 
-                        } 
+                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } } }, 
+                        scales: { x: { grid: { display: false }, stacked: true }, y: { grid: { color: state.theme==='dark'?'#333':'#e5e7eb' }, beginAtZero: true, stacked: true, ticks: { maxTicksLimit: 5, callback: (v) => v===0?null:(v>=1000?(v/1000)+' rb':v) } } } 
                     }
                 });
             };
@@ -1058,12 +1065,16 @@
                     data: {
                         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                         datasets: [
-                            { label: 'Realisasi', data: data.real, borderColor: color, backgroundColor: gradient, fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4 },
-                            { label: 'Target', data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointStyle: createDashedCircle(colorTarget) },
+                            { label: 'Realisasi', data: data.real, borderColor: color, backgroundColor: gradient, fill: true, borderWidth: 3, pointRadius: 4 },
+                            { label: getTargetLabel(), data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointRadius: 0, pointHoverRadius: 0 },
                             { label: 'Stok', data: data.stock, type: 'bar', backgroundColor: '#616161', borderWidth: 0 }
                         ]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } }
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { mode: 'index', intersect: false } }, 
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                    }
                 });
             };
 
@@ -1079,7 +1090,23 @@
                 });
                 if(charts.provinsi) charts.provinsi.destroy();
                 const colorMain = state.activeProduct === 'UREA' ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
-                charts.provinsi = new Chart(ctx, { type: 'line', data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets: [ { label: 'Realisasi', data: mReal, borderColor: colorMain, backgroundColor: hexToRgbA(colorMain, 0.1), fill: true, tension: 0.4, borderWidth: 3 }, { label: 'Target', data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2 }, { label: 'Stok', data: mStock, type: 'bar', backgroundColor: '#616161' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } } });
+                
+                charts.provinsi = new Chart(ctx, { 
+                    type: 'line', 
+                    data: { 
+                        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
+                        datasets: [ 
+                            { label: 'Realisasi', data: mReal, borderColor: colorMain, backgroundColor: hexToRgbA(colorMain, 0.1), fill: true, borderWidth: 3 }, 
+                            { label: getTargetLabel(), data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointRadius: 0, pointHoverRadius: 0 }, 
+                            { label: 'Stok', data: mStock, type: 'bar', backgroundColor: '#616161' } 
+                        ] 
+                    }, 
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                    } 
+                });
             };
 
              const renderNasionalDistChart = (nasStats) => {
@@ -1087,7 +1114,24 @@
                 if(charts.nasionalDist) charts.nasionalDist.destroy();
                 const isUrea = state.activeProduct === 'UREA'; const data = isUrea ? nasStats.UREA : nasStats.NPK;
                 const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
-                charts.nasionalDist = new Chart(ctx, { type: 'bar', data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets: [ { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, borderWidth: 3, fill: false, tension: 0.4 }, { type: 'line', label: 'Target', data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, fill: false }, { label: 'Truk', data: data.land, backgroundColor: '#555555', stack: 'stack1' }, { label: 'Kapal', data: data.sea, backgroundColor: '#B3B3B3', stack: 'stack1' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } } });
+                
+                charts.nasionalDist = new Chart(ctx, { 
+                    type: 'bar', 
+                    data: { 
+                        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
+                        datasets: [ 
+                            { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, borderWidth: 3, fill: false }, 
+                            { type: 'line', label: getTargetLabel(), data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, fill: false, pointRadius: 0, pointHoverRadius: 0 }, 
+                            { label: 'Truk', data: data.land, backgroundColor: '#555555', stack: 'stack1' }, 
+                            { label: 'Kapal', data: data.sea, backgroundColor: '#B3B3B3', stack: 'stack1' } 
+                        ] 
+                    }, 
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
+                        scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                    } 
+                });
             };
 
             const renderDistProvChart = () => {
@@ -1102,38 +1146,86 @@
                 });
                 if(charts.provinsiDist) charts.provinsiDist.destroy();
                 const isUrea = state.activeProduct === 'UREA'; const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
-                charts.provinsiDist = new Chart(ctx, { type: 'bar', data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets: [ { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, borderWidth: 3, tension: 0.4 }, { type: 'line', label: 'Target', data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2 }, { label: 'Truk', data: mLand, backgroundColor: '#555555', stack: 'stack1' }, { label: 'Kapal', data: mSea, backgroundColor: '#B3B3B3', stack: 'stack1' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } } });
+                
+                charts.provinsiDist = new Chart(ctx, { 
+                    type: 'bar', 
+                    data: { 
+                        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
+                        datasets: [ 
+                            { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, borderWidth: 3 }, 
+                            { type: 'line', label: getTargetLabel(), data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointRadius: 0, pointHoverRadius: 0 }, 
+                            { label: 'Truk', data: mLand, backgroundColor: '#555555', stack: 'stack1' }, 
+                            { label: 'Kapal', data: mSea, backgroundColor: '#B3B3B3', stack: 'stack1' } 
+                        ] 
+                    }, 
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
+                        scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                    } 
+                });
             };
 
             const processSalesData = () => {
                 const { rawData, selectedYear, sector, activeProduct } = state;
                 let stats = { curr: { UREA: {real:0, target:0}, NPK: {real:0, target:0} }, prev: { UREA: {real:0}, NPK: {real:0} }, nasional: { UREA: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)}, NPK: {real:Array(12).fill(0), target:Array(12).fill(0), stock:Array(12).fill(0)} }, provinsi: {} };
                 const dropdownProvs = new Set(); let maxMonths = { UREA: -1, NPK: -1 };
+                
+                // First Pass: Find Max Month for Current Year
+                rawData.forEach(r => {
+                     if (r.JENIS_DATA !== 'PSP') return;
+                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
+                     let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
+                     if (r.TAHUN === selectedYear && r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI' && r.BULAN > maxMonths[prodKey]) { maxMonths[prodKey] = r.BULAN; }
+                });
+
+                // Second Pass: Accumulate Data
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'PSP') return;
                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
                     let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
-                     if (r.TAHUN === selectedYear && r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI' && r.BULAN > maxMonths[prodKey]) { maxMonths[prodKey] = r.BULAN; }
-                    let isReal = (r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI'); let isTarget = r.JENIS === 'ALOKASI' || r.JENIS === 'RKO'; let isStock = r.JENIS.includes('STOK') || r.KATEGORI === 'STOK';
+                    
+                    let isReal = (r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI'); 
+                    let isTarget = r.JENIS === 'ALOKASI' || r.JENIS === 'RKO'; 
+                    let isStock = r.JENIS.includes('STOK') || r.KATEGORI === 'STOK';
+                    
                     if (r.TAHUN === selectedYear) {
                         if (isReal) { stats.curr[prodKey].real += r.TONASE; if(r.BULAN >= 0) stats.nasional[prodKey].real[r.BULAN] += r.TONASE; if (prodKey === activeProduct) { if(r.PROVINSI && r.PROVINSI !== 'LAINNYA') dropdownProvs.add(r.PROVINSI); if (!stats.provinsi[r.PROVINSI]) stats.provinsi[r.PROVINSI] = { real: 0, target: 0 }; stats.provinsi[r.PROVINSI].real += r.TONASE; } } 
                         else if (isTarget) { stats.curr[prodKey].target += r.TONASE; if(r.BULAN >= 0) stats.nasional[prodKey].target[r.BULAN] += r.TONASE; if (prodKey === activeProduct) { if (!stats.provinsi[r.PROVINSI]) stats.provinsi[r.PROVINSI] = { real: 0, target: 0 }; stats.provinsi[r.PROVINSI].target += r.TONASE; } } 
                         else if (isStock) { if(r.BULAN >= 0) stats.nasional[prodKey].stock[r.BULAN] += r.TONASE; }
                     }
-                    if (r.TAHUN === (selectedYear - 1) && isReal) stats.prev[prodKey].real += r.TONASE;
+                    // YOY LOGIC FIX: Compare YTD previous year vs YTD current year
+                    if (r.TAHUN === (selectedYear - 1) && isReal) {
+                        if (r.BULAN <= maxMonths[prodKey] || maxMonths[prodKey] === -1) {
+                             stats.prev[prodKey].real += r.TONASE;
+                        }
+                    }
                 });
                 if(state.page === 'SALES') { populateProvDropdown('dropdown-provinsi', [...dropdownProvs]); renderSalesKPI(stats, maxMonths); renderSalesRankings(stats.provinsi); renderNasionalChart(stats.nasional); renderProvChart(); }
                 statsGlobal = stats;
             };
 
-             const renderSalesKPI = (stats) => {
+             const renderSalesKPI = (stats, maxMonths) => {
                 const fmt = (n) => formatNumber(n);
                 ['UREA', 'NPK'].forEach(key => {
                     const real = stats.curr[key].real, target = stats.curr[key].target; const pct = target > 0 ? (real / target * 100) : 0; const keyL = key.toLowerCase();
-                    document.getElementById(`val-${keyL}-real`).innerText = fmt(real); document.getElementById(`val-${keyL}-pct`).innerText = pct.toFixed(0) + '%'; document.getElementById(`prog-${keyL}`).style.width = Math.min(pct, 100) + '%'; document.getElementById(`val-${keyL}-target`).innerText = fmt(target);
-                    const sisa = target - real; const elSisa = document.getElementById(`val-${keyL}-sisa`); if(elSisa) elSisa.innerText = sisa > 0 ? fmt(sisa) : '0';
-                    let growth=0, isUp=true, prev=stats.prev[key].real; if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } else if(real>0) growth=100;
-                    const elG = document.getElementById(`growth-${keyL}-val`); if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
+                    document.getElementById(`val-${keyL}-real`).innerText = fmt(real); document.getElementById(`val-${keyL}-pct`).innerText = pct.toFixed(0) + '%'; document.getElementById(`prog-${keyL}`).style.width = Math.min(pct, 100) + '%'; 
+                    document.getElementById(`lbl-${keyL}-target`).innerHTML = `${getTargetLabel()}: <span id="val-${keyL}-target">${fmt(target)}</span>`;
+                    const sisa = target - real; const elSisa = document.getElementById(`row-${keyL}-sisa`); if(elSisa) elSisa.innerHTML = `Sisa ${getTargetLabel()}: <span id="val-${keyL}-sisa">${sisa > 0 ? fmt(sisa) : '0'}</span>`;
+
+                    let growth=0, isUp=true, prev=stats.prev[key].real; 
+                    if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } 
+                    else if(real>0 && prev===0) { growth=100; } // Fallback if no prev data but current exists
+                    
+                    const elG = document.getElementById(`growth-${keyL}-val`); 
+                    if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
+                    
+                    // Update Legend Text
+                    const mName = maxMonths[key] > -1 ? `(s.d ${new Date(0, maxMonths[key]).toLocaleString('id-ID', {month:'short'})})` : '';
+                    document.getElementById(`year-curr-${keyL}`).innerText = `${state.selectedYear}`;
+                    document.getElementById(`year-prev-${keyL}`).innerText = `${state.selectedYear-1}`;
+                    document.getElementById(`val-${keyL}-curr`).innerText = fmt(real);
+                    document.getElementById(`val-${keyL}-prev`).innerText = fmt(prev);
                 });
             };
 
@@ -1151,6 +1243,17 @@
                 let distStats = { curr: { UREA: {real:0}, NPK: {real:0} }, prev: { UREA: {real:0}, NPK: {real:0} }, details: { UREA: { bag: 0, bulk: 0, land: 0, sea: 0 }, NPK: { bag: 0, bulk: 0, land: 0, sea: 0 } }, nasional: { UREA: {real:[], target:[], land:Array(12).fill(0), sea:Array(12).fill(0), stock:[]}, NPK: {real:[], target:[], land:Array(12).fill(0), sea:Array(12).fill(0), stock:[]} }, provinsi: {} };
                 if(statsGlobal) { ['UREA','NPK'].forEach(p => { distStats.nasional[p].target=statsGlobal.nasional[p].target; distStats.nasional[p].stock=statsGlobal.nasional[p].stock; }); }
                 const dropdownProvs = new Set();
+                let maxMonths = { UREA: -1, NPK: -1 };
+
+                // Pass 1: Find Max Month
+                rawData.forEach(r => {
+                     if (r.JENIS_DATA !== 'DISTRIBUSI') return;
+                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
+                     let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
+                     if (r.TAHUN === selectedYear && r.BULAN > maxMonths[prodKey]) { maxMonths[prodKey] = r.BULAN; }
+                });
+
+                // Pass 2: Accumulate
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'DISTRIBUSI') return;
                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
@@ -1161,7 +1264,11 @@
                          if(r.MATERIAL && r.MATERIAL.includes('CURAH')) distStats.details[prodKey].bulk += r.TONASE; else distStats.details[prodKey].bag += r.TONASE;
                          if (prodKey === activeProduct) { if(r.PROVINSI) dropdownProvs.add(r.PROVINSI); if (!distStats.provinsi[r.PROVINSI]) distStats.provinsi[r.PROVINSI] = { real: 0 }; distStats.provinsi[r.PROVINSI].real += r.TONASE; }
                     }
-                    if (r.TAHUN === (selectedYear-1)) distStats.prev[prodKey].real += r.TONASE;
+                    if (r.TAHUN === (selectedYear-1)) {
+                         if (r.BULAN <= maxMonths[prodKey] || maxMonths[prodKey] === -1) {
+                             distStats.prev[prodKey].real += r.TONASE;
+                         }
+                    }
                 });
                 distStatsGlobal = distStats;
                 if(state.page === 'DISTRIBUSI') { populateProvDropdown('dropdown-provinsi-dist', [...dropdownProvs]); renderDistKPI(distStats); renderDistRankings(distStats.provinsi); renderNasionalDistChart(distStats.nasional); renderDistProvChart(); }
@@ -1174,8 +1281,17 @@
                      document.getElementById(`val-dist-${keyL}-real`).innerText = fmt(real);
                      const getPct = (v) => real>0?((v/real)*100).toFixed(0)+'%':'0%';
                      document.getElementById(`val-dist-${keyL}-inbag`).innerText = getPct(det.bag); document.getElementById(`val-dist-${keyL}-curah`).innerText = getPct(det.bulk); document.getElementById(`val-dist-${keyL}-truck`).innerText = getPct(det.land); document.getElementById(`val-dist-${keyL}-kapal`).innerText = getPct(det.sea);
-                     let growth=0, isUp=true, prev=stats.prev[key].real; if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } else if(real>0) growth=100;
-                     const elG = document.getElementById(`growth-dist-${keyL}-val`); if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
+                     
+                     let growth=0, isUp=true, prev=stats.prev[key].real; 
+                     if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } else if(real>0 && prev===0) growth=100;
+                     
+                     const elG = document.getElementById(`growth-dist-${keyL}-val`); 
+                     if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
+
+                     document.getElementById(`year-curr-dist-${keyL}`).innerText = `${state.selectedYear}`;
+                     document.getElementById(`year-prev-dist-${keyL}`).innerText = `${state.selectedYear-1}`;
+                     document.getElementById(`val-dist-${keyL}-curr`).innerText = fmt(real);
+                     document.getElementById(`val-dist-${keyL}-prev`).innerText = fmt(prev);
                 });
             };
 
@@ -1206,10 +1322,8 @@
                     MATERIAL: String(row.MATERIAL || '').toUpperCase(),
                     PROVINSI: toTitleCase(String(row.PROVINSI || '')),
                     TONASE: parseIndoNumber(row.TONASE),
-                    // LINI 1 Specifics
                     JENIS_DATA: row.JENIS_DATA || 'PSP',
                     PRODUKSI: parseIndoNumber(row.PRODUKSI),
-                    // FIXED: Handle fallback keys for Lini 1 Data (Spaces vs Underscores)
                     STOK_CURAH: parseIndoNumber(row.STOK_CURAH || row['STOK CURAH']),
                     STOK_SUBSIDI: parseIndoNumber(row.STOK_SUBSIDI || row['STOK SUBSIDI']),
                     STOK_NON_SUBSIDI: parseIndoNumber(row.STOK_NON_SUBSIDI || row['STOK NON SUBSIDI'])
@@ -1226,26 +1340,18 @@
             };
 
             const fetchData = async (passwordInput) => {
-                // UI Elements for Auth
                 const authBtn = document.querySelector('.btn-square');
                 const authInput = document.getElementById('appPassword');
                 const authBox = document.querySelector('.auth-box');
                 const err = document.getElementById('authError');
                 
-                // 1. Loading State UI
-                if(authBtn) {
-                    authBtn.disabled = true;
-                    authBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SABAR YE...';
-                }
+                if(authBtn) { authBtn.disabled = true; authBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SABAR YE...'; }
                 if(authInput) authInput.disabled = true;
                 if(err) err.style.display = 'none';
 
-                // Loader global (optional, but hidden by z-index anyway usually)
                 const loader = document.getElementById('loader');
-                // loader.style.display = 'flex'; // Skip global loader for auth flow to focus on box
 
                 try {
-                    // SECURE POST REQUEST: Updated Content-Type to text/plain to avoid CORS
                     const res = await fetch(BASE_API_URL, {
                         redirect: "follow",
                         method: 'POST',
@@ -1255,55 +1361,45 @@
                     
                     const json = await res.json();
 
-                    if (json.status === 'error') {
-                        throw new Error(json.message || 'Akses Ditolak');
-                    }
+                    if (json.status === 'error') { throw new Error(json.message || 'Akses Ditolak'); }
 
-                    // 2. Success Animation UI
                     if(authBox) {
                         authBox.classList.add('success-state');
-                        authBox.innerHTML = `
-                            <div class="auth-success-icon"><i class="fas fa-check-circle"></i></div>
-                            <div style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:8px;">Akses Diterima</div>
-                            <div style="font-size:12px; color:var(--text-secondary);">Menyiapkan Dashboard...</div>
-                        `;
+                        authBox.innerHTML = `<div class="auth-success-icon"><i class="fas fa-check-circle"></i></div><div style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:8px;">Akses Diterima</div><div style="font-size:12px; color:var(--text-secondary);">Menyiapkan Dashboard...</div>`;
                     }
 
-                    // Success Login Logic
                     state.password = passwordInput;
                     sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
+
+                    // SMART DATE UPDATE LOGIC
+                    const dataString = JSON.stringify(json.data);
+                    const newHash = generateHash(dataString);
+                    const storedHash = localStorage.getItem(CACHE_KEY_HASH);
                     
-                    // Process Data in background while animation plays
+                    let displayDate = localStorage.getItem(CACHE_KEY_TIME);
+
+                    // If data changed or no date stored, update date
+                    if (newHash !== storedHash || !displayDate) {
+                        const now = new Date();
+                        // Format: dd/mm/yyyy only
+                        displayDate = `Update: ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+                        localStorage.setItem(CACHE_KEY_HASH, newHash);
+                        localStorage.setItem(CACHE_KEY_TIME, displayDate);
+                    }
+                    
+                    document.getElementById('header-update-text').innerText = displayDate;
+                    
                     processData(json.data);
 
-                    // Delay for animation (1.5s)
                     await new Promise(r => setTimeout(r, 1500));
-                    
                     document.getElementById('authOverlay').style.opacity = '0';
                     setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; }, 500);
 
-                    // Set Date header
-                    const now = new Date();
-                    const formattedDate = `Update: ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                    document.getElementById('header-update-text').innerText = formattedDate;
-
                 } catch (e) {
                     console.error(e);
-                    // Reset UI on Error
-                    if(authBtn) {
-                        authBtn.disabled = false;
-                        authBtn.innerText = 'BUKA DASHBOARD';
-                    }
-                    if(authInput) {
-                        authInput.disabled = false;
-                        authInput.focus();
-                    }
-                    
-                    if(err) {
-                        err.style.display = 'block';
-                        err.innerText = "Gagal: " + e.message;
-                    }
-                    
+                    if(authBtn) { authBtn.disabled = false; authBtn.innerText = 'BUKA DASHBOARD'; }
+                    if(authInput) { authInput.disabled = false; authInput.focus(); }
+                    if(err) { err.style.display = 'block'; err.innerText = "Gagal: " + e.message; }
                     sessionStorage.removeItem(CACHE_KEY_AUTH_TOKEN);
                 } finally {
                     if(loader) loader.style.display = 'none';
@@ -1413,7 +1509,7 @@
                     document.querySelectorAll('.nav-sub-item, .nav-item').forEach(el => el.classList.remove('active'));
                     let activeId = ''; if(pageType === 'LINI1') { activeId = 'nav-lini1'; } else if (pageType === 'SALES') { activeId = sectorType==='SUBSIDI'?'nav-sales-subsidi':'nav-sales-retail'; } else { activeId = sectorType==='SUBSIDI'?'nav-dist-subsidi':'nav-dist-retail'; }
                     const el = document.getElementById(activeId); if(el) el.classList.add('active');
-                    const pageTitle = document.getElementById('page-title-text'); if(pageType === 'LINI1') pageTitle.innerText = 'Stok Lini 1'; else pageTitle.innerText = (pageType==='SALES'?'Penjualan ':'Distribusi ') + (sectorType==='SUBSIDI'?'Subsidi':'Retail');
+                    const pageTitle = document.getElementById('page-title-text'); if(pageType === 'LINI1') pageTitle.innerText = 'LINI 1'; else pageTitle.innerText = (pageType==='SALES'?'Penjualan ':'Distribusi ') + (sectorType==='SUBSIDI'?'Subsidi':'Retail');
                     updateDashboard(); if(window.innerWidth <= 768) { state.sidebarOpen = false; renderSidebar(); }
                 },
                 changeYear: (val) => { state.selectedYear = parseInt(val); updateDashboard(); },
@@ -1428,5 +1524,3 @@
     </script>
 </body>
 </html>
-
-
