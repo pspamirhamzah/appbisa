@@ -413,8 +413,13 @@
             .main-content { margin-left: 0 !important; }
             body { font-size: 12px; }
             header { padding: 0 16px; height: 56px; min-height: 56px; }
-            /* KPI GRID MOBILE - 1 COLUMN = 3 ROWS for Lini 1 page */
-            .kpi-grid, .kpi-grid-lini1 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+            
+            /* KPI GRID MOBILE UPDATED */
+            /* Penjualan/Distribusi cards cards returned to 2 columns */
+            .kpi-grid { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+            /* Lini 1 cards stay 1 column */
+            .kpi-grid-lini1 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+            
             .kpi-modern { padding: 14px; min-height: 140px; justify-content: flex-start; }
             .kpi-big { font-size: 20px; }
             .chart-grid, .ranking-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
@@ -916,6 +921,14 @@
 
             const formatNumber = (num) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(num);
 
+            // New Y-Axis Formatter for Professional Look
+            const formatYAxis = (v) => {
+                if (v === 0) return 0;
+                if (Math.abs(v) >= 1000000) return (v / 1000000).toFixed(1) + ' jt';
+                if (Math.abs(v) >= 1000) return (v / 1000).toFixed(0) + ' rb';
+                return v;
+            };
+
             const hexToRgbA = (hex, alpha) => {
                 let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return hex;
             }
@@ -1017,7 +1030,16 @@
                         responsive: true, maintainAspectRatio: false, 
                         interaction: { mode: 'index', intersect: false }, 
                         plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } } }, 
-                        scales: { x: { grid: { display: false }, stacked: true }, y: { grid: { color: state.theme==='dark'?'#333':'#e5e7eb' }, beginAtZero: true, stacked: true, ticks: { maxTicksLimit: 5, callback: (v) => v===0?null:(v>=1000?(v/1000)+' rb':v) } } } 
+                        scales: { 
+                            x: { grid: { display: false }, stacked: true }, 
+                            y: { 
+                                beginAtZero: true, 
+                                stacked: true,
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
+                                ticks: { maxTicksLimit: 6, callback: formatYAxis },
+                                border: { display: false }
+                            } 
+                        } 
                     }
                 });
             };
@@ -1073,7 +1095,15 @@
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
                         plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { mode: 'index', intersect: false } }, 
-                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                        scales: { 
+                            x: { grid: { display: false } }, 
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
+                                ticks: { maxTicksLimit: 6, callback: formatYAxis },
+                                border: { display: false }
+                            } 
+                        } 
                     }
                 });
             };
@@ -1104,7 +1134,15 @@
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
                         plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
-                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                        scales: { 
+                            x: { grid: { display: false } }, 
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
+                                ticks: { maxTicksLimit: 6, callback: formatYAxis },
+                                border: { display: false }
+                            } 
+                        } 
                     } 
                 });
             };
@@ -1129,7 +1167,16 @@
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
                         plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
-                        scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                        scales: { 
+                            x: { grid: { display: false }, stacked: true }, 
+                            y: { 
+                                beginAtZero: true, 
+                                stacked: false, 
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
+                                ticks: { maxTicksLimit: 6, callback: formatYAxis },
+                                border: { display: false }
+                            } 
+                        } 
                     } 
                 });
             };
@@ -1161,7 +1208,16 @@
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
                         plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
-                        scales: { x: { grid: { display: false }, stacked: true }, y: { beginAtZero: true, stacked: false, grid: { color: state.theme==='dark'?'#333':'#e5e7eb' } } } 
+                        scales: { 
+                            x: { grid: { display: false }, stacked: true }, 
+                            y: { 
+                                beginAtZero: true, 
+                                stacked: false, 
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
+                                ticks: { maxTicksLimit: 6, callback: formatYAxis },
+                                border: { display: false }
+                            } 
+                        } 
                     } 
                 });
             };
@@ -1330,7 +1386,8 @@
                 }));
                 infoAiData = data.filter(r => r.JENIS_DATA === 'INFO_AI');
 
-                const years = [...new Set(state.rawData.map(r => r.TAHUN))].sort((a,b) => b-a);
+                // FIX: FILTER TAHUN > 0
+                const years = [...new Set(state.rawData.map(r => r.TAHUN))].filter(y => y > 0).sort((a,b) => b-a);
                 const yearSel = document.getElementById('year-select');
                 if (yearSel && years.length > 0) {
                     yearSel.innerHTML = '';
