@@ -51,7 +51,7 @@
             --color-npk: #38bdf8;        
             --color-success: #4ade80;    
             --color-danger: #f87171;      
-            --color-stock: #a8a29e;       
+            --color-stock: #a8a29e;        
             --color-accent-1: #ffffff; 
             
             /* Medal Colors */
@@ -436,7 +436,6 @@
         <div class="auth-box">
             <div class="auth-logo">APP <span>bisa</span></div>
             <div class="auth-subtitle">Adm Pemasaran & Penjualan</div>
-            <!-- Ikon perisai dihapus -->
             <input type="password" id="appPassword" class="input-square" placeholder="Masukkan Password" onkeyup="if(event.keyCode===13) app.loginApp()">
             <button class="btn-square" onclick="app.loginApp()">BUKA DASHBOARD</button>
             <p id="authError" style="color: var(--color-danger); font-size: 11px; margin-top: 10px; display: none;">Password salah!</p>
@@ -495,14 +494,14 @@
             </div>
         </div>
 
-        <!-- MENU LINI 1 (NEW) -->
+        <!-- MENU LINI 1 -->
         <div class="nav-item" id="nav-lini1" onclick="app.navigate('LINI1', 'ALL')">
             <i class="fas fa-warehouse"></i> <span>LINI 1</span>
         </div>
 
         <div class="nav-spacer"></div>
 
-        <!-- LOGOUT BUTTON (MOVED HERE) -->
+        <!-- LOGOUT BUTTON -->
         <div class="nav-item btn-logout-sidebar" onclick="app.logoutApp()" title="Logout">
              <i class="fas fa-power-off"></i> <span>LOGOUT</span>
         </div>
@@ -851,17 +850,25 @@
                     </div>
                 </div>
 
-                <div class="chart-grid-full">
-                    <!-- Chart Lini 1 -->
+                <div class="chart-grid">
+                    <!-- Chart Lini 1 - Produksi & Stok -->
                     <div class="card">
                         <div class="chart-header">
-                            <div class="chart-title">Produksi & Stok Lini 1</div>
+                            <div class="chart-title">Produksi & Stok Curah</div>
                             <div class="btn-group">
                                 <button class="btn-filter active f-urea" id="btn-lini1-urea" onclick="app.setChartProduct('UREA')">UREA</button>
                                 <button class="btn-filter" id="btn-lini1-npk" onclick="app.setChartProduct('NPK')">NPK</button>
                             </div>
                         </div>
-                        <div class="chart-canvas-container"><canvas id="chartLini1"></canvas></div>
+                        <div class="chart-canvas-container"><canvas id="chartLini1Prod"></canvas></div>
+                    </div>
+
+                    <!-- Chart Lini 1 - Stok Subsidi vs Non Sub -->
+                    <div class="card">
+                        <div class="chart-header">
+                            <div class="chart-title">Stok Subsidi vs Non-Subsidi</div>
+                        </div>
+                        <div class="chart-canvas-container"><canvas id="chartLini1Stock"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -904,7 +911,7 @@
                 password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || ''
             };
 
-            let charts = { nasional: null, provinsi: null, nasionalDist: null, provinsiDist: null, lini1: null };
+            let charts = { nasional: null, provinsi: null, nasionalDist: null, provinsiDist: null, lini1Prod: null, lini1Stock: null };
             let statsGlobal = null; 
             let distStatsGlobal = null;
             let infoAiData = [];
@@ -1007,34 +1014,70 @@
             };
 
             const renderLini1Chart = (dataLini1) => {
-                const canvas = document.getElementById('chartLini1');
-                if(!canvas) return;
-                const ctx = canvas.getContext('2d');
-                if(charts.lini1) charts.lini1.destroy();
+                const canvasProd = document.getElementById('chartLini1Prod');
+                const canvasStock = document.getElementById('chartLini1Stock');
+                if(!canvasProd || !canvasStock) return;
+                
+                const ctxProd = canvasProd.getContext('2d');
+                const ctxStock = canvasStock.getContext('2d');
+                
+                if(charts.lini1Prod) charts.lini1Prod.destroy();
+                if(charts.lini1Stock) charts.lini1Stock.destroy();
+                
                 const isUrea = state.activeProduct === 'UREA';
                 const colorProd = isUrea ? '#FFDE00' : '#38bdf8'; 
-                const colorCurah = '#555555'; const colorSub = '#4ade80'; const colorNon = '#a855f7'; 
+                const colorTotal = '#555555'; 
+                const colorSub = '#4ade80'; 
+                const colorNon = '#a855f7'; 
 
-                charts.lini1 = new Chart(ctx, {
+                // Grafik 1: Produksi & Stok Curah
+                charts.lini1Prod = new Chart(ctxProd, {
                     type: 'bar',
                     data: {
                         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
                         datasets: [
                             { type: 'line', label: 'Produksi', data: dataLini1.produksi, borderColor: colorProd, backgroundColor: colorProd, borderWidth: 3, pointRadius: 4, order: 1 },
-                            { label: 'Stok Curah', data: dataLini1.stokCurah, backgroundColor: colorCurah, stack: 'stock', order: 2 },
-                            { label: 'Stok Subsidi', data: dataLini1.stokSub, backgroundColor: colorSub, stack: 'stock', order: 3 },
-                            { label: 'Stok Non-Sub', data: dataLini1.stokNon, backgroundColor: colorNon, stack: 'stock', order: 4 }
+                            { label: 'Stok Curah', data: dataLini1.stokCurah, backgroundColor: colorTotal, order: 2 }
                         ]
                     },
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
-                        interaction: { mode: 'index', intersect: false }, 
-                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + formatNumber(c.raw) } } }, 
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, 
+                            tooltip: { mode: 'index', intersect: false } 
+                        }, 
                         scales: { 
-                            x: { grid: { display: false }, stacked: true }, 
+                            x: { grid: { display: false } }, 
                             y: { 
                                 beginAtZero: true, 
-                                stacked: true,
+                                grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
+                                ticks: { maxTicksLimit: 6, callback: formatYAxis },
+                                border: { display: false }
+                            } 
+                        } 
+                    }
+                });
+
+                // Grafik 2: Stok Subsidi vs Non-Subsidi
+                charts.lini1Stock = new Chart(ctxStock, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+                        datasets: [
+                            { label: 'Stok Subsidi', data: dataLini1.stokSub, backgroundColor: colorSub },
+                            { label: 'Stok Non-Subsidi', data: dataLini1.stokNon, backgroundColor: colorNon }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, 
+                            tooltip: { mode: 'index', intersect: false } 
+                        }, 
+                        scales: { 
+                            x: { grid: { display: false } }, 
+                            y: { 
+                                beginAtZero: true, 
                                 grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
                                 ticks: { maxTicksLimit: 6, callback: formatYAxis },
                                 border: { display: false }
@@ -1046,7 +1089,7 @@
 
             const processLini1Data = () => {
                 const { rawData, selectedYear, activeProduct } = state;
-                let metrics = { produksi: Array(12).fill(0), stokCurah: Array(12).fill(0), stokSub: Array(12).fill(0), stokNon: Array(12).fill(0), totalProd: 0, lastStock: 0, lastCurah: 0, lastSub: 0, lastNon: 0 };
+                let metrics = { produksi: Array(12).fill(0), stokCurah: Array(12).fill(0), stokSub: Array(12).fill(0), stokNon: Array(12).fill(0), stokTotal: Array(12).fill(0), totalProd: 0, lastStock: 0, lastCurah: 0, lastSub: 0, lastNon: 0 };
                 let maxMonth = -1;
 
                 rawData.forEach(r => {
@@ -1057,8 +1100,11 @@
                     if (prodKey !== activeProduct) return;
 
                     if (r.BULAN >= 0) {
-                         metrics.produksi[r.BULAN] = r.PRODUKSI; metrics.stokCurah[r.BULAN] = r.STOK_CURAH;
-                         metrics.stokSub[r.BULAN] = r.STOK_SUBSIDI; metrics.stokNon[r.BULAN] = r.STOK_NON_SUBSIDI;
+                         metrics.produksi[r.BULAN] = r.PRODUKSI; 
+                         metrics.stokCurah[r.BULAN] = r.STOK_CURAH;
+                         metrics.stokSub[r.BULAN] = r.STOK_SUBSIDI; 
+                         metrics.stokNon[r.BULAN] = r.STOK_NON_SUBSIDI;
+                         metrics.stokTotal[r.BULAN] = r.STOK_CURAH + r.STOK_SUBSIDI + r.STOK_NON_SUBSIDI;
                          metrics.totalProd += r.PRODUKSI;
                          if (r.BULAN > maxMonth) {
                              maxMonth = r.BULAN; metrics.lastCurah = r.STOK_CURAH; metrics.lastSub = r.STOK_SUBSIDI; metrics.lastNon = r.STOK_NON_SUBSIDI;
@@ -1094,7 +1140,10 @@
                     },
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
-                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { mode: 'index', intersect: false } }, 
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } }, 
+                            tooltip: { mode: 'index', intersect: false } 
+                        }, 
                         scales: { 
                             x: { grid: { display: false } }, 
                             y: { 
@@ -1133,7 +1182,10 @@
                     }, 
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
-                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } },
+                            tooltip: { mode: 'index', intersect: false } 
+                        },
                         scales: { 
                             x: { grid: { display: false } }, 
                             y: { 
@@ -1147,7 +1199,7 @@
                 });
             };
 
-             const renderNasionalDistChart = (nasStats) => {
+            const renderNasionalDistChart = (nasStats) => {
                 const canvas = document.getElementById('chartNasionalDist'); if(!canvas) return; const ctx = canvas.getContext('2d');
                 if(charts.nasionalDist) charts.nasionalDist.destroy();
                 const isUrea = state.activeProduct === 'UREA'; const data = isUrea ? nasStats.UREA : nasStats.NPK;
@@ -1158,20 +1210,23 @@
                     data: { 
                         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
                         datasets: [ 
-                            { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, borderWidth: 3, fill: false }, 
-                            { type: 'line', label: getTargetLabel(), data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, fill: false, pointRadius: 0, pointHoverRadius: 0 }, 
+                            { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, borderWidth: 3, fill: false, stack: 'stok' }, 
+                            { type: 'line', label: getTargetLabel(), data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, fill: false, pointRadius: 0, pointHoverRadius: 0, stack: 'target' }, 
                             { label: 'Truk', data: data.land, backgroundColor: '#555555', stack: 'stack1' }, 
                             { label: 'Kapal', data: data.sea, backgroundColor: '#B3B3B3', stack: 'stack1' } 
                         ] 
                     }, 
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
-                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } },
+                            tooltip: { mode: 'index', intersect: false } 
+                        },
                         scales: { 
                             x: { grid: { display: false }, stacked: true }, 
                             y: { 
                                 beginAtZero: true, 
-                                stacked: false, 
+                                stacked: true, 
                                 grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
                                 ticks: { maxTicksLimit: 6, callback: formatYAxis },
                                 border: { display: false }
@@ -1199,20 +1254,23 @@
                     data: { 
                         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
                         datasets: [ 
-                            { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, borderWidth: 3 }, 
-                            { type: 'line', label: getTargetLabel(), data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointRadius: 0, pointHoverRadius: 0 }, 
+                            { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, borderWidth: 3, stack: 'stok' }, 
+                            { type: 'line', label: getTargetLabel(), data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointRadius: 0, pointHoverRadius: 0, stack: 'target' }, 
                             { label: 'Truk', data: mLand, backgroundColor: '#555555', stack: 'stack1' }, 
                             { label: 'Kapal', data: mSea, backgroundColor: '#B3B3B3', stack: 'stack1' } 
                         ] 
                     }, 
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
-                        plugins: { legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } } },
+                        plugins: { 
+                            legend: { display: true, labels: { usePointStyle: true, boxWidth: 8 } },
+                            tooltip: { mode: 'index', intersect: false } 
+                        },
                         scales: { 
                             x: { grid: { display: false }, stacked: true }, 
                             y: { 
                                 beginAtZero: true, 
-                                stacked: false, 
+                                stacked: true,
                                 grid: { color: state.theme==='dark'?'#333':'#e5e7eb', drawBorder: false }, 
                                 ticks: { maxTicksLimit: 6, callback: formatYAxis },
                                 border: { display: false }
@@ -1250,7 +1308,6 @@
                         else if (isTarget) { stats.curr[prodKey].target += r.TONASE; if(r.BULAN >= 0) stats.nasional[prodKey].target[r.BULAN] += r.TONASE; if (prodKey === activeProduct) { if (!stats.provinsi[r.PROVINSI]) stats.provinsi[r.PROVINSI] = { real: 0, target: 0 }; stats.provinsi[r.PROVINSI].target += r.TONASE; } } 
                         else if (isStock) { if(r.BULAN >= 0) stats.nasional[prodKey].stock[r.BULAN] += r.TONASE; }
                     }
-                    // YOY LOGIC FIX: Compare YTD previous year vs YTD current year
                     if (r.TAHUN === (selectedYear - 1) && isReal) {
                         if (r.BULAN <= maxMonths[prodKey] || maxMonths[prodKey] === -1) {
                              stats.prev[prodKey].real += r.TONASE;
@@ -1271,12 +1328,11 @@
 
                     let growth=0, isUp=true, prev=stats.prev[key].real; 
                     if(prev>0) { growth=((real-prev)/prev)*100; isUp=growth>=0; } 
-                    else if(real>0 && prev===0) { growth=100; } // Fallback if no prev data but current exists
+                    else if(real>0 && prev===0) { growth=100; } 
                     
                     const elG = document.getElementById(`growth-${keyL}-val`); 
                     if(elG) { elG.innerText = (growth>0?'+':'')+growth.toFixed(1)+'%'; elG.style.color = isUp?'var(--color-success)':'var(--color-danger)'; }
                     
-                    // Update Legend Text
                     const mName = maxMonths[key] > -1 ? `(s.d ${new Date(0, maxMonths[key]).toLocaleString('id-ID', {month:'short'})})` : '';
                     document.getElementById(`year-curr-${keyL}`).innerText = `${state.selectedYear}`;
                     document.getElementById(`year-prev-${keyL}`).innerText = `${state.selectedYear-1}`;
@@ -1306,7 +1362,7 @@
                      if (r.JENIS_DATA !== 'DISTRIBUSI') return;
                      let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
                      let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
-                     if (r.TAHUN === selectedYear && r.BULAN > maxMonths[prodKey]) { maxMonths[prodKey] = r.BULAN; }
+                     if (r.TAHUN === selectedYear && r.JENIS === 'REALISASI DISTRIBUSI' && r.BULAN > maxMonths[prodKey]) { maxMonths[prodKey] = r.BULAN; }
                 });
 
                 // Pass 2: Accumulate
@@ -1314,14 +1370,30 @@
                     if (r.JENIS_DATA !== 'DISTRIBUSI') return;
                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); if (!isSectorMatch) return;
                     let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : ''); if (!prodKey) return;
+                    
                     if (r.TAHUN === selectedYear) {
-                         distStats.curr[prodKey].real += r.TONASE;
-                         if (r.KATEGORI && (r.KATEGORI.includes('TRUCK') || r.KATEGORI.includes('DARAT'))) { distStats.details[prodKey].land += r.TONASE; if(r.BULAN>=0) distStats.nasional[prodKey].land[r.BULAN]+=r.TONASE; } else { distStats.details[prodKey].sea += r.TONASE; if(r.BULAN>=0) distStats.nasional[prodKey].sea[r.BULAN]+=r.TONASE; }
-                         if(r.MATERIAL && r.MATERIAL.includes('CURAH')) distStats.details[prodKey].bulk += r.TONASE; else distStats.details[prodKey].bag += r.TONASE;
-                         if (prodKey === activeProduct) { if(r.PROVINSI) dropdownProvs.add(r.PROVINSI); if (!distStats.provinsi[r.PROVINSI]) distStats.provinsi[r.PROVINSI] = { real: 0 }; distStats.provinsi[r.PROVINSI].real += r.TONASE; }
+                         if (r.JENIS === 'REALISASI DISTRIBUSI') {
+                             distStats.curr[prodKey].real += r.TONASE;
+                             
+                             if (r.KATEGORI && (r.KATEGORI.includes('TRUCK') || r.KATEGORI.includes('DARAT'))) {
+                                 distStats.details[prodKey].land += r.TONASE;
+                                 if(r.BULAN>=0) distStats.nasional[prodKey].land[r.BULAN]+=r.TONASE;
+                             } else if (r.KATEGORI && (r.KATEGORI.includes('KAPAL') || r.KATEGORI.includes('LAUT'))) {
+                                 distStats.details[prodKey].sea += r.TONASE;
+                                 if(r.BULAN>=0) distStats.nasional[prodKey].sea[r.BULAN]+=r.TONASE;
+                             }
+                             
+                             if(r.MATERIAL && r.MATERIAL.includes('CURAH')) distStats.details[prodKey].bulk += r.TONASE; else distStats.details[prodKey].bag += r.TONASE;
+                             
+                             if (prodKey === activeProduct) { 
+                                 if(r.PROVINSI) dropdownProvs.add(r.PROVINSI); 
+                                 if (!distStats.provinsi[r.PROVINSI]) distStats.provinsi[r.PROVINSI] = { real: 0 }; 
+                                 distStats.provinsi[r.PROVINSI].real += r.TONASE; 
+                             }
+                         }
                     }
                     if (r.TAHUN === (selectedYear-1)) {
-                         if (r.BULAN <= maxMonths[prodKey] || maxMonths[prodKey] === -1) {
+                         if (r.JENIS === 'REALISASI DISTRIBUSI' && (r.BULAN <= maxMonths[prodKey] || maxMonths[prodKey] === -1)) {
                              distStats.prev[prodKey].real += r.TONASE;
                          }
                     }
@@ -1386,7 +1458,6 @@
                 }));
                 infoAiData = data.filter(r => r.JENIS_DATA === 'INFO_AI');
 
-                // FIX: FILTER TAHUN > 0
                 const years = [...new Set(state.rawData.map(r => r.TAHUN))].filter(y => y > 0).sort((a,b) => b-a);
                 const yearSel = document.getElementById('year-select');
                 if (yearSel && years.length > 0) {
@@ -1435,10 +1506,8 @@
                     
                     let displayDate = localStorage.getItem(CACHE_KEY_TIME);
 
-                    // If data changed or no date stored, update date
                     if (newHash !== storedHash || !displayDate) {
                         const now = new Date();
-                        // Format: dd/mm/yyyy only
                         displayDate = `Update: ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
                         localStorage.setItem(CACHE_KEY_HASH, newHash);
                         localStorage.setItem(CACHE_KEY_TIME, displayDate);
@@ -1470,7 +1539,6 @@
                 const btn = document.getElementById('parent-sales'); if(btn) toggleMenu('submenu-sales', btn);
             };
             
-            // AI Analyze Helper
             const analyzeData = async (type) => {
                 const flipInner = document.getElementById(`flip-${type}`);
                 const content = document.getElementById(`ai-${type}-content`);
