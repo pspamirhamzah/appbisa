@@ -390,6 +390,15 @@
             box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
         }
 
+        /* SYNC ANIMATION STYLES */
+        .sync-step {
+            font-size: 13px; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 14px; display: flex; align-items: center; gap: 12px;
+            transition: opacity 0.3s;
+        }
+        .sync-step i { font-size: 16px; width: 20px; text-align: center; }
+        .sync-step i.fa-circle { font-size: 8px; color: var(--text-muted); }
+
         /* LOADER */
         #loader { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--color-urea); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
@@ -1468,18 +1477,56 @@
             };
 
             const fetchData = async (passwordInput) => {
-                const authBtn = document.querySelector('.btn-square');
                 const authInput = document.getElementById('appPassword');
                 const authBox = document.querySelector('.auth-box');
                 const err = document.getElementById('authError');
                 
-                if(authBtn) { authBtn.disabled = true; authBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SABAR YE...'; }
                 if(authInput) authInput.disabled = true;
                 if(err) err.style.display = 'none';
 
-                const loader = document.getElementById('loader');
+                // Simpan UI asli jika ternyata password salah / error
+                const originalAuthBoxHTML = authBox ? authBox.innerHTML : '';
+
+                // --- 1. MUNCULKAN ANIMASI PROGRESS SEGERA ---
+                if(authBox) {
+                    authBox.style.borderColor = 'var(--border-color)';
+                    authBox.style.boxShadow = 'none';
+                    authBox.innerHTML = `
+                        <div class="auth-logo" style="margin-bottom: 24px;">APP <span>bisa</span></div>
+                        <div class="sync-container" style="text-align: left;">
+                            <div id="sync-step-1" class="sync-step"><i class="fas fa-circle-notch fa-spin" style="color:var(--color-urea)"></i> <span>Mengautentikasi & Menghubungkan...</span></div>
+                            <div id="sync-step-2" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Mengunduh Data Server...</span></div>
+                            <div id="sync-step-3" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Membangun Visualisasi...</span></div>
+                            <div id="sync-step-4" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Menyelesaikan...</span></div>
+                        </div>
+                        <div class="progress-track-modern" style="margin-top:24px; background: var(--bg-body); height: 8px;">
+                            <div class="progress-bar bg-urea" id="sync-progress" style="width: 15%; transition: width 0.4s ease-out;"></div>
+                        </div>
+                    `;
+                }
+
+                const setStep = (num, text, progress) => {
+                    if(num > 1) {
+                        const prev = document.getElementById(`sync-step-${num-1}`);
+                        if(prev) {
+                            prev.querySelector('i').className = 'fas fa-check-circle';
+                            prev.querySelector('i').style.color = 'var(--color-success)';
+                        }
+                    }
+                    const curr = document.getElementById(`sync-step-${num}`);
+                    if(curr) {
+                        curr.style.opacity = '1';
+                        curr.querySelector('i').className = 'fas fa-circle-notch fa-spin';
+                        curr.querySelector('i').style.color = 'var(--color-urea)';
+                        curr.querySelector('span').innerText = text;
+                    }
+                    const progBar = document.getElementById('sync-progress');
+                    if(progBar) progBar.style.width = `${progress}%`;
+                };
 
                 try {
+                    // --- 2. MULAI REQUEST KE GOOGLE APPS SCRIPT ---
+                    // Proses ini paling memakan waktu, tapi user sudah melihat loading progress bar.
                     const res = await fetch(BASE_API_URL, {
                         redirect: "follow",
                         method: 'POST',
@@ -1491,15 +1538,14 @@
 
                     if (json.status === 'error') { throw new Error(json.message || 'Akses Ditolak'); }
 
+                    // Jika sukses, ubah kotak menjadi status hijau success
                     if(authBox) {
                         authBox.classList.add('success-state');
-                        authBox.innerHTML = `<div class="auth-success-icon"><i class="fas fa-check-circle"></i></div><div style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:8px;">Akses Diterima</div><div style="font-size:12px; color:var(--text-secondary);">Menyiapkan Dashboard...</div>`;
                     }
 
                     state.password = passwordInput;
                     sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
 
-                    // SMART DATE UPDATE LOGIC
                     const dataString = JSON.stringify(json.data);
                     const newHash = generateHash(dataString);
                     const storedHash = localStorage.getItem(CACHE_KEY_HASH);
@@ -1515,20 +1561,42 @@
                     
                     document.getElementById('header-update-text').innerText = displayDate;
                     
-                    processData(json.data);
+                    // --- 3. PROSES DATA DENGAN SANGAT CEPAT ---
+                    setStep(2, 'Mengunduh Data Berhasil', 50);
+                    await new Promise(r => setTimeout(r, 150)); // Jeda sangat singkat (0.15 detik)
+                    
+                    processData(json.data); 
 
-                    await new Promise(r => setTimeout(r, 1500));
+                    setStep(3, 'Membangun Dashboard...', 85);
+                    await new Promise(r => setTimeout(r, 150));
+
+                    setStep(4, 'Dashboard Siap!', 100);
+                    const lastStep = document.getElementById('sync-step-4');
+                    if(lastStep) {
+                        lastStep.querySelector('i').className = 'fas fa-check-circle';
+                        lastStep.querySelector('i').style.color = 'var(--color-success)';
+                    }
+
+                    await new Promise(r => setTimeout(r, 300)); // Tunggu 0.3 detik agar 100% terlihat
+                    
+                    // Sembunyikan Overlay
                     document.getElementById('authOverlay').style.opacity = '0';
-                    setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; }, 500);
+                    setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; }, 400);
 
                 } catch (e) {
                     console.error(e);
-                    if(authBtn) { authBtn.disabled = false; authBtn.innerText = 'BUKA DASHBOARD'; }
-                    if(authInput) { authInput.disabled = false; authInput.focus(); }
-                    if(err) { err.style.display = 'block'; err.innerText = "Gagal: " + e.message; }
+                    // Jika password salah atau server gagal, kembalikan UI seperti semula
+                    if(authBox) {
+                        authBox.classList.remove('success-state');
+                        authBox.innerHTML = originalAuthBoxHTML;
+                    }
+                    // Ambil elemen yang baru di-render ulang
+                    const newAuthInput = document.getElementById('appPassword');
+                    const newErr = document.getElementById('authError');
+                    
+                    if(newAuthInput) { newAuthInput.disabled = false; newAuthInput.focus(); }
+                    if(newErr) { newErr.style.display = 'block'; newErr.innerText = "Gagal: " + e.message; }
                     sessionStorage.removeItem(CACHE_KEY_AUTH_TOKEN);
-                } finally {
-                    if(loader) loader.style.display = 'none';
                 }
             };
 
