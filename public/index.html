@@ -1327,7 +1327,7 @@
                     
                     let isReal = (r.KATEGORI === 'PENJUALAN' && r.JENIS === 'REALISASI'); 
                     let isTarget = r.JENIS === 'ALOKASI' || r.JENIS === 'RKO'; 
-                    let isStock = r.JENIS.includes('STOK') && r.KATEGORI === 'AKTUAL';
+                    let isStock = r.JENIS.includes('STOK') || r.KATEGORI === 'STOK';
                     
                     if (r.TAHUN === selectedYear) {
                         if (isReal) { 
