@@ -902,6 +902,20 @@
             const toTitleCase = (str) => str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
             const getTargetLabel = () => state.sector === 'SUBSIDI' ? 'Alokasi' : 'RKAP';
 
+            const MONTH_NAMES_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+            // Menampilkan teks "Update" di header berdasarkan bulan/tahun terakhir
+            // yang benar-benar memiliki data realisasi (bukan tanggal buka aplikasi).
+            const setHeaderUpdate = (year, monthIdx) => {
+                const el = document.getElementById('header-update-text');
+                if (!el) return;
+                if (monthIdx === null || monthIdx === undefined || monthIdx < 0) {
+                    el.innerText = `Belum ada data realisasi ${year}`;
+                } else {
+                    el.innerText = `Update Data: ${MONTH_NAMES_ID[monthIdx]} ${year}`;
+                }
+            };
+
             const generateHash = (str) => {
                 let hash = 0;
                 if (!str || str.length === 0) return '0';
@@ -1172,6 +1186,9 @@
                 document.getElementById('val-lini1-sub').innerText = formatNumber(metrics.lastSub);
                 document.getElementById('val-lini1-non').innerText = formatNumber(metrics.lastNon);
                 renderLini1Chart(metrics);
+
+                // Update header berdasarkan bulan data produksi/stok Lini 1 terakhir yang tersedia
+                setHeaderUpdate(selectedYear, maxMonth);
             };
 
             const renderNasionalChart = (nasStats) => {
@@ -1381,6 +1398,10 @@
                     renderSalesRankings(stats.provinsi); 
                     renderNasionalChart(stats.nasional); 
                     renderProvChart(); 
+
+                    // Update header berdasarkan bulan realisasi penjualan terakhir yang tersedia
+                    const latestMonth = Math.max(maxMonths.UREA, maxMonths.NPK);
+                    setHeaderUpdate(selectedYear, latestMonth);
                 }
                 statsGlobal = stats;
             };
@@ -1635,6 +1656,10 @@
                     renderDistRankings(distStats.provinsi); 
                     renderNasionalDistChart(distStats.nasional); 
                     renderDistProvChart(); 
+
+                    // Update header berdasarkan bulan realisasi distribusi terakhir yang tersedia
+                    const latestMonth = Math.max(maxMonths.UREA, maxMonths.NPK);
+                    setHeaderUpdate(selectedYear, latestMonth);
                 }
             };
 
@@ -1832,10 +1857,6 @@
                     state.password = passwordInput;
                     sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
 
-                    const now = new Date();
-                    const displayDate = `Update: ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-                    document.getElementById('header-update-text').innerText = displayDate;
-                    
                     setStep(2, 'Mengunduh Data Berhasil', 50);
                     await new Promise(r => setTimeout(r, 150));
                     
