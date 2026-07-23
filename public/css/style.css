@@ -307,13 +307,6 @@ header {
 .chart-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
 .big-icon { font-size: 15px; }
 
-/* Subtitle pada judul ranking */
-.chart-title .subtitle {
-    font-weight: 400;     /* tidak bold */
-    font-size: 0.9em;     /* sedikit lebih kecil */
-    opacity: 0.75;        /* lebih redup, mengikuti warna judul */
-}
-
 .btn-group { background: var(--bg-body); padding: 4px; border-radius: 10px; display: flex; gap: 2px; width: auto; }
 
 /* FIX TOMBOL GOYANG */
