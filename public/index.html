@@ -855,7 +855,7 @@
                 <div class="ranking-grid" style="grid-template-columns: 1fr;">
                     <div class="card">
                         <div class="chart-header">
-                            <div class="chart-title big-icon">Peringkat Harga Regional <span class="subtitle">(Rata-rata YTD - <span id="lbl-ranking-prod">UREA</span>)</span></div>
+                            <div class="chart-title big-icon">Peringkat Harga Global <span id="lbl-ranking-prod">UREA</span></div>
                             <i class="fas fa-list-ol" style="color: var(--text-secondary); font-size: 18px;"></i>
                         </div>
                         <div id="list-tren-harga" class="rank-list"></div>
@@ -1171,13 +1171,18 @@
                 const colorSub = '#4ade80'; 
                 const colorNon = '#a855f7'; 
 
+                // Membuat gradien untuk grafik line Produksi
+                const gradientProd = ctxProd.createLinearGradient(0, 0, 0, 300);
+                gradientProd.addColorStop(0, hexToRgbA(colorProd, 0.4));
+                gradientProd.addColorStop(1, hexToRgbA(colorProd, 0.0));
+
                 // Grafik 1: Produksi & Stok Curah
                 charts.lini1Prod = new Chart(ctxProd, {
                     type: 'bar',
                     data: {
                         labels: ALL_MONTHS_LABELS,
                         datasets: [
-                            { type: 'line', label: 'Produksi', data: dataLini1.produksi, borderColor: colorProd, backgroundColor: colorProd, borderWidth: 3, pointRadius: 4, order: 1 },
+                            { type: 'line', label: 'Produksi', data: dataLini1.produksi, borderColor: colorProd, backgroundColor: gradientProd, fill: true, borderWidth: 3, pointRadius: 4, order: 1 },
                             { label: 'Stok Curah', data: dataLini1.stokCurah, backgroundColor: colorTotal, order: 2 }
                         ]
                     },
@@ -1351,15 +1356,24 @@
                 const isUrea = state.activeProduct === 'UREA'; const data = isUrea ? nasStats.UREA : nasStats.NPK;
                 const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
                 
+                // Warna terbalik berdasarkan tema: Mode gelap (Truk terang, Kapal gelap)
+                const colorTruck = state.theme === 'dark' ? '#b3b3b3' : '#555555';
+                const colorKapal = state.theme === 'dark' ? '#555555' : '#b3b3b3';
+
+                // Membuat gradien untuk grafik line Stok
+                const gradientStok = ctx.createLinearGradient(0, 0, 0, 300);
+                gradientStok.addColorStop(0, hexToRgbA(colorLine, 0.4));
+                gradientStok.addColorStop(1, hexToRgbA(colorLine, 0.0));
+
                 charts.nasionalDist = new Chart(ctx, { 
                     type: 'bar', 
                     data: { 
                         labels: ALL_MONTHS_LABELS, 
                         datasets: [ 
-                            { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, borderWidth: 3, fill: false, stack: 'stok' }, 
+                            { type: 'line', label: 'Stok', data: data.stock, borderColor: colorLine, backgroundColor: gradientStok, borderWidth: 3, fill: true, stack: 'stok' }, 
                             { type: 'line', label: getTargetLabel(), data: data.target, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, fill: false, pointRadius: 0, pointHoverRadius: 0, stack: 'target' }, 
-                            { label: 'Truk', data: data.land, backgroundColor: '#555555', stack: 'stack1' }, 
-                            { label: 'Kapal', data: data.sea, backgroundColor: '#B3B3B3', stack: 'stack1' } 
+                            { label: 'Truk', data: data.land, backgroundColor: colorTruck, stack: 'stack1' }, 
+                            { label: 'Kapal', data: data.sea, backgroundColor: colorKapal, stack: 'stack1' } 
                         ] 
                     }, 
                     options: { 
@@ -1437,15 +1451,24 @@
                 const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; 
                 const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
                 
+                // Warna terbalik berdasarkan tema: Mode gelap (Truk terang, Kapal gelap)
+                const colorTruck = state.theme === 'dark' ? '#b3b3b3' : '#555555';
+                const colorKapal = state.theme === 'dark' ? '#555555' : '#b3b3b3';
+
+                // Membuat gradien untuk grafik line Stok
+                const gradientStok = ctx.createLinearGradient(0, 0, 0, 300);
+                gradientStok.addColorStop(0, hexToRgbA(colorLine, 0.4));
+                gradientStok.addColorStop(1, hexToRgbA(colorLine, 0.0));
+
                 charts.provinsiDist = new Chart(ctx, { 
                     type: 'bar', 
                     data: { 
                         labels: ALL_MONTHS_LABELS, 
                         datasets: [ 
-                            { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, borderWidth: 3, stack: 'stok' }, 
+                            { type: 'line', label: 'Stok', data: mStock, borderColor: colorLine, backgroundColor: gradientStok, borderWidth: 3, fill: true, stack: 'stok' }, 
                             { type: 'line', label: getTargetLabel(), data: mTarget, borderColor: colorTarget, borderDash: [6, 6], borderWidth: 2, pointRadius: 0, pointHoverRadius: 0, stack: 'target' }, 
-                            { label: 'Truk', data: mLand, backgroundColor: '#555555', stack: 'stack1' }, 
-                            { label: 'Kapal', data: mSea, backgroundColor: '#B3B3B3', stack: 'stack1' } 
+                            { label: 'Truk', data: mLand, backgroundColor: colorTruck, stack: 'stack1' }, 
+                            { label: 'Kapal', data: mSea, backgroundColor: colorKapal, stack: 'stack1' } 
                         ] 
                     }, 
                     options: { 
@@ -1508,7 +1531,7 @@
                             intersect: false,
                         },
                         plugins: {
-                            legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+                            legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
