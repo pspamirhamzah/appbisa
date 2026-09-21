@@ -321,13 +321,12 @@
         .auth-logo { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
         .auth-logo span { font-weight: 400; color: var(--color-urea); }
         .auth-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 30px; letter-spacing: 0.5px; }
-        .auth-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 15px; text-align: left; line-height: 1.4; }
-
+        
         .input-square { width: 100%; padding: 14px; margin-bottom: 15px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-primary); font-family: inherit; font-size: 12px; border-radius: 12px; outline: none; transition: border-color 0.2s; text-align: center; }
         .input-square:focus { border-color: var(--color-urea); }
         .btn-square { width: 100%; padding: 14px; background: var(--color-urea); color: #000; font-weight: 800; border: none; cursor: pointer; border-radius: 12px; transition: 0.2s; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
         .btn-square:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 222, 0, 0.3); }
-        .btn-guest { background: var(--bg-hover); color: var(--text-primary); }
+        .btn-guest { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color); }
         .btn-guest:hover { background: var(--border-color); box-shadow: none; }
 
         .sync-step {
@@ -367,29 +366,29 @@
 </head>
 <body>
 
+    
+    <!-- INITIAL LANDING / LOGIN SCREEN (REPLACES AUTO-LOGIN) -->
+    <div id="initialLoginScreen" class="auth-overlay" style="display: flex; opacity: 1;">
+        <div class="auth-box">
+            <div class="auth-logo">APP <span>bisa</span></div>
+            <div class="auth-subtitle">Silakan Login untuk Melanjutkan</div>
+            
+            <input type="password" id="mainPassword" class="input-square" placeholder="Masukkan Password..." style="margin-bottom: 20px;" onkeyup="if(event.keyCode===13) app.handleLogin('admin')">
+            
+            <button class="btn-square" onclick="app.handleLogin('guest')">BUKA DASHBOARD</button>
+            <button class="btn-square btn-guest" onclick="app.handleLogin('admin')">ADMIN</button>
+            
+            <p id="mainAuthError" style="color: var(--color-danger); font-size: 11px; margin-top: 15px; display: none;">Password salah!</p>
+        </div>
+    </div>
+
     <!-- LOADING SCREEN -->
-    <div id="loadingOverlay" class="auth-overlay">
+    <div id="loadingOverlay" class="auth-overlay" style="display: none; opacity: 0; z-index: 10001;">
         <div class="auth-box" id="loadingBox">
             <div class="auth-logo">APP <span>bisa</span></div>
             <div class="sync-container" style="text-align: left;">
                 <div class="sync-step"><i class="fas fa-circle-notch fa-spin" style="color:var(--color-urea)"></i> <span>Menyiapkan Dashboard...</span></div>
             </div>
-        </div>
-    </div>
-
-    <!-- LOGIN MODAL (FULL ACCESS) -->
-    <div id="authOverlay" class="auth-overlay" style="display: none; opacity: 0; background: rgba(0, 0, 0, 0.75);">
-        <div class="auth-box" style="padding-top: 20px;">
-            <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
-                <button onclick="app.closeLoginModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:5px;"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="auth-logo">APP <span>bisa</span></div>
-            <div class="auth-subtitle">Akses Full Data</div>
-            
-            <input type="password" id="appPassword" class="input-square" placeholder="Password" style="margin-bottom: 15px;" onkeyup="if(event.keyCode===13) app.loginApp()">
-            <button class="btn-square btn-guest" onclick="app.loginApp()">LOGIN</button>
-            
-            <p id="authError" style="color: var(--color-danger); font-size: 11px; margin-top: 5px; display: none;">Password salah!</p>
         </div>
     </div>
 
@@ -444,7 +443,7 @@
             <i class="fas fa-warehouse"></i> <span>STOK</span>
         </div>
 
-        <!-- MENU TREN HARGA (BARU) -->
+        <!-- MENU TREN HARGA -->
         <div class="nav-item" id="nav-tren-harga" onclick="app.navigate('TREN_HARGA', 'ALL')">
             <i class="fas fa-chart-line"></i> <span>TREN HARGA</span>
         </div>
@@ -452,14 +451,12 @@
         <div class="nav-spacer"></div>
 
         <!-- AUTH BUTTONS -->
-        <div class="nav-item" id="btn-login-sidebar" onclick="app.showLoginModal()" style="margin-top: auto; color: var(--color-urea);">
-             <i class="fas fa-sign-in-alt"></i> <span>LOGIN</span>
-        </div>
-        <div class="nav-item btn-logout-sidebar" id="btn-logout-sidebar" onclick="app.logoutApp()" style="display: none; margin-top: auto;" title="Logout">
+        <div class="nav-item btn-logout-sidebar" id="btn-logout-sidebar" onclick="app.logoutApp()" style="margin-top: auto;" title="Logout">
              <i class="fas fa-power-off"></i> <span>LOGOUT</span>
         </div>
     </aside>
 
+    
     <!-- MAIN CONTENT -->
     <main class="main-content" id="main-content">
         <header>
@@ -614,6 +611,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- VIEW: DISTRIBUTION -->
             <div id="view-distribution" style="display: none;">
@@ -816,9 +814,9 @@
                 </div>
             </div>
 
-            <!-- VIEW: TREN HARGA (BARU) -->
+
+            <!-- VIEW: TREN HARGA -->
             <div id="view-tren-harga" style="display: none;">
-                <!-- Menggunakan chart-grid (2 kolom) untuk KPI Tren Harga -->
                 <div class="chart-grid" style="margin-bottom: 20px;">
                     <!-- KPI Rata-rata Urea + Growth -->
                     <div class="card kpi-modern">
@@ -891,12 +889,13 @@
         </div> 
     </main>
 
+    
     <!-- JAVASCRIPT -->
     <script>
-        // GLOBAL MONTH LABELS (ALWAYS 12 MONTHS)
+        // GLOBAL MONTH LABELS
         const ALL_MONTHS_LABELS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
-        // GLOBAL CHART DEFAULTS - SMOOTH LINES
+        // GLOBAL CHART DEFAULTS
         Chart.defaults.color = '#b3b3b3';
         Chart.defaults.borderColor = '#424242';
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
@@ -908,9 +907,8 @@
         const app = (() => {
             const BASE_API_URL = 'https://script.google.com/macros/s/AKfycbwI-LGpAOaJS167sAPtN5-pnNhFYhDkLcrwakpKWWTnSD0xdsPlT09dLnymmMdUW9UD3w/exec';
             
-            const CACHE_KEY_HASH = 'last_data_hash';
-            const CACHE_KEY_TIME = 'last_update_date';
             const CACHE_KEY_AUTH_TOKEN = 'app_auth_token'; 
+            const CACHE_KEY_ROLE = 'app_role';
 
             let state = {
                 rawData: [],
@@ -918,13 +916,11 @@
                 sector: 'SUBSIDI',        
                 activeProduct: 'UREA',
                 activeTrendProduct: 'UREA', 
-                selectedYear: 2026, // Default diset ke 2026
+                selectedYear: 2026,
                 sidebarOpen: true,
                 theme: localStorage.getItem('theme') || 'dark',
-                lastDataHash: localStorage.getItem(CACHE_KEY_HASH) || '',
-                lastUpdateDate: localStorage.getItem(CACHE_KEY_TIME) || '-',
                 password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || '',
-                isGuest: false // Menyimpan penanda jika user membuka data terbatas
+                isGuest: false // false = Admin (Full), true = Guest (Jan-Jun)
             };
 
             let charts = { nasional: null, provinsi: null, nasionalDist: null, provinsiDist: null, lini1Prod: null, lini1Stock: null, trenHarga: null };
@@ -1004,7 +1000,7 @@
                 let years = [...new Set(filteredData.map(r => r.TAHUN))].filter(y => y > 0).sort((a,b) => b-a);
                 
                 if (state.isGuest) {
-                    years = [2026]; // Kunci dropdown tahun hanya di 2026 untuk Guest
+                    years = [2026]; // Kunci dropdown tahun hanya di 2026 untuk Buka Dashboard (Guest)
                 }
 
                 const yearSel = document.getElementById('year-select');
@@ -1055,6 +1051,7 @@
                     let opt = document.createElement('option'); opt.value = ""; opt.innerText = "Tidak ada data"; s.appendChild(opt);
                 }
             };
+
 
             const renderSidebar = () => {
                 const sb = document.getElementById('sidebar');
@@ -1167,6 +1164,7 @@
             /* ======================================================== */
             /* CHART RENDERING                                          */
             /* ======================================================== */
+            
             
             const renderLini1Chart = (dataLini1) => {
                 const canvasProd = document.getElementById('chartLini1Prod');
@@ -1564,6 +1562,7 @@
                     }
                 });
             };
+
 
             const processTrenHargaData = () => {
                 const { rawData, selectedYear, activeTrendProduct } = state;
@@ -2080,7 +2079,7 @@
                 return mock;
             };
 
-            // Fungsi pembantu untuk memanipulasi progress UI loading screen
+
             const applyLoadingScreen = () => {
                 const overlay = document.getElementById('loadingOverlay');
                 const box = document.getElementById('loadingBox');
@@ -2138,48 +2137,51 @@
                 await new Promise(r => setTimeout(r, 300));
                 
                 const loadingOverlay = document.getElementById('loadingOverlay');
+                const initialScreen = document.getElementById('initialLoginScreen');
+                
                 if(loadingOverlay) {
                     loadingOverlay.style.opacity = '0';
                     setTimeout(() => { loadingOverlay.style.display = 'none'; }, 400);
                 }
-            };
-
-            const showLoginModal = () => {
-                const modal = document.getElementById('authOverlay');
-                const err = document.getElementById('authError');
-                const inp = document.getElementById('appPassword');
-                if(modal) {
-                    if(err) err.style.display = 'none';
-                    if(inp) inp.value = '';
-                    modal.style.display = 'flex';
-                    setTimeout(() => modal.style.opacity = '1', 10);
-                    if(inp) setTimeout(() => inp.focus(), 100);
-                }
-                if(window.innerWidth <= 768 && state.sidebarOpen) toggleSidebar();
-            };
-
-            const closeLoginModal = () => {
-                const modal = document.getElementById('authOverlay');
-                if(modal) {
-                    modal.style.opacity = '0';
-                    setTimeout(() => modal.style.display = 'none', 300);
+                if(initialScreen) {
+                    initialScreen.style.opacity = '0';
+                    setTimeout(() => { initialScreen.style.display = 'none'; }, 400);
                 }
             };
 
-            const loginAsGuest = async () => {
-                state.isGuest = true;
-                state.selectedYear = 2026; 
+            const handleLogin = (type) => {
+                const passInput = document.getElementById('mainPassword');
+                const errText = document.getElementById('mainAuthError');
+                
+                if (!passInput.value || passInput.value.trim() === '') {
+                    if (errText) {
+                        errText.innerText = 'Silakan isi password terlebih dahulu.';
+                        errText.style.display = 'block';
+                    }
+                    return;
+                }
 
+                if (errText) errText.style.display = 'none';
+                
+                if (type === 'guest') {
+                    loginAsGuestMode(passInput.value);
+                } else {
+                    fetchData(passInput.value);
+                }
+            };
+
+            const loginAsGuestMode = async (passwordInput) => {
+                const errText = document.getElementById('mainAuthError');
+                
                 applyLoadingScreen();
                 setStep(1, 'Memuat Data Terbatas...', 25);
                 
                 try {
-                    // Mengambil data dari API secara otomatis (tanpa form input user)
                     const res = await fetch(BASE_API_URL, {
                         redirect: "follow",
                         method: 'POST',
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ password: 'pso123', action: 'GET_ALL_DATA' })
+                        body: JSON.stringify({ password: passwordInput, action: 'GET_ALL_DATA' })
                     });
                     
                     const json = await res.json();
@@ -2194,7 +2196,6 @@
                         
                         if (y === 2026 && m > 5) {
                             const jenis = String(r.JENIS || '').toUpperCase();
-                            
                             // Target dan Alokasi bulanan harus DIKEKALKAN agar total tahunan genap
                             if (jenis === 'ALOKASI' || jenis === 'RKO') {
                                 return true;
@@ -2205,40 +2206,33 @@
                         return true;
                     });
 
+                    state.password = passwordInput;
+                    state.isGuest = true;
+                    state.selectedYear = 2026; 
+                    sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
+                    sessionStorage.setItem(CACHE_KEY_ROLE, 'guest');
+
                     setStep(2, 'Data Jan - Jun 2026...', 50);
                     await new Promise(r => setTimeout(r, 150));
 
                     processData(dataset);
                     await finishLoadingAndEnter();
 
-                    // Update Navbar Button State
-                    document.getElementById('btn-login-sidebar').style.display = 'flex';
-                    document.getElementById('btn-logout-sidebar').style.display = 'none';
-
                 } catch (error) {
-                    console.warn("Gagal terhubung ke API sebagai Guest.", error);
-                    const box = document.getElementById('loadingBox');
-                    if (box) {
-                        box.innerHTML = `
-                            <div class="auth-logo" style="margin-bottom: 24px;">APP <span>bisa</span></div>
-                            <div style="color: var(--color-danger); font-size: 13px; margin-bottom: 15px;">Gagal memuat data dari Server API.</div>
-                            <button class="btn-square btn-guest" onclick="location.reload()">COBA LAGI</button>
-                        `;
+                    console.error(error);
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
+                    if (errText) {
+                        errText.innerText = error.message || 'Password salah atau gagal memuat data.';
+                        errText.style.display = 'block';
                     }
                 }
             };
 
             const fetchData = async (passwordInput) => {
-                const authInput = document.getElementById('appPassword');
-                const err = document.getElementById('authError');
-                
-                if(authInput) authInput.disabled = true;
-                if(err) err.style.display = 'none';
-
-                closeLoginModal();
+                const errText = document.getElementById('mainAuthError');
                 applyLoadingScreen();
-
-                setStep(1, 'Mengautentikasi & Menghubungkan...', 25);
+                setStep(1, 'Mengautentikasi (Full Data)...', 25);
 
                 try {
                     let dataset = [];
@@ -2260,52 +2254,28 @@
                     state.password = passwordInput;
                     state.isGuest = false;
                     sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
+                    sessionStorage.setItem(CACHE_KEY_ROLE, 'admin');
 
                     setStep(2, 'Mengunduh Data Berhasil', 50);
                     await new Promise(r => setTimeout(r, 150));
                     
                     processData(dataset); 
-
                     await finishLoadingAndEnter();
-
-                    // Update Navbar Button State
-                    document.getElementById('btn-login-sidebar').style.display = 'none';
-                    document.getElementById('btn-logout-sidebar').style.display = 'flex';
 
                 } catch (e) {
                     console.error(e);
                     const loadingOverlay = document.getElementById('loadingOverlay');
-                    if(loadingOverlay) loadingOverlay.style.display = 'none';
-                    
-                    showLoginModal();
-                    
-                    if(authInput) {
-                        authInput.disabled = false;
-                        authInput.focus();
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
+                    if (errText) {
+                        errText.innerText = e.message || 'Password salah!';
+                        errText.style.display = 'block';
                     }
-                    const newErr = document.getElementById('authError');
-                    if(newErr) {
-                        newErr.innerText = e.message || 'Password salah!';
-                        newErr.style.display = 'block';
-                    }
-                }
-            };
-
-            const loginApp = () => {
-                const pass = document.getElementById('appPassword').value;
-                if (!pass || pass.trim() === '') {
-                    const err = document.getElementById('authError');
-                    if (err) {
-                        err.innerText = 'Silakan isi password untuk login.';
-                        err.style.display = 'block';
-                    }
-                } else {
-                    fetchData(pass);
                 }
             };
 
             const logoutApp = () => {
                 sessionStorage.removeItem(CACHE_KEY_AUTH_TOKEN);
+                sessionStorage.removeItem(CACHE_KEY_ROLE);
                 location.reload();
             };
 
@@ -2320,11 +2290,21 @@
                     }
                 });
 
-                // Otomatis tentukan mode saat web dibuka
-                if (state.password) {
-                    fetchData(state.password);
+                // Cek Login dari sesi sebelumnya (jika halaman di-refresh)
+                const savedPass = sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN);
+                const savedRole = sessionStorage.getItem(CACHE_KEY_ROLE);
+                
+                if (savedPass && savedRole) {
+                    // Sembunyikan layar awal dan load data sesuai sesi
+                    if (savedRole === 'guest') {
+                        loginAsGuestMode(savedPass);
+                    } else {
+                        fetchData(savedPass);
+                    }
                 } else {
-                    loginAsGuest();
+                    // Biarkan layar login tampil, jangan load data
+                    const initialScreen = document.getElementById('initialLoginScreen');
+                    if(initialScreen) initialScreen.style.display = 'flex';
                 }
             };
 
@@ -2340,10 +2320,7 @@
                 renderProvChart,
                 renderDistProvChart,
                 changeYear,
-                showLoginModal,
-                closeLoginModal,
-                loginAsGuest,
-                loginApp,
+                handleLogin,
                 logoutApp,
                 init
             };
