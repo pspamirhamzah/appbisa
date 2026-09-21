@@ -38,7 +38,7 @@
             /* Brand Colors (Dark Mode) */
             --color-urea: #FFDE00;        
             --color-npk: #38bdf8;        
-            --color-ammonia: #10b981; /* Emerald for Ammonia */
+            --color-ammonia: #10b981; 
             --color-success: #4ade80;    
             --color-danger: #f87171;      
             --color-stock: #a8a29e;        
@@ -321,11 +321,14 @@
         .auth-logo { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
         .auth-logo span { font-weight: 400; color: var(--color-urea); }
         .auth-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 30px; letter-spacing: 0.5px; }
+        .auth-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 15px; text-align: left; line-height: 1.4; }
 
-        .input-square { width: 100%; padding: 14px; margin-bottom: 20px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-primary); font-family: inherit; font-size: 14px; border-radius: 12px; outline: none; transition: border-color 0.2s; text-align: center; }
+        .input-square { width: 100%; padding: 14px; margin-bottom: 15px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-primary); font-family: inherit; font-size: 12px; border-radius: 12px; outline: none; transition: border-color 0.2s; text-align: center; }
         .input-square:focus { border-color: var(--color-urea); }
-        .btn-square { width: 100%; padding: 14px; background: var(--color-urea); color: #000; font-weight: 800; border: none; cursor: pointer; border-radius: 12px; transition: 0.2s; font-size: 13px; letter-spacing: 1px; }
+        .btn-square { width: 100%; padding: 14px; background: var(--color-urea); color: #000; font-weight: 800; border: none; cursor: pointer; border-radius: 12px; transition: 0.2s; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
         .btn-square:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 222, 0, 0.3); }
+        .btn-guest { background: var(--bg-hover); color: var(--text-primary); }
+        .btn-guest:hover { background: var(--border-color); box-shadow: none; }
 
         .sync-step {
             font-size: 13px; font-weight: 600; color: var(--text-primary);
@@ -364,14 +367,29 @@
 </head>
 <body>
 
-    <!-- AUTH SCREEN -->
-    <div id="authOverlay" class="auth-overlay">
-        <div class="auth-box">
+    <!-- LOADING SCREEN -->
+    <div id="loadingOverlay" class="auth-overlay">
+        <div class="auth-box" id="loadingBox">
             <div class="auth-logo">APP <span>bisa</span></div>
-            <div class="auth-subtitle">Adm Pemasaran & Penjualan</div>
-            <input type="password" id="appPassword" class="input-square" placeholder="Masukkan Password" onkeyup="if(event.keyCode===13) app.loginApp()">
-            <button class="btn-square" onclick="app.loginApp()">BUKA DASHBOARD</button>
-            <p id="authError" style="color: var(--color-danger); font-size: 11px; margin-top: 10px; display: none;">Password salah!</p>
+            <div class="sync-container" style="text-align: left;">
+                <div class="sync-step"><i class="fas fa-circle-notch fa-spin" style="color:var(--color-urea)"></i> <span>Menyiapkan Dashboard...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL (FULL ACCESS) -->
+    <div id="authOverlay" class="auth-overlay" style="display: none; opacity: 0; background: rgba(0, 0, 0, 0.75);">
+        <div class="auth-box" style="padding-top: 20px;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
+                <button onclick="app.closeLoginModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:5px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="auth-logo">APP <span>bisa</span></div>
+            <div class="auth-subtitle">Akses Full Data</div>
+            
+            <input type="password" id="appPassword" class="input-square" placeholder="Password" style="margin-bottom: 15px;" onkeyup="if(event.keyCode===13) app.loginApp()">
+            <button class="btn-square btn-guest" onclick="app.loginApp()">LOGIN</button>
+            
+            <p id="authError" style="color: var(--color-danger); font-size: 11px; margin-top: 5px; display: none;">Password salah!</p>
         </div>
     </div>
 
@@ -433,8 +451,11 @@
 
         <div class="nav-spacer"></div>
 
-        <!-- LOGOUT BUTTON -->
-        <div class="nav-item btn-logout-sidebar" onclick="app.logoutApp()" title="Logout">
+        <!-- AUTH BUTTONS -->
+        <div class="nav-item" id="btn-login-sidebar" onclick="app.showLoginModal()" style="margin-top: auto; color: var(--color-urea);">
+             <i class="fas fa-sign-in-alt"></i> <span>LOGIN</span>
+        </div>
+        <div class="nav-item btn-logout-sidebar" id="btn-logout-sidebar" onclick="app.logoutApp()" style="display: none; margin-top: auto;" title="Logout">
              <i class="fas fa-power-off"></i> <span>LOGOUT</span>
         </div>
     </aside>
@@ -509,8 +530,8 @@
                         <div class="kpi-big" id="growth-urea-val">0%</div>
                         <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
                         <div class="growth-legend">
-                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-urea">2025</span>: <span id="val-urea-curr">0</span></div>
-                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-urea">2024</span>: <span id="val-urea-prev">0</span></div>
+                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-urea">2026</span>: <span id="val-urea-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-urea">2025</span>: <span id="val-urea-prev">0</span></div>
                         </div>
                     </div>
 
@@ -523,8 +544,8 @@
                         <div class="kpi-big" id="growth-npk-val">0%</div>
                         <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
                         <div class="growth-legend">
-                            <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-npk">2025</span>: <span id="val-npk-curr">0</span></div>
-                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-npk">2024</span>: <span id="val-npk-prev">0</span></div>
+                            <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-npk">2026</span>: <span id="val-npk-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-npk">2025</span>: <span id="val-npk-prev">0</span></div>
                         </div>
                     </div>
                 </div>
@@ -648,8 +669,8 @@
                         <div class="kpi-big" id="growth-dist-urea-val">0%</div>
                         <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
                         <div class="growth-legend">
-                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-dist-urea">2025</span>: <span id="val-dist-urea-curr">0</span></div>
-                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-dist-urea">2024</span>: <span id="val-dist-urea-prev">0</span></div>
+                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-dist-urea">2026</span>: <span id="val-dist-urea-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-dist-urea">2025</span>: <span id="val-dist-urea-prev">0</span></div>
                         </div>
                     </div>
 
@@ -662,8 +683,8 @@
                         <div class="kpi-big" id="growth-dist-npk-val">0%</div>
                         <div class="kpi-subtext">vs Tahun Lalu (YTD)</div>
                         <div class="growth-legend">
-                            <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-dist-npk">2025</span>: <span id="val-dist-npk-curr">0</span></div>
-                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-dist-npk">2024</span>: <span id="val-dist-npk-prev">0</span></div>
+                            <div class="legend-item"><span class="dot bg-npk"></span> <span id="year-curr-dist-npk">2026</span>: <span id="val-dist-npk-curr">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-dist-npk">2025</span>: <span id="val-dist-npk-prev">0</span></div>
                         </div>
                     </div>
                 </div>
@@ -811,8 +832,8 @@
                         </div>
                         <div class="kpi-subtext">USD/MT</div>
                         <div class="growth-legend">
-                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-avg-urea">2025</span>: <span id="val-avg-urea-curr" style="font-weight: 700; color: var(--text-primary);">0</span></div>
-                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-avg-urea">2024</span>: <span id="val-avg-urea-prev">0</span></div>
+                            <div class="legend-item"><span class="dot bg-urea"></span> <span id="year-curr-avg-urea">2026</span>: <span id="val-avg-urea-curr" style="font-weight: 700; color: var(--text-primary);">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-avg-urea">2025</span>: <span id="val-avg-urea-prev">0</span></div>
                         </div>
                     </div>
                     
@@ -828,8 +849,8 @@
                         </div>
                         <div class="kpi-subtext">USD/MT</div>
                         <div class="growth-legend">
-                            <div class="legend-item"><span class="dot" style="background: var(--color-ammonia)"></span> <span id="year-curr-avg-ammonia">2025</span>: <span id="val-avg-ammonia-curr" style="font-weight: 700; color: var(--text-primary);">0</span></div>
-                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-avg-ammonia">2024</span>: <span id="val-avg-ammonia-prev">0</span></div>
+                            <div class="legend-item"><span class="dot" style="background: var(--color-ammonia)"></span> <span id="year-curr-avg-ammonia">2026</span>: <span id="val-avg-ammonia-curr" style="font-weight: 700; color: var(--text-primary);">0</span></div>
+                            <div class="legend-item"><span class="dot bg-grey"></span> <span id="year-prev-avg-ammonia">2025</span>: <span id="val-avg-ammonia-prev">0</span></div>
                         </div>
                     </div>
                 </div>
@@ -864,7 +885,7 @@
             </div>
             
             <div class="footer">
-                <h4>Copyright &copy;2025 Adm Pemasaran & Penjualan</h4>
+                <h4>Copyright &copy;2026 Adm Pemasaran & Penjualan</h4>
                 <p>Design by 00.0034</p>
             </div>
         </div> 
@@ -896,13 +917,14 @@
                 page: 'SALES',
                 sector: 'SUBSIDI',        
                 activeProduct: 'UREA',
-                activeTrendProduct: 'UREA',  // New state for Tren Harga Product toggle
-                selectedYear: new Date().getFullYear(),
+                activeTrendProduct: 'UREA', 
+                selectedYear: 2026, // Default diset ke 2026
                 sidebarOpen: true,
                 theme: localStorage.getItem('theme') || 'dark',
                 lastDataHash: localStorage.getItem(CACHE_KEY_HASH) || '',
                 lastUpdateDate: localStorage.getItem(CACHE_KEY_TIME) || '-',
-                password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || ''
+                password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || '',
+                isGuest: false // Menyimpan penanda jika user membuka data terbatas
             };
 
             let charts = { nasional: null, provinsi: null, nasionalDist: null, provinsiDist: null, lini1Prod: null, lini1Stock: null, trenHarga: null };
@@ -946,7 +968,7 @@
             const normalizeMonth = (str) => { 
                 if (str === null || str === undefined) return -1;
                 let num = parseInt(str);
-                if (!isNaN(num) && num >= 1 && num <= 12) return num - 1; // Handle 1-12 from dataset
+                if (!isNaN(num) && num >= 1 && num <= 12) return num - 1; 
                 const map = {'JAN':0, 'JANUARI':0, 'FEB':1, 'FEBRUARI':1, 'MAR':2, 'MARET':2, 'APR':3, 'APRIL':3, 'MEI':4, 'MAY':4, 'JUN':5, 'JUNI':5, 'JUL':6, 'JULI':6, 'AGU':7, 'AGUSTUS':7, 'SEP':8, 'SEPTEMBER':8, 'OKT':9, 'OKTOBER':9, 'NOV':10, 'NOVEMBER':10, 'DES':11, 'DESEMBER':11}; 
                 return map[String(str).toUpperCase().trim()] ?? -1; 
             };
@@ -959,7 +981,10 @@
             const setHeaderUpdate = (year, monthIdx) => {
                 const el = document.getElementById('header-update-text');
                 if (!el) return;
-                if (monthIdx === null || monthIdx === undefined || monthIdx < 0) {
+                
+                if (state.isGuest) {
+                    el.innerText = `Data Terbatas: Jan-Jun 2026`;
+                } else if (monthIdx === null || monthIdx === undefined || monthIdx < 0) {
                     el.innerText = `Belum ada data realisasi ${year}`;
                 } else {
                     el.innerText = `Update Data: ${MONTH_NAMES_ID[monthIdx]} ${year}`;
@@ -969,22 +994,23 @@
             const updateYearOptions = () => {
                 const { rawData, page } = state;
                 
-                // Menentukan jenis data berdasarkan halaman yang dipilih
                 let targetJenisData = 'PSP'; 
                 if (page === 'SALES') targetJenisData = 'PSP';
                 else if (page === 'DISTRIBUSI') targetJenisData = 'DISTRIBUSI';
                 else if (page === 'LINI1') targetJenisData = 'LINI1';
                 else if (page === 'TREN_HARGA') targetJenisData = 'TREN_HARGA';
 
-                // Menyaring tahun yang tersedia HANYA untuk data halaman saat ini
                 const filteredData = rawData.filter(r => r.JENIS_DATA === targetJenisData);
-                const years = [...new Set(filteredData.map(r => r.TAHUN))].filter(y => y > 0).sort((a,b) => b-a);
+                let years = [...new Set(filteredData.map(r => r.TAHUN))].filter(y => y > 0).sort((a,b) => b-a);
                 
+                if (state.isGuest) {
+                    years = [2026]; // Kunci dropdown tahun hanya di 2026 untuk Guest
+                }
+
                 const yearSel = document.getElementById('year-select');
                 if (yearSel && years.length > 0) {
                     yearSel.innerHTML = '';
                     
-                    // Jika tahun terpilih sebelumnya tidak ada di halaman ini, ambil tahun terbaru
                     if (!years.includes(state.selectedYear)) {
                         state.selectedYear = years[0];
                     }
@@ -999,17 +1025,6 @@
                 } else if (yearSel) {
                     yearSel.innerHTML = '<option value="">Tidak ada data</option>';
                 }
-            };
-
-            const generateHash = (str) => {
-                let hash = 0;
-                if (!str || str.length === 0) return '0';
-                for (let i = 0; i < str.length; i++) {
-                    const char = str.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + char;
-                    hash = hash & hash;
-                }
-                return hash.toString();
             };
 
             const toggleTheme = () => {
@@ -1071,7 +1086,6 @@
                 state.page = page;
                 state.sector = sector;
                 
-                // Active menu highlights
                 document.querySelectorAll('.nav-sub-item, .nav-item').forEach(el => el.classList.remove('active'));
                 
                 if (page === 'SALES') {
@@ -1097,7 +1111,7 @@
                     renderSidebar();
                 }
 
-                updateYearOptions(); // Memperbarui dropdown tahun jika berpindah halaman
+                updateYearOptions(); 
                 updateDashboard();
             };
 
@@ -1171,12 +1185,10 @@
                 const colorSub = '#4ade80'; 
                 const colorNon = '#a855f7'; 
 
-                // Membuat gradien untuk grafik line Produksi
                 const gradientProd = ctxProd.createLinearGradient(0, 0, 0, 300);
                 gradientProd.addColorStop(0, hexToRgbA(colorProd, 0.4));
                 gradientProd.addColorStop(1, hexToRgbA(colorProd, 0.0));
 
-                // Grafik 1: Produksi & Stok Curah
                 charts.lini1Prod = new Chart(ctxProd, {
                     type: 'bar',
                     data: {
@@ -1204,7 +1216,6 @@
                     }
                 });
 
-                // Grafik 2: Stok Subsidi vs Non-Subsidi
                 charts.lini1Stock = new Chart(ctxStock, {
                     type: 'bar',
                     data: {
@@ -1282,7 +1293,6 @@
                 let mStock = Array(12).fill(null);
                 let maxM = -1;
 
-                // Cari bulan maksimum provinsi
                 state.rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'PSP') return; 
                     if (r.TAHUN !== state.selectedYear || r.PROVINSI !== provName) return;
@@ -1295,7 +1305,6 @@
                     }
                 });
 
-                // Kumpulkan data
                 state.rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'PSP') return; 
                     if (r.TAHUN !== state.selectedYear || r.PROVINSI !== provName) return;
@@ -1356,11 +1365,9 @@
                 const isUrea = state.activeProduct === 'UREA'; const data = isUrea ? nasStats.UREA : nasStats.NPK;
                 const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
                 
-                // Warna terbalik berdasarkan tema: Mode gelap (Truk terang, Kapal gelap)
                 const colorTruck = state.theme === 'dark' ? '#b3b3b3' : '#555555';
                 const colorKapal = state.theme === 'dark' ? '#555555' : '#b3b3b3';
 
-                // Membuat gradien untuk grafik line Stok
                 const gradientStok = ctx.createLinearGradient(0, 0, 0, 300);
                 gradientStok.addColorStop(0, hexToRgbA(colorLine, 0.4));
                 gradientStok.addColorStop(1, hexToRgbA(colorLine, 0.0));
@@ -1451,11 +1458,9 @@
                 const colorLine = isUrea ? '#FFDE00' : '#38bdf8'; 
                 const colorTarget = state.theme === 'dark' ? '#ffffff' : '#000000';
                 
-                // Warna terbalik berdasarkan tema: Mode gelap (Truk terang, Kapal gelap)
                 const colorTruck = state.theme === 'dark' ? '#b3b3b3' : '#555555';
                 const colorKapal = state.theme === 'dark' ? '#555555' : '#b3b3b3';
 
-                // Membuat gradien untuk grafik line Stok
                 const gradientStok = ctx.createLinearGradient(0, 0, 0, 300);
                 gradientStok.addColorStop(0, hexToRgbA(colorLine, 0.4));
                 gradientStok.addColorStop(1, hexToRgbA(colorLine, 0.0));
@@ -1514,7 +1519,7 @@
                         pointRadius: isPSP ? 5 : 4,
                         pointHoverRadius: isPSP ? 7 : 6,
                         tension: 0.3,
-                        order: isPSP ? 0 : 1 // Memastikan garis PSP digambar paling depan (atas)
+                        order: isPSP ? 0 : 1 
                     });
                 });
 
@@ -1565,16 +1570,13 @@
                 let regionDataMap = {};
                 let maxMonth = -1;
                 
-                // Variabel untuk KPI
                 let avgStats = {
                     curr: { UREA: { sum: 0, count: 0 }, AMMONIA: { sum: 0, count: 0 } },
                     prev: { UREA: { sum: 0, count: 0 }, AMMONIA: { sum: 0, count: 0 } }
                 };
                 
-                // Variabel untuk Tabel Peringkat
                 let rankMap = {};
 
-                // 1. Cari Bulan Maksimum (YTD) untuk tahun terpilih
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'TREN_HARGA' || r.TAHUN !== selectedYear) return;
                     if (r.PRODUK !== activeTrendProduct) return;
@@ -1584,7 +1586,6 @@
                     }
                 });
 
-                // 2. Kumpulkan data untuk Chart, KPI, dan Peringkat
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'TREN_HARGA') return;
                     if (!r.PRODUK || !r.HARGA) return;
@@ -1593,11 +1594,9 @@
                     
                     if (r.TAHUN === selectedYear) {
                         if (r.BULAN >= 0 && r.BULAN <= 11) {
-                            // Hitung untuk KPI rata-rata global semua wilayah
                             avgStats.curr[prodKey].sum += r.HARGA;
                             avgStats.curr[prodKey].count += 1;
                             
-                            // Hitung khusus untuk wilayah produk yang aktif (Chart & Tabel)
                             if (prodKey === activeTrendProduct) {
                                 if (!regionDataMap[r.WILAYAH]) regionDataMap[r.WILAYAH] = Array(12).fill(null);
                                 regionDataMap[r.WILAYAH][r.BULAN] = r.HARGA;
@@ -1609,7 +1608,6 @@
                         }
                     } 
                     else if (r.TAHUN === (selectedYear - 1)) {
-                        // Untuk Growth YoY, hitung rata-rata tahun lalu s.d bulan YTD (maxMonth)
                         if (r.BULAN >= 0 && r.BULAN <= maxMonth) {
                             avgStats.prev[prodKey].sum += r.HARGA;
                             avgStats.prev[prodKey].count += 1;
@@ -1617,13 +1615,10 @@
                     }
                 });
 
-                // Render Chart
                 renderTrenHargaChart(regionDataMap, maxMonth);
                 
-                // Format IDR ke USD
                 const formatUSD = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
-                // Render KPI Card (Urea & Ammonia)
                 ['UREA', 'AMMONIA'].forEach(prod => {
                     const currAvg = avgStats.curr[prod].count > 0 ? (avgStats.curr[prod].sum / avgStats.curr[prod].count) : 0;
                     const prevAvg = avgStats.prev[prod].count > 0 ? (avgStats.prev[prod].sum / avgStats.prev[prod].count) : 0;
@@ -1660,7 +1655,6 @@
                     if (valPrevEl) valPrevEl.innerText = formatUSD(prevAvg);
                 });
 
-                // Render Tabel Peringkat Regional (Tertinggi - Terendah)
                 const listRank = document.getElementById('list-tren-harga');
                 const lblRankProd = document.getElementById('lbl-ranking-prod');
                 if (lblRankProd) lblRankProd.innerText = activeTrendProduct;
@@ -1671,7 +1665,7 @@
                         val: rankMap[region].count > 0 ? rankMap[region].sum / rankMap[region].count : 0
                     }));
                     
-                    rankArr.sort((a, b) => b.val - a.val); // Sort descending
+                    rankArr.sort((a, b) => b.val - a.val); 
                     
                     listRank.innerHTML = rankArr.map((item, idx) => `
                         <div class="rank-item">
@@ -1700,7 +1694,6 @@
                 };
                 let maxMonth = -1;
 
-                // Cari max month dulu
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'LINI1' || r.TAHUN !== selectedYear) return;
                     let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : '');
@@ -1709,7 +1702,6 @@
                     }
                 });
 
-                // Isi data
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'LINI1' || r.TAHUN !== selectedYear) return;
                     let prodKey = r.PRODUK.includes('UREA') ? 'UREA' : (r.PRODUK.includes('NPK') ? 'NPK' : '');
@@ -1731,7 +1723,6 @@
                     }
                 });
 
-                // Terapkan nilai 0 untuk bulan lalu yang kosong, dan biarkan NULL untuk bulan depan
                 if (maxMonth >= 0) {
                     for (let m = 0; m <= maxMonth; m++) {
                         if (metrics.produksi[m] === null) metrics.produksi[m] = 0;
@@ -1765,7 +1756,6 @@
                 const dropdownProvs = new Set(); 
                 let maxMonths = { UREA: -1, NPK: -1 };
                 
-                // Pass 1: Find Max Month for Current Year
                 rawData.forEach(r => {
                      if (r.JENIS_DATA !== 'PSP') return;
                      let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); 
@@ -1777,7 +1767,6 @@
                      }
                 });
 
-                // Pass 2: Accumulate Data
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'PSP') return;
                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); 
@@ -1824,7 +1813,6 @@
                     }
                 });
 
-                // Clean arrays for non-existing months up to maxMonths
                 ['UREA', 'NPK'].forEach(pk => {
                     let mM = maxMonths[pk];
                     if (mM >= 0) {
@@ -1909,7 +1897,6 @@
                 const dropdownProvs = new Set();
                 let maxMonths = { UREA: -1, NPK: -1 };
 
-                // Pass 1: Find Max Month
                 rawData.forEach(r => {
                      if (r.JENIS_DATA !== 'DISTRIBUSI') return;
                      let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); 
@@ -1921,7 +1908,6 @@
                      }
                 });
 
-                // Pass 2: Accumulate
                 rawData.forEach(r => {
                     if (r.JENIS_DATA !== 'DISTRIBUSI') return;
                     let isSectorMatch = (sector === 'SUBSIDI') ? r.SEKTOR.includes('SUBSIDI') : r.SEKTOR.includes('RETAIL'); 
@@ -2039,8 +2025,8 @@
                     KATEGORI: String(row.KATEGORI || '').toUpperCase(),
                     MATERIAL: String(row.MATERIAL || '').toUpperCase(),
                     PROVINSI: toTitleCase(String(row.PROVINSI || '')),
-                    WILAYAH: String(row.WILAYAH || ''), // Used for TREN_HARGA
-                    HARGA: row.HARGA ? parseIndoNumber(row.HARGA) : null, // Used for TREN_HARGA
+                    WILAYAH: String(row.WILAYAH || ''), 
+                    HARGA: row.HARGA ? parseIndoNumber(row.HARGA) : null, 
                     TONASE: parseIndoNumber(row.TONASE),
                     JENIS_DATA: row.JENIS_DATA || 'PSP',
                     PRODUKSI: parseIndoNumber(row.PRODUKSI),
@@ -2050,7 +2036,6 @@
                 }));
                 infoAiData = data.filter(r => r.JENIS_DATA === 'INFO_AI');
 
-                // Update filter dropdown tahun berdasarkan data halaman saat ini
                 updateYearOptions();
                 updateDashboard(); 
             };
@@ -2095,51 +2080,165 @@
                 return mock;
             };
 
+            // Fungsi pembantu untuk memanipulasi progress UI loading screen
+            const applyLoadingScreen = () => {
+                const overlay = document.getElementById('loadingOverlay');
+                const box = document.getElementById('loadingBox');
+                if(!overlay || !box) return;
+                
+                overlay.style.display = 'flex';
+                overlay.style.opacity = '1';
+                
+                box.style.borderColor = 'var(--border-color)';
+                box.style.boxShadow = 'none';
+                box.innerHTML = `
+                    <div class="auth-logo" style="margin-bottom: 24px;">APP <span>bisa</span></div>
+                    <div class="sync-container" style="text-align: left;">
+                        <div id="sync-step-1" class="sync-step"><i class="fas fa-circle-notch fa-spin" style="color:var(--color-urea)"></i> <span id="sync-text-1">Menghubungkan...</span></div>
+                        <div id="sync-step-2" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span id="sync-text-2">Mengunduh Data...</span></div>
+                        <div id="sync-step-3" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span id="sync-text-3">Membangun Visualisasi...</span></div>
+                        <div id="sync-step-4" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Menyelesaikan...</span></div>
+                    </div>
+                    <div class="progress-track-modern" style="margin-top:24px; background: var(--bg-body); height: 8px;">
+                        <div class="progress-bar bg-urea" id="sync-progress" style="width: 15%; transition: width 0.4s ease-out;"></div>
+                    </div>
+                `;
+            }
+
+            const setStep = (num, text, progress) => {
+                if(num > 1) {
+                    const prev = document.getElementById(`sync-step-${num-1}`);
+                    if(prev) {
+                        prev.querySelector('i').className = 'fas fa-check-circle';
+                        prev.querySelector('i').style.color = 'var(--color-success)';
+                    }
+                }
+                const curr = document.getElementById(`sync-step-${num}`);
+                if(curr) {
+                    curr.style.opacity = '1';
+                    curr.querySelector('i').className = 'fas fa-circle-notch fa-spin';
+                    curr.querySelector('i').style.color = 'var(--color-urea)';
+                    if(text) curr.querySelector('span').innerText = text;
+                }
+                const progBar = document.getElementById('sync-progress');
+                if(progBar) progBar.style.width = `${progress}%`;
+            };
+
+            const finishLoadingAndEnter = async () => {
+                setStep(3, 'Membangun Dashboard...', 85);
+                await new Promise(r => setTimeout(r, 150));
+
+                setStep(4, 'Dashboard Siap!', 100);
+                const lastStep = document.getElementById('sync-step-4');
+                if(lastStep) {
+                    lastStep.querySelector('i').className = 'fas fa-check-circle';
+                    lastStep.querySelector('i').style.color = 'var(--color-success)';
+                }
+
+                await new Promise(r => setTimeout(r, 300));
+                
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if(loadingOverlay) {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => { loadingOverlay.style.display = 'none'; }, 400);
+                }
+            };
+
+            const showLoginModal = () => {
+                const modal = document.getElementById('authOverlay');
+                const err = document.getElementById('authError');
+                const inp = document.getElementById('appPassword');
+                if(modal) {
+                    if(err) err.style.display = 'none';
+                    if(inp) inp.value = '';
+                    modal.style.display = 'flex';
+                    setTimeout(() => modal.style.opacity = '1', 10);
+                    if(inp) setTimeout(() => inp.focus(), 100);
+                }
+                if(window.innerWidth <= 768 && state.sidebarOpen) toggleSidebar();
+            };
+
+            const closeLoginModal = () => {
+                const modal = document.getElementById('authOverlay');
+                if(modal) {
+                    modal.style.opacity = '0';
+                    setTimeout(() => modal.style.display = 'none', 300);
+                }
+            };
+
+            const loginAsGuest = async () => {
+                state.isGuest = true;
+                state.selectedYear = 2026; 
+
+                applyLoadingScreen();
+                setStep(1, 'Memuat Data Terbatas...', 25);
+                
+                try {
+                    // Mengambil data dari API secara otomatis (tanpa form input user)
+                    const res = await fetch(BASE_API_URL, {
+                        redirect: "follow",
+                        method: 'POST',
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ password: 'pso123', action: 'GET_ALL_DATA' })
+                    });
+                    
+                    const json = await res.json();
+                    if (json.status === 'error') throw new Error(json.message);
+                    
+                    let dataset = json.data;
+
+                    // Sembunyikan Realisasi (performa aktual) HANYA untuk bulan Juli s/d Des 2026.
+                    dataset = dataset.filter(r => {
+                        const y = parseInt(r.TAHUN);
+                        const m = normalizeMonth(r.BULAN);
+                        
+                        if (y === 2026 && m > 5) {
+                            const jenis = String(r.JENIS || '').toUpperCase();
+                            
+                            // Target dan Alokasi bulanan harus DIKEKALKAN agar total tahunan genap
+                            if (jenis === 'ALOKASI' || jenis === 'RKO') {
+                                return true;
+                            }
+                            // Hapus Realisasi, Distribusi, Stok dsb untuk bulan Juli-Desember
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    setStep(2, 'Data Jan - Jun 2026...', 50);
+                    await new Promise(r => setTimeout(r, 150));
+
+                    processData(dataset);
+                    await finishLoadingAndEnter();
+
+                    // Update Navbar Button State
+                    document.getElementById('btn-login-sidebar').style.display = 'flex';
+                    document.getElementById('btn-logout-sidebar').style.display = 'none';
+
+                } catch (error) {
+                    console.warn("Gagal terhubung ke API sebagai Guest.", error);
+                    const box = document.getElementById('loadingBox');
+                    if (box) {
+                        box.innerHTML = `
+                            <div class="auth-logo" style="margin-bottom: 24px;">APP <span>bisa</span></div>
+                            <div style="color: var(--color-danger); font-size: 13px; margin-bottom: 15px;">Gagal memuat data dari Server API.</div>
+                            <button class="btn-square btn-guest" onclick="location.reload()">COBA LAGI</button>
+                        `;
+                    }
+                }
+            };
+
             const fetchData = async (passwordInput) => {
                 const authInput = document.getElementById('appPassword');
-                const authBox = document.querySelector('.auth-box');
                 const err = document.getElementById('authError');
                 
                 if(authInput) authInput.disabled = true;
                 if(err) err.style.display = 'none';
 
-                const originalAuthBoxHTML = authBox ? authBox.innerHTML : '';
+                closeLoginModal();
+                applyLoadingScreen();
 
-                if(authBox) {
-                    authBox.style.borderColor = 'var(--border-color)';
-                    authBox.style.boxShadow = 'none';
-                    authBox.innerHTML = `
-                        <div class="auth-logo" style="margin-bottom: 24px;">APP <span>bisa</span></div>
-                        <div class="sync-container" style="text-align: left;">
-                            <div id="sync-step-1" class="sync-step"><i class="fas fa-circle-notch fa-spin" style="color:var(--color-urea)"></i> <span>Mengautentikasi & Menghubungkan...</span></div>
-                            <div id="sync-step-2" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Mengunduh Data Server...</span></div>
-                            <div id="sync-step-3" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Membangun Visualisasi...</span></div>
-                            <div id="sync-step-4" class="sync-step" style="opacity: 0.4;"><i class="fas fa-circle"></i> <span>Menyelesaikan...</span></div>
-                        </div>
-                        <div class="progress-track-modern" style="margin-top:24px; background: var(--bg-body); height: 8px;">
-                            <div class="progress-bar bg-urea" id="sync-progress" style="width: 15%; transition: width 0.4s ease-out;"></div>
-                        </div>
-                    `;
-                }
-
-                const setStep = (num, text, progress) => {
-                    if(num > 1) {
-                        const prev = document.getElementById(`sync-step-${num-1}`);
-                        if(prev) {
-                            prev.querySelector('i').className = 'fas fa-check-circle';
-                            prev.querySelector('i').style.color = 'var(--color-success)';
-                        }
-                    }
-                    const curr = document.getElementById(`sync-step-${num}`);
-                    if(curr) {
-                        curr.style.opacity = '1';
-                        curr.querySelector('i').className = 'fas fa-circle-notch fa-spin';
-                        curr.querySelector('i').style.color = 'var(--color-urea)';
-                        curr.querySelector('span').innerText = text;
-                    }
-                    const progBar = document.getElementById('sync-progress');
-                    if(progBar) progBar.style.width = `${progress}%`;
-                };
+                setStep(1, 'Mengautentikasi & Menghubungkan...', 25);
 
                 try {
                     let dataset = [];
@@ -2158,9 +2257,8 @@
                         dataset = generateMockData();
                     }
 
-                    if(authBox) authBox.classList.add('success-state');
-
                     state.password = passwordInput;
+                    state.isGuest = false;
                     sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
 
                     setStep(2, 'Mengunduh Data Berhasil', 50);
@@ -2168,26 +2266,22 @@
                     
                     processData(dataset); 
 
-                    setStep(3, 'Membangun Dashboard...', 85);
-                    await new Promise(r => setTimeout(r, 150));
+                    await finishLoadingAndEnter();
 
-                    setStep(4, 'Dashboard Siap!', 100);
-                    const lastStep = document.getElementById('sync-step-4');
-                    if(lastStep) {
-                        lastStep.querySelector('i').className = 'fas fa-check-circle';
-                        lastStep.querySelector('i').style.color = 'var(--color-success)';
-                    }
-
-                    await new Promise(r => setTimeout(r, 300));
-                    
-                    document.getElementById('authOverlay').style.opacity = '0';
-                    setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; }, 400);
+                    // Update Navbar Button State
+                    document.getElementById('btn-login-sidebar').style.display = 'none';
+                    document.getElementById('btn-logout-sidebar').style.display = 'flex';
 
                 } catch (e) {
                     console.error(e);
-                    if(authBox) {
-                        authBox.classList.remove('success-state');
-                        authBox.innerHTML = originalAuthBoxHTML;
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    if(loadingOverlay) loadingOverlay.style.display = 'none';
+                    
+                    showLoginModal();
+                    
+                    if(authInput) {
+                        authInput.disabled = false;
+                        authInput.focus();
                     }
                     const newErr = document.getElementById('authError');
                     if(newErr) {
@@ -2199,7 +2293,15 @@
 
             const loginApp = () => {
                 const pass = document.getElementById('appPassword').value;
-                fetchData(pass);
+                if (!pass || pass.trim() === '') {
+                    const err = document.getElementById('authError');
+                    if (err) {
+                        err.innerText = 'Silakan isi password untuk login.';
+                        err.style.display = 'block';
+                    }
+                } else {
+                    fetchData(pass);
+                }
             };
 
             const logoutApp = () => {
@@ -2218,8 +2320,11 @@
                     }
                 });
 
+                // Otomatis tentukan mode saat web dibuka
                 if (state.password) {
                     fetchData(state.password);
+                } else {
+                    loginAsGuest();
                 }
             };
 
@@ -2235,6 +2340,9 @@
                 renderProvChart,
                 renderDistProvChart,
                 changeYear,
+                showLoginModal,
+                closeLoginModal,
+                loginAsGuest,
                 loginApp,
                 logoutApp,
                 init
