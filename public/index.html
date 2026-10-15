@@ -326,8 +326,6 @@
         .input-square:focus { border-color: var(--color-urea); }
         .btn-square { width: 100%; padding: 14px; background: var(--color-urea); color: #000; font-weight: 800; border: none; cursor: pointer; border-radius: 12px; transition: 0.2s; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
         .btn-square:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 222, 0, 0.3); }
-        .btn-guest { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color); }
-        .btn-guest:hover { background: var(--border-color); box-shadow: none; }
 
         .sync-step {
             font-size: 13px; font-weight: 600; color: var(--text-primary);
@@ -367,17 +365,15 @@
 <body>
 
     
-    <!-- INITIAL LANDING / LOGIN SCREEN (REPLACES AUTO-LOGIN) -->
+    <!-- INITIAL LANDING / LOGIN SCREEN -->
     <div id="initialLoginScreen" class="auth-overlay" style="display: flex; opacity: 1;">
         <div class="auth-box">
             <div class="auth-logo">APP <span>bisa</span></div>
             <div class="auth-subtitle">Silakan Login untuk Melanjutkan</div>
             
-            <input type="password" id="mainPassword" class="input-square" placeholder="Masukkan Password..." style="margin-bottom: 20px;" onkeyup="if(event.keyCode===13) app.handleLogin('admin')">
+            <input type="password" id="mainPassword" class="input-square" placeholder="Masukkan Password..." style="margin-bottom: 20px;" onkeyup="if(event.keyCode===13) app.handleLogin()">
             
-            <!-- PERUBAHAN DI SINI: Tombol Kuning memanggil 'admin', Tombol Abu memanggil 'guest' -->
-            <button class="btn-square" onclick="app.handleLogin('admin')">BUKA DASHBOARD</button>
-            <button class="btn-square btn-guest" onclick="app.handleLogin('guest')">GUEST</button>
+            <button class="btn-square" onclick="app.handleLogin()">BUKA DASHBOARD</button>
             
             <p id="mainAuthError" style="color: var(--color-danger); font-size: 11px; margin-top: 15px; display: none;">Password salah!</p>
         </div>
@@ -920,8 +916,7 @@
                 selectedYear: 2026,
                 sidebarOpen: true,
                 theme: localStorage.getItem('theme') || 'dark',
-                password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || '',
-                isGuest: false // false = Admin (Full), true = Guest (Jan-Jun)
+                password: sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN) || ''
             };
 
             let charts = { nasional: null, provinsi: null, nasionalDist: null, provinsiDist: null, lini1Prod: null, lini1Stock: null, trenHarga: null };
@@ -979,9 +974,7 @@
                 const el = document.getElementById('header-update-text');
                 if (!el) return;
                 
-                if (state.isGuest) {
-                    el.innerText = `Data: Jan-Jun 2026`;
-                } else if (monthIdx === null || monthIdx === undefined || monthIdx < 0) {
+                if (monthIdx === null || monthIdx === undefined || monthIdx < 0) {
                     el.innerText = `Belum ada data realisasi ${year}`;
                 } else {
                     el.innerText = `Update Data: ${MONTH_NAMES_ID[monthIdx]} ${year}`;
@@ -999,10 +992,6 @@
 
                 const filteredData = rawData.filter(r => r.JENIS_DATA === targetJenisData);
                 let years = [...new Set(filteredData.map(r => r.TAHUN))].filter(y => y > 0).sort((a,b) => b-a);
-                
-                if (state.isGuest) {
-                    years = [2026]; // Kunci dropdown tahun hanya di 2026 untuk Buka Dashboard (Guest)
-                }
 
                 const yearSel = document.getElementById('year-select');
                 if (yearSel && years.length > 0) {
@@ -2150,7 +2139,7 @@
                 }
             };
 
-            const handleLogin = (type) => {
+            const handleLogin = () => {
                 const passInput = document.getElementById('mainPassword');
                 const errText = document.getElementById('mainAuthError');
                 
@@ -2163,77 +2152,13 @@
                 }
 
                 if (errText) errText.style.display = 'none';
-                
-                if (type === 'guest') {
-                    loginAsGuestMode(passInput.value);
-                } else {
-                    fetchData(passInput.value);
-                }
-            };
-
-            const loginAsGuestMode = async (passwordInput) => {
-                const errText = document.getElementById('mainAuthError');
-                
-                applyLoadingScreen();
-                setStep(1, 'Memuat Data Terbatas...', 25);
-                
-                try {
-                    const res = await fetch(BASE_API_URL, {
-                        redirect: "follow",
-                        method: 'POST',
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ password: passwordInput, action: 'GET_ALL_DATA' })
-                    });
-                    
-                    const json = await res.json();
-                    if (json.status === 'error') throw new Error(json.message);
-                    
-                    let dataset = json.data;
-
-                    // Sembunyikan Realisasi (performa aktual) HANYA untuk bulan Juli s/d Des 2026.
-                    dataset = dataset.filter(r => {
-                        const y = parseInt(r.TAHUN);
-                        const m = normalizeMonth(r.BULAN);
-                        
-                        if (y === 2026 && m > 5) {
-                            const jenis = String(r.JENIS || '').toUpperCase();
-                            // Target dan Alokasi bulanan harus DIKEKALKAN agar total tahunan genap
-                            if (jenis === 'ALOKASI' || jenis === 'RKO') {
-                                return true;
-                            }
-                            // Hapus Realisasi, Distribusi, Stok dsb untuk bulan Juli-Desember
-                            return false;
-                        }
-                        return true;
-                    });
-
-                    state.password = passwordInput;
-                    state.isGuest = true;
-                    state.selectedYear = 2026; 
-                    sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
-                    sessionStorage.setItem(CACHE_KEY_ROLE, 'guest');
-
-                    setStep(2, 'Data Jan - Jun 2026...', 50);
-                    await new Promise(r => setTimeout(r, 150));
-
-                    processData(dataset);
-                    await finishLoadingAndEnter();
-
-                } catch (error) {
-                    console.error(error);
-                    const loadingOverlay = document.getElementById('loadingOverlay');
-                    if (loadingOverlay) loadingOverlay.style.display = 'none';
-                    if (errText) {
-                        errText.innerText = error.message || 'Password salah atau gagal memuat data.';
-                        errText.style.display = 'block';
-                    }
-                }
+                fetchData(passInput.value);
             };
 
             const fetchData = async (passwordInput) => {
                 const errText = document.getElementById('mainAuthError');
                 applyLoadingScreen();
-                setStep(1, 'Mengautentikasi (Full Data)...', 25);
+                setStep(1, 'Mengautentikasi...', 25);
 
                 try {
                     let dataset = [];
@@ -2253,9 +2178,7 @@
                     }
 
                     state.password = passwordInput;
-                    state.isGuest = false;
                     sessionStorage.setItem(CACHE_KEY_AUTH_TOKEN, passwordInput);
-                    sessionStorage.setItem(CACHE_KEY_ROLE, 'admin');
 
                     setStep(2, 'Mengunduh Data Berhasil', 50);
                     await new Promise(r => setTimeout(r, 150));
@@ -2276,7 +2199,6 @@
 
             const logoutApp = () => {
                 sessionStorage.removeItem(CACHE_KEY_AUTH_TOKEN);
-                sessionStorage.removeItem(CACHE_KEY_ROLE);
                 location.reload();
             };
 
@@ -2293,15 +2215,10 @@
 
                 // Cek Login dari sesi sebelumnya (jika halaman di-refresh)
                 const savedPass = sessionStorage.getItem(CACHE_KEY_AUTH_TOKEN);
-                const savedRole = sessionStorage.getItem(CACHE_KEY_ROLE);
                 
-                if (savedPass && savedRole) {
+                if (savedPass) {
                     // Sembunyikan layar awal dan load data sesuai sesi
-                    if (savedRole === 'guest') {
-                        loginAsGuestMode(savedPass);
-                    } else {
-                        fetchData(savedPass);
-                    }
+                    fetchData(savedPass);
                 } else {
                     // Biarkan layar login tampil, jangan load data
                     const initialScreen = document.getElementById('initialLoginScreen');
