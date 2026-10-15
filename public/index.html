@@ -375,8 +375,9 @@
             
             <input type="password" id="mainPassword" class="input-square" placeholder="Masukkan Password..." style="margin-bottom: 20px;" onkeyup="if(event.keyCode===13) app.handleLogin('admin')">
             
-            <button class="btn-square" onclick="app.handleLogin('guest')">BUKA DASHBOARD</button>
-            <button class="btn-square btn-guest" onclick="app.handleLogin('admin')">ADMIN</button>
+            <!-- PERUBAHAN DI SINI: Tombol Kuning memanggil 'admin', Tombol Abu memanggil 'guest' -->
+            <button class="btn-square" onclick="app.handleLogin('admin')">BUKA DASHBOARD</button>
+            <button class="btn-square btn-guest" onclick="app.handleLogin('guest')">GUEST</button>
             
             <p id="mainAuthError" style="color: var(--color-danger); font-size: 11px; margin-top: 15px; display: none;">Password salah!</p>
         </div>
